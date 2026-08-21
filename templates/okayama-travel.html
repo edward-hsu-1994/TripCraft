@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>日本岡山旅遊</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Vue 3 -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <!-- Leaflet (OpenStreetMap) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap');
+    body {
+      font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    /* Hide scrollbar for tabs */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* Leaflet z-index fix */
+    .leaflet-pane {
+      z-index: 10 !important;
+    }
+    .leaflet-top, .leaflet-bottom {
+      z-index: 15 !important;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-slate-800 antialiased min-h-screen">
+  <div id="app" class="max-w-4xl mx-auto px-4 py-8">
+    
+    <!-- Top Header Card -->
+    <header class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8 mb-6">
+      <!-- Title -->
+      <h1 class="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">
+        {{ trip.title }}
+      </h1>
+
+      <!-- Date Range -->
+      <div class="mt-3 text-slate-500 font-medium text-sm md:text-base tracking-wide">
+        {{ trip.dateRange }}
+      </div>
+
+      <!-- Description Block with Left Border -->
+      <div class="mt-5 border-l-2 border-slate-300 pl-4 py-0.5">
+        <p class="text-sm md:text-base text-slate-500 leading-relaxed">
+          {{ trip.description }}
+        </p>
+      </div>
+    </header>
+
+    <!-- Tab Control Section -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
+      <!-- Tab Header Bar -->
+      <div class="border-b border-slate-200">
+        <nav class="flex space-x-6 md:space-x-8 overflow-x-auto no-scrollbar -mb-px" aria-label="Tabs">
+          <button
+            v-for="tab in tabs"
+            :key="tab.id"
+            @click="switchTab(tab.id)"
+            :class="[
+              activeTab === tab.id
+                ? 'border-sky-500 text-slate-900 font-bold'
+                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 font-medium',
+              tab.id !== 'overview' ? 'day-tab day-detail-tab' : 'overview-tab',
+              'whitespace-nowrap pb-3 px-1 border-b-2 text-base md:text-lg transition-colors cursor-pointer'
+            ]"
+            :data-tab="tab.id"
+          >
+            {{ tab.name }}
+          </button>
+        </nav>
+      </div>
+
+      <!-- Tab Content Area -->
+      <div class="mt-8">
+        
+        <!-- 1. Overview Tab Content (總覽頁) -->
+        <div v-if="activeTab === 'overview'" class="overview-content space-y-8">
+          
+          <!-- 行程筆記 -->
+          <section>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-lg">📝</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">行程筆記</h2>
+            </div>
+            <div class="bg-slate-50 rounded-xl p-4 md:p-5 border border-slate-200/80 text-slate-700 leading-relaxed text-sm md:text-base">
+              {{ overview.notes }}
+            </div>
+          </section>
+
+          <!-- 天氣資訊 -->
+          <section>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-lg">🌤️</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">天氣資訊</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div 
+                v-for="(item, idx) in overview.weather" 
+                :key="idx"
+                class="bg-sky-50/50 rounded-xl p-4 border border-sky-100 flex flex-col justify-between"
+              >
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-semibold text-sky-800 bg-sky-100 px-2 py-0.5 rounded-full">{{ item.title }}</span>
+                  <span class="text-xl">{{ item.icon }}</span>
+                </div>
+                <div class="text-lg font-bold text-slate-800">{{ item.value }}</div>
+                <p class="text-xs text-slate-500 mt-1 leading-normal">{{ item.desc }}</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- 注意事項 -->
+          <section>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-lg">⚠️</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">注意事項</h2>
+            </div>
+            <div class="bg-amber-50/40 rounded-xl p-5 border border-amber-200/60">
+              <ul class="space-y-2.5 text-sm md:text-base text-slate-700">
+                <li 
+                  v-for="(notice, idx) in overview.notices" 
+                  :key="idx"
+                  class="flex items-start gap-2.5"
+                >
+                  <span class="text-amber-500 mt-0.5 font-bold">•</span>
+                  <span class="leading-relaxed">{{ notice }}</span>
+                </li>
+              </ul>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- 2. Daily Timeline Content (第1天 ~ 第8天) -->
+        <div v-for="day in dayList" :key="day.id" class="day-detail-section" :data-day="day.id">
+          <div v-if="activeTab === day.id" class="day-detail-content">
+            
+            <!-- If itinerary items exist for this day -->
+            <div v-if="itinerary[day.id] && itinerary[day.id].length > 0" class="max-w-2xl mx-auto py-2">
+              
+              <!-- OpenStreetMap Map Block -->
+              <div class="mb-8 bg-white rounded-2xl p-3 md:p-4 border border-slate-200/80 shadow-sm">
+                <div class="flex items-center justify-between mb-2.5 px-1">
+                  <div class="flex items-center gap-2 font-bold text-slate-800 text-sm md:text-base">
+                    <span>🗺️</span>
+                    <span>當日景點路線地圖 (OpenStreetMap)</span>
+                  </div>
+                  <span class="text-xs text-slate-400 font-normal">依行程編號標記</span>
+                </div>
+                <div :id="'map-' + day.id" class="w-full h-64 md:h-80 rounded-xl overflow-hidden z-0 border border-slate-100"></div>
+              </div>
+
+              <div v-for="(spot, index) in itinerary[day.id]" :key="index" class="relative">
+                
+                <!-- Spot Card (No Image) -->
+                <div class="bg-[#f0f4f9] rounded-2xl p-4 md:p-5 flex items-center gap-4 shadow-sm border border-slate-200/50 hover:bg-[#e8eff7] transition">
+                  
+                  <!-- Left: Number Badge -->
+                  <div class="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-rose-600 text-white font-bold text-sm md:text-base flex items-center justify-center shadow-sm flex-shrink-0">
+                    {{ index + 1 }}
+                  </div>
+
+                  <!-- Right: Spot Info -->
+                  <div class="flex-1 min-w-0 pr-1">
+                    <!-- Time & Type Icon -->
+                    <div class="flex items-center gap-1.5 text-rose-600 font-bold text-sm md:text-base">
+                      <!-- Type Icon -->
+                      <span class="w-6 h-6 rounded-full border border-rose-500/80 flex items-center justify-center text-xs">
+                        <template v-if="spot.type === 'flight'">✈️</template>
+                        <template v-else-if="spot.type === 'hotel'">🛏️</template>
+                        <template v-else-if="spot.type === 'train'">🚆</template>
+                        <template v-else-if="spot.type === 'bus'">🚌</template>
+                        <template v-else-if="spot.type === 'shopping'">🛍️</template>
+                        <template v-else-if="spot.type === 'info'">ℹ️</template>
+                        <template v-else-if="spot.type === 'castle'">🏯</template>
+                        <template v-else-if="spot.type === 'shrine'">⛩️</template>
+                        <template v-else-if="spot.type === 'park'">🌿</template>
+                        <template v-else-if="spot.type === 'cruise'">🚢</template>
+                        <template v-else-if="spot.type === 'tower'">🗼</template>
+                        <template v-else-if="spot.type === 'sight'">🎡</template>
+                        <template v-else>📍</template>
+                      </span>
+                      <span>{{ spot.time }}</span>
+                      <span v-if="spot.tag" class="text-xs text-slate-400 font-normal">({{ spot.tag }})</span>
+                    </div>
+
+                    <!-- Spot Name -->
+                    <h3 class="font-bold text-slate-800 text-base md:text-lg mt-0.5 tracking-tight truncate">
+                      {{ spot.name }}
+                    </h3>
+
+                    <!-- Duration / Departure -->
+                    <p class="text-xs md:text-sm text-slate-400 font-medium mt-0.5">
+                      {{ spot.duration }}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Transit Connector (Between cards) -->
+                <div v-if="index < itinerary[day.id].length - 1" class="py-3 pl-8 md:pl-9 flex items-center gap-3 text-slate-500 text-xs md:text-sm font-medium">
+                  <!-- Vertical dashed line indicator -->
+                  <div class="flex items-center gap-2">
+                    <span v-if="spot.transit?.icon === 'plane'" class="text-base">✈️</span>
+                    <span v-else-if="spot.transit?.icon === 'bus'" class="text-base">🚌</span>
+                    <span v-else-if="spot.transit?.icon === 'walk'" class="text-base">🚶</span>
+                    <span v-else-if="spot.transit?.icon === 'train'" class="text-base">🚆</span>
+                    <span v-else class="text-base">➡️</span>
+                    <span>{{ spot.transit?.text }}</span>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- Fallback Placeholder for days with no data yet -->
+            <div v-else class="py-12 text-center text-slate-400 border-2 border-dashed border-slate-200 rounded-xl">
+              <div class="text-4xl mb-2">🗓️</div>
+              <h3 class="text-base font-semibold text-slate-600">{{ day.name }} 行程內容區塊（Placeholder）</h3>
+              <p class="text-sm text-slate-400 mt-1">即將填入景點排程、交通時間、停留時間與備註</p>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const { createApp, ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } = Vue;
+
+    createApp({
+      setup() {
+        const trip = reactive({
+          title: '2026山陽關西夏末八天七夜旅遊',
+          dateRange: '2026/09/05 - 2026/09/12',
+          description: '本次旅遊進出機場為岡山桃太郎機場(OKJ)，機場與岡山市區交通需搭乘機場巴士。旅遊規劃中有比較大的時間緩衝用於休息、就餐、廁所等。'
+        });
+
+        const activeTab = ref('day1');
+
+        const tabs = reactive([
+          { id: 'overview', name: '總覽頁' },
+          { id: 'day1', name: '第1天' },
+          { id: 'day2', name: '第2天' },
+          { id: 'day3', name: '第3天' },
+          { id: 'day4', name: '第4天' },
+          { id: 'day5', name: '第5天' },
+          { id: 'day6', name: '第6天' },
+          { id: 'day7', name: '第7天' },
+          { id: 'day8', name: '第8天' }
+        ]);
+
+        const overview = reactive({
+          notes: '本次旅遊進出機場為岡山桃太郎機場(OKJ)，機場與岡山市區交通需搭乘機場巴士。',
+          weather: [
+            { title: '平均氣溫', icon: '🌡️', value: '23°C ~ 30°C', desc: '夏末初秋，日間溫暖微熱，早晚微風舒適。' },
+            { title: '晴雨概況', icon: '☀️', value: '晴朗少雨', desc: '岡山素有晴天之國美名，降雨機率低但午後偶有陣雨。' },
+            { title: '穿著建議', icon: '👕', value: '透氣夏裝 + 薄外套', desc: '白天穿著短袖透氣衣物，室內冷氣房及晚間建議備薄開衫。' }
+          ],
+          notices: [
+            '機場交通：岡山桃太郎機場往返岡山市區請搭乘利木津巴士（單程約 30 分鐘，票價約 ¥780）。',
+            '交通票券：建議準備 ICOCA 或 Suica 交通卡，適用於 JR 電車、岡山路面電車及市區超商。',
+            '營業時間：日本部分景點與老街店鋪（如倉敷美觀、吉備津神社）多於 16:30 ~ 17:00 休息，請注意時間規劃。',
+            '隨身準備：建議隨身攜帶水壺與防曬用品，並預留部分日幣現金供小型攤販使用。'
+          ]
+        });
+
+        // Itinerary data organized by days
+        const itinerary = reactive({
+          day1: [
+            {
+              name: '臺灣桃園國際機場',
+              time: '08:30',
+              tag: '',
+              type: 'flight',
+              duration: '11:30 起飛',
+              coords: [25.0797, 121.2342],
+              transit: { icon: 'plane', text: '台灣虎航 IT214 02:35' }
+            },
+            {
+              name: '岡山機場',
+              time: '14:05',
+              tag: '',
+              type: 'flight',
+              duration: '停留 0 時 45 分',
+              coords: [34.7570, 133.8550],
+              transit: { icon: 'bus', text: '機場接駁巴士 35 分' }
+            },
+            {
+              name: '岡山車站',
+              time: '15:25',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 05 分',
+              coords: [34.6663, 133.9184],
+              transit: { icon: 'walk', text: '步行 6 分' }
+            },
+            {
+              name: '岡山站前大和ROYNET飯店',
+              time: '15:36',
+              tag: '',
+              type: 'hotel',
+              duration: '停留 0 時 30 分',
+              coords: [34.6657, 133.9202],
+              transit: { icon: 'walk', text: '步行 5 分' }
+            },
+            {
+              name: '桃太郎觀光旅遊中心',
+              time: '16:11',
+              tag: '',
+              type: 'info',
+              duration: '停留 0 時 10 分',
+              coords: [34.6660, 133.9190],
+              transit: { icon: 'walk', text: '步行 2 分' }
+            },
+            {
+              name: '岡山一番街',
+              time: '16:23',
+              tag: '',
+              type: 'shopping',
+              duration: '停留 1 時',
+              coords: [34.6655, 133.9180],
+              transit: { icon: 'walk', text: '步行 3 分' }
+            },
+            {
+              name: '桃太郎雕像',
+              time: '17:26',
+              tag: '',
+              type: 'sight',
+              duration: '停留 0 時 15 分',
+              coords: [34.6652, 133.9195],
+              transit: { icon: 'walk', text: '步行 9 分' }
+            },
+            {
+              name: '永旺夢樂城 岡山',
+              time: '17:50',
+              tag: '',
+              type: 'shopping',
+              duration: '停留 2 時 30 分',
+              coords: [34.6625, 133.9190],
+              transit: { icon: 'walk', text: '步行 10 分' }
+            },
+            {
+              name: '岡山站前大和ROYNET飯店 (Daiwa Roynet Hotel)',
+              time: '20:30',
+              tag: '',
+              type: 'hotel',
+              coords: [34.6657, 133.9202],
+              duration: '返回飯店休息'
+            }
+          ],
+          day2: [
+            {
+              name: '岡山站前大和ROYNET飯店',
+              time: '08:00',
+              tag: '',
+              type: 'hotel',
+              duration: '停留 1 時 00 分',
+              coords: [34.6657, 133.9202],
+              transit: { icon: 'walk', text: '步行 6 分' }
+            },
+            {
+              name: '岡山車站',
+              time: '09:06',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 40 分',
+              coords: [34.6663, 133.9184],
+              transit: { icon: 'train', text: 'JR 瀨戶大橋線（特急南風 Nanpu / 特急潮風 Shiokaze）47 分' }
+            },
+            {
+              name: '丸龜站',
+              time: '10:33',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 10 分',
+              coords: [34.2905, 133.7937],
+              transit: { icon: 'walk', text: '步行 18 分' }
+            },
+            {
+              name: '丸龜城',
+              time: '11:01',
+              tag: '',
+              type: 'castle',
+              duration: '停留 2 時',
+              coords: [34.2863, 133.7997],
+              transit: { icon: 'walk', text: '步行 18 分' }
+            },
+            {
+              name: '丸龜站',
+              time: '13:19',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 40 分',
+              coords: [34.2905, 133.7937],
+              transit: { icon: 'train', text: 'JR 瀨戶大橋線（特急南風 Nanpu / 特急潮風 Shiokaze）47 分' }
+            },
+            {
+              name: '岡山車站',
+              time: '14:46',
+              tag: '',
+              type: 'train',
+              duration: '停留 1 時',
+              coords: [34.6663, 133.9184],
+              transit: { icon: 'bus', text: '岡山路面電車 / 巴士 20 分' }
+            },
+            {
+              name: '岡山神社',
+              time: '16:06',
+              tag: '',
+              type: 'shrine',
+              duration: '停留 0 時 40 分',
+              coords: [34.6662, 133.9358],
+              transit: { icon: 'bus', text: '岡山路面電車 / 巴士 23 分' }
+            },
+            {
+              name: '岡山站前商店街',
+              time: '17:09',
+              tag: '',
+              type: 'shopping',
+              duration: '停留 1 時',
+              coords: [34.6660, 133.9215],
+              transit: { icon: 'walk', text: '步行 1 分' }
+            },
+            {
+              name: '岡山站前大和ROYNET飯店 (Daiwa Roynet Hotel)',
+              time: '18:10',
+              tag: '',
+              type: 'hotel',
+              coords: [34.6657, 133.9202],
+              duration: '返回飯店休息'
+            }
+          ],
+          day3: [
+            {
+              name: '岡山站前大和ROYNET飯店',
+              time: '08:00',
+              tag: '',
+              type: 'hotel',
+              duration: '停留 1 時 00 分',
+              coords: [34.6657, 133.9202],
+              transit: { icon: 'bus', text: '岡山路面電車 / 巴士 18 分' }
+            },
+            {
+              name: '岡山後樂園',
+              time: '09:18',
+              tag: '',
+              type: 'park',
+              duration: '停留 1 時',
+              coords: [34.6672, 133.9360],
+              transit: { icon: 'walk', text: '步行 9 分' }
+            },
+            {
+              name: '烏城公園',
+              time: '10:27',
+              tag: '',
+              type: 'castle',
+              duration: '停留 1 時',
+              coords: [34.6652, 133.9362],
+              transit: { icon: 'bus', text: '岡山路面電車 / 巴士 17 分' }
+            },
+            {
+              name: '岡山車站',
+              time: '11:44',
+              tag: '',
+              type: 'train',
+              duration: '停留 2 時 15 分',
+              coords: [34.6663, 133.9184],
+              transit: { icon: 'train', text: 'JR 吉備線（桃太郎線）24 分' }
+            },
+            {
+              name: '吉備津站',
+              time: '14:23',
+              tag: '',
+              type: 'train',
+              duration: '抵達站點',
+              coords: [34.6805, 133.8560],
+              transit: { icon: 'walk', text: '步行 12 分' }
+            },
+            {
+              name: '吉備津神社',
+              time: '14:35',
+              tag: '',
+              type: 'shrine',
+              duration: '停留 1 時 30 分',
+              coords: [34.6702, 133.8509],
+              transit: { icon: 'walk', text: '步行 25 分' }
+            },
+            {
+              name: '吉備津彥神社',
+              time: '16:30',
+              tag: '',
+              type: 'shrine',
+              duration: '停留 1 時',
+              coords: [34.6781, 133.8643],
+              transit: { icon: 'walk', text: '步行 6 分' }
+            },
+            {
+              name: '備前一宮站',
+              time: '17:36',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 40 分',
+              coords: [34.6817, 133.8687],
+              transit: { icon: 'train', text: 'JR 吉備線（桃太郎線）21 分' }
+            },
+            {
+              name: '岡山車站',
+              time: '18:37',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 10 分',
+              coords: [34.6663, 133.9184],
+              transit: { icon: 'walk', text: '步行 10 分' }
+            },
+            {
+              name: '永旺夢樂城 岡山',
+              time: '18:57',
+              tag: '',
+              type: 'shopping',
+              duration: '停留 2 時',
+              coords: [34.6625, 133.9190],
+              transit: { icon: 'walk', text: '步行 10 分' }
+            },
+            {
+              name: '岡山站前大和ROYNET飯店 (Daiwa Roynet Hotel)',
+              time: '21:07',
+              tag: '',
+              type: 'hotel',
+              coords: [34.6657, 133.9202],
+              duration: '返回飯店休息'
+            }
+          ],
+          day4: [
+            {
+              name: '岡山站前大和ROYNET飯店',
+              time: '07:00',
+              tag: '',
+              type: 'hotel',
+              duration: '08:00 離開',
+              coords: [34.6657, 133.9202],
+              transit: { icon: 'walk', text: '步行 6 分' }
+            },
+            {
+              name: '岡山車站',
+              time: '08:06',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 30 分',
+              coords: [34.6663, 133.9184],
+              transit: { icon: 'train', text: 'JR 山陽新幹線 25 分' }
+            },
+            {
+              name: '姬路站',
+              time: '09:01',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 15 分',
+              coords: [34.8273, 134.6908],
+              transit: { icon: 'bus', text: '神姬巴士 / 步行 31 分' }
+            },
+            {
+              name: '姬路城',
+              time: '09:47',
+              tag: '',
+              type: 'castle',
+              duration: '停留 3 時',
+              coords: [34.8394, 134.6939],
+              transit: { icon: 'walk', text: '步行 16 分' }
+            },
+            {
+              name: '好古園',
+              time: '13:03',
+              tag: '',
+              type: 'park',
+              duration: '停留 1 時',
+              coords: [34.8385, 134.6905],
+              transit: { icon: 'walk', text: '步行 11 分' }
+            },
+            {
+              name: '本町商店街',
+              time: '14:14',
+              tag: '',
+              type: 'shopping',
+              duration: '停留 1 時 30 分',
+              coords: [34.8335, 134.6925],
+              transit: { icon: 'bus', text: '神姬巴士 / 步行 23 分' }
+            },
+            {
+              name: '姬路站',
+              time: '16:07',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 30 分',
+              coords: [34.8273, 134.6908],
+              transit: { icon: 'train', text: 'JR 山陽新幹線 25 分' }
+            },
+            {
+              name: '岡山車站',
+              time: '17:02',
+              tag: '',
+              type: 'train',
+              duration: '停留 1 時',
+              coords: [34.6663, 133.9184],
+              transit: { icon: 'walk', text: '步行 6 分' }
+            },
+            {
+              name: '岡山站前大和ROYNET飯店 (Daiwa Roynet Hotel)',
+              time: '18:08',
+              tag: '',
+              type: 'hotel',
+              coords: [34.6657, 133.9202],
+              duration: '返回飯店休息'
+            }
+          ],
+          day5: [
+            {
+              name: '岡山站前大和ROYNET飯店',
+              time: '08:00',
+              tag: '',
+              type: 'hotel',
+              duration: '08:30 離開',
+              coords: [34.6657, 133.9202],
+              transit: { icon: 'walk', text: '步行 6 分' }
+            },
+            {
+              name: '岡山車站',
+              time: '08:36',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 30 分',
+              coords: [34.6663, 133.9184],
+              transit: { icon: 'train', text: 'JR 山陽新幹線 39 分' }
+            },
+            {
+              name: '新神戶',
+              time: '09:45',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 15 分',
+              coords: [34.7061, 135.1955],
+              transit: { icon: 'walk', text: '步行 13 分' }
+            },
+            {
+              name: '神戶北野異人館街',
+              time: '10:13',
+              tag: '',
+              type: 'sight',
+              duration: '停留 2 時',
+              coords: [34.7011, 135.1895],
+              transit: { icon: 'walk', text: '步行 5 分' }
+            },
+            {
+              name: '北野天滿神社',
+              time: '12:18',
+              tag: '',
+              type: 'shrine',
+              duration: '停留 0 時 30 分',
+              coords: [34.7020, 135.1898],
+              transit: { icon: 'walk', text: '步行 13 分' }
+            },
+            {
+              name: '生田神社',
+              time: '13:01',
+              tag: '',
+              type: 'shrine',
+              duration: '停留 0 時 45 分',
+              coords: [34.6946, 135.1906],
+              transit: { icon: 'bus', text: 'City Loop 巴士 / 步行 15 分' }
+            },
+            {
+              name: '神戶ベイクルーズ 御座船安宅丸 (Kobe Bay Cruise)',
+              time: '14:01',
+              tag: '',
+              type: 'cruise',
+              duration: '停留 1 時 30 分',
+              coords: [34.6826, 135.1873],
+              transit: { icon: 'walk', text: '步行 3 分' }
+            },
+            {
+              name: '神戶港塔',
+              time: '15:34',
+              tag: '',
+              type: 'tower',
+              duration: '停留 1 時',
+              coords: [34.6828, 135.1878],
+              transit: { icon: 'bus', text: '市區巴士 / 步行 18 分' }
+            },
+            {
+              name: '新神戶',
+              time: '18:04',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 30 分',
+              coords: [34.7061, 135.1955],
+              transit: { icon: 'train', text: 'JR 山陽新幹線 24 分' }
+            },
+            {
+              name: '新大阪車站',
+              time: '18:58',
+              tag: '',
+              type: 'train',
+              duration: '停留 3 時',
+              coords: [34.7335, 135.5003],
+              transit: { icon: 'train', text: 'JR 山陽新幹線 51 分' }
+            },
+            {
+              name: '岡山車站',
+              time: '22:49',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 10 分',
+              coords: [34.6663, 133.9184],
+              transit: { icon: 'walk', text: '步行 6 分' }
+            },
+            {
+              name: '岡山站前大和ROYNET飯店 (Daiwa Roynet Hotel)',
+              time: '23:05',
+              tag: '',
+              type: 'hotel',
+              coords: [34.6657, 133.9202],
+              duration: '返回飯店休息'
+            }
+          ],
+          day6: [
+            {
+              name: '岡山站前大和ROYNET飯店',
+              time: '08:00',
+              tag: '',
+              type: 'hotel',
+              duration: '停留 1 時 00 分',
+              coords: [34.6657, 133.9202],
+              transit: { icon: 'walk', text: '步行 6 分' }
+            },
+            {
+              name: '岡山車站',
+              time: '09:06',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 30 分',
+              coords: [34.6663, 133.9184],
+              transit: { icon: 'train', text: 'JR 山陽新幹線 22 分' }
+            },
+            {
+              name: '福山站',
+              time: '09:58',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 10 分',
+              coords: [34.4893, 133.3615],
+              transit: { icon: 'walk', text: '步行 8 分' }
+            },
+            {
+              name: '福山城',
+              time: '10:16',
+              tag: '',
+              type: 'castle',
+              duration: '停留 2 時',
+              coords: [34.4912, 133.3610],
+              transit: { icon: 'walk', text: '步行 7 分' }
+            },
+            {
+              name: '福山站',
+              time: '12:23',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 30 分',
+              coords: [34.4893, 133.3615],
+              transit: { icon: 'train', text: 'JR 山陽本線 33 分' }
+            },
+            {
+              name: '倉敷站',
+              time: '13:26',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 10 分',
+              coords: [34.6015, 133.7656],
+              transit: { icon: 'walk', text: '步行 16 分' }
+            },
+            {
+              name: '阿智神社',
+              time: '13:52',
+              tag: '',
+              type: 'shrine',
+              duration: '停留 1 時',
+              coords: [34.5975, 133.7715],
+              transit: { icon: 'walk', text: '步行 7 分' }
+            },
+            {
+              name: '倉敷美觀地區',
+              time: '14:59',
+              tag: '',
+              type: 'sight',
+              duration: '停留 2 時',
+              coords: [34.5958, 133.7712],
+              transit: { icon: 'walk', text: '步行 14 分' }
+            },
+            {
+              name: '倉敷站',
+              time: '17:13',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 30 分',
+              coords: [34.6015, 133.7656],
+              transit: { icon: 'train', text: 'JR 山陽本線 23 分' }
+            },
+            {
+              name: '岡山車站',
+              time: '18:06',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 10 分',
+              coords: [34.6663, 133.9184],
+              transit: { icon: 'walk', text: '步行 6 分' }
+            },
+            {
+              name: '岡山站前大和ROYNET飯店 (Daiwa Roynet Hotel)',
+              time: '18:22',
+              tag: '',
+              type: 'hotel',
+              coords: [34.6657, 133.9202],
+              duration: '返回飯店休息'
+            }
+          ],
+          day7: [
+            {
+              name: '岡山站前大和ROYNET飯店',
+              time: '08:00',
+              tag: '',
+              type: 'hotel',
+              duration: '停留 1 時 00 分',
+              coords: [34.6657, 133.9202],
+              transit: { icon: 'walk', text: '步行 6 分' }
+            },
+            {
+              name: '岡山車站',
+              time: '09:06',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 30 分',
+              coords: [34.6663, 133.9184],
+              transit: { icon: 'train', text: 'JR 瀨戶大橋線（快速 Marine Liner）64 分' }
+            },
+            {
+              name: '高松站 (Takamatsu Station)',
+              time: '10:40',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 10 分',
+              coords: [34.3508, 134.0470],
+              transit: { icon: 'walk', text: '步行 15 分' }
+            },
+            {
+              name: '高松城跡 (Takamatsu Castle Park)',
+              time: '11:05',
+              tag: '',
+              type: 'castle',
+              duration: '停留 2 時',
+              coords: [34.3502, 134.0515],
+              transit: { icon: 'bus', text: '琴電電車 / 巴士 15 分' }
+            },
+            {
+              name: '栗林公園',
+              time: '13:20',
+              tag: '',
+              type: 'park',
+              duration: '停留 2 時',
+              coords: [34.3298, 134.0442],
+              transit: { icon: 'bus', text: '琴電電車 / 巴士 15 分' }
+            },
+            {
+              name: '高松站 (Takamatsu Station)',
+              time: '15:35',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 30 分',
+              coords: [34.3508, 134.0470],
+              transit: { icon: 'train', text: 'JR 瀨戶大橋線（快速 Marine Liner）64 分' }
+            },
+            {
+              name: '岡山車站',
+              time: '17:09',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 10 分',
+              coords: [34.6663, 133.9184],
+              transit: { icon: 'walk', text: '步行 6 分' }
+            },
+            {
+              name: '岡山站前大和ROYNET飯店 (Daiwa Roynet Hotel)',
+              time: '17:25',
+              tag: '',
+              type: 'hotel',
+              coords: [34.6657, 133.9202],
+              duration: '返回飯店休息'
+            }
+          ],
+          day8: [
+            {
+              name: '岡山站前大和ROYNET飯店',
+              time: '08:00',
+              tag: '',
+              type: 'hotel',
+              duration: '10:30 離開',
+              coords: [34.6657, 133.9202],
+              transit: { icon: 'walk', text: '步行 6 分' }
+            },
+            {
+              name: '岡山車站',
+              time: '10:36',
+              tag: '',
+              type: 'train',
+              duration: '停留 1 時',
+              coords: [34.6663, 133.9184],
+              transit: { icon: 'bus', text: '機場接駁巴士 40 分' }
+            },
+            {
+              name: '岡山機場',
+              time: '12:55',
+              tag: '',
+              type: 'flight',
+              duration: '15:55 起飛',
+              coords: [34.7570, 133.8550],
+              transit: { icon: 'plane', text: '台灣虎航 IT215 02:45' }
+            },
+            {
+              name: '臺灣桃園國際機場',
+              time: '18:40',
+              tag: '',
+              type: 'flight',
+              coords: [25.0797, 121.2342],
+              duration: '返抵國門'
+            }
+          ]
+        });
+
+        const dayList = computed(() => {
+          return tabs.filter(t => t.id !== 'overview');
+        });
+
+        // OpenStreetMap Map Renderer
+        const mapInstances = {};
+
+        function renderMap(dayId) {
+          if (dayId === 'overview') return;
+          nextTick(() => {
+            const containerId = 'map-' + dayId;
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const spots = itinerary[dayId] || [];
+            const validSpots = spots.filter(s => s.coords && s.coords.length === 2);
+            if (validSpots.length === 0) return;
+
+            let map = mapInstances[dayId];
+            if (!map) {
+              map = L.map(containerId, {
+                scrollWheelZoom: false
+              });
+              L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 18
+              }).addTo(map);
+              mapInstances[dayId] = map;
+            } else {
+              map.eachLayer((layer) => {
+                if (layer instanceof L.Marker || layer instanceof L.Polyline) {
+                  map.removeLayer(layer);
+                }
+              });
+            }
+
+            const latLngs = [];
+            validSpots.forEach((spot, idx) => {
+              const markerIcon = L.divIcon({
+                className: 'custom-osm-marker',
+                html: `<div style="
+                  background-color: #e11d48;
+                  color: #ffffff;
+                  width: 26px;
+                  height: 26px;
+                  border-radius: 50%;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-weight: 700;
+                  font-size: 12px;
+                  border: 2px solid #ffffff;
+                  box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+                  font-family: inherit;
+                ">${idx + 1}</div>`,
+                iconSize: [26, 26],
+                iconAnchor: [13, 13],
+                popupAnchor: [0, -13]
+              });
+
+              const marker = L.marker(spot.coords, { icon: markerIcon }).addTo(map);
+              marker.bindPopup(`
+                <div style="font-family: inherit; font-size: 13px; line-height: 1.4;">
+                  <strong style="color: #e11d48;">${idx + 1}. ${spot.name}</strong><br/>
+                  <span style="color: #64748b; font-size: 12px;">⏰ ${spot.time} · ${spot.duration}</span>
+                </div>
+              `);
+              latLngs.push(spot.coords);
+            });
+
+            // Draw route polyline between local spots
+            if (latLngs.length > 1) {
+              const localSpots = latLngs.filter(c => c[0] > 30);
+              if (localSpots.length > 1) {
+                L.polyline(localSpots, {
+                  color: '#e11d48',
+                  weight: 3.5,
+                  opacity: 0.75,
+                  dashArray: '5, 8'
+                }).addTo(map);
+              }
+            }
+
+            // Fit bounds with padding
+            const localCoords = latLngs.filter(c => c[0] > 30);
+            const fitCoords = (localCoords.length > 0) ? localCoords : latLngs;
+            if (fitCoords.length === 1) {
+              map.setView(fitCoords[0], 14);
+            } else if (fitCoords.length > 1) {
+              map.fitBounds(fitCoords, {
+                padding: [40, 40],
+                maxZoom: 15
+              });
+            }
+
+            setTimeout(() => {
+              map.invalidateSize();
+            }, 120);
+          });
+        }
+
+        // Tab Switching & URL Hash Sync
+        function switchTab(tabId) {
+          activeTab.value = tabId;
+          if (window.location.hash !== '#' + tabId) {
+            window.location.hash = tabId;
+          }
+          if (tabId !== 'overview') {
+            renderMap(tabId);
+          }
+        }
+
+        function handleHashChange() {
+          const hash = window.location.hash.replace('#', '');
+          if (tabs.some(t => t.id === hash)) {
+            activeTab.value = hash;
+            if (hash !== 'overview') {
+              renderMap(hash);
+            }
+          }
+        }
+
+        watch(activeTab, (newTab) => {
+          if (newTab !== 'overview') {
+            renderMap(newTab);
+          }
+        });
+
+        onMounted(() => {
+          const hash = window.location.hash.replace('#', '');
+          if (hash && tabs.some(t => t.id === hash)) {
+            activeTab.value = hash;
+          } else {
+            window.location.hash = activeTab.value;
+          }
+          if (activeTab.value !== 'overview') {
+            renderMap(activeTab.value);
+          }
+          window.addEventListener('hashchange', handleHashChange);
+        });
+
+        onUnmounted(() => {
+          window.removeEventListener('hashchange', handleHashChange);
+        });
+
+        return {
+          trip,
+          activeTab,
+          tabs,
+          overview,
+          itinerary,
+          dayList,
+          switchTab
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>

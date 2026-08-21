@@ -11,12 +11,13 @@ TripCraft 不是樣板行程產生器，是**研究驅動 + 對話驅動**的行
 3. **確認天數** — 週末 3–6 個點、5 天 6–10 個點、7 天 8–12 個點，依此規模推薦景點
 4. **確認景點** — 使用者指定或 Agent 上網查推薦，兩條分支
 5. **住宿需求 + 飯店推薦** — 過夜才問；使用者給偏好，Agent 上網查 3–5 家飯店（位置 / 價格 / 評分 / 來源 URL）讓使用者挑
-6. **交通方式** — 步行 / 大眾運輸 / 計程車 / 租車 / 混搭，必問
-7. **景點停留時間** — 上網查實際資料，每個景點附來源 URL
-8. **交通時間 + 等候時間** — 上網查該地大眾運輸實際資料（含路線、班距、票價、來源 URL）
-9. **day-by-day 時間表** — 每一天都是 `Time | Location/Activity | Duration | Transit & method | Source` 的表格
-10. **全天行程 = 停留時間 + 交通時間 + 等候時間 + 用餐 + 緩衝**，不憑感覺拼湊
-11. **國際行程附**：簽證、護照效期、貨幣、時差、語言、保險、eSIM、機場接送、緊急聯絡
+6. **研究目的地** — 氣候、旺季/淡季、當地節慶、特產與簽證 / 貨幣 / 時差等國際資訊
+7. **交通方式** — 步行 / 大眾運輸 / 計程車 / 租車 / 混搭，必問
+8. **景點停留時間** — 上網查實際資料，每個景點附來源 URL
+9. **交通時間 + 等候時間** — 上網查該地大眾運輸實際資料（含路線、班距、票價、來源 URL）
+10. **day-by-day 時間表** — 每一天都是 `Time | Location/Activity | Duration | Transit & method | Source` 的表格
+11. **全天行程 = 停留時間 + 交通時間 + 等候時間 + 用餐 + 緩衝**，不憑感覺拼湊
+12. **國際行程附**：簽證、護照效期、貨幣、時差、語言、保險、eSIM、機場接送、緊急聯絡
 
 ## 這是什麼
 
@@ -46,7 +47,7 @@ TripCraft 以 [`SKILL.md`](./SKILL.md) 為核心，採用 Coding Agent 的最小
 - 「規劃一趟家庭冰島旅遊，預算 15 萬台幣」
 - 「幫我安排巴黎週末行程」
 
-Agent 會依 [`SKILL.md`](./SKILL.md) 的 13 步 workflow 依序執行：
+Agent 會依 [`SKILL.md`](./SKILL.md) 的 12 步 workflow 依序執行：
 1. 確認出發地 + 國內/國外
 2. 詢問偏好 → 推薦 5–8 個目的地
 3. 確認天數
@@ -64,15 +65,22 @@ Agent 會依 [`SKILL.md`](./SKILL.md) 的 13 步 workflow 依序執行：
 
 ```
 TripCraft/
-├── README.md              專案說明
-├── SKILL.md               Skill 本體（給 Coding Agent 讀）
-├── .gitignore
+├── README.md                        專案說明
+├── SKILL.md                         Skill 本體（給 Coding Agent 讀）
 └── examples/
-    └── tokyo-5days.md     完整輸出範例（含所有段落）
+    └── reference/                   參考資料目錄（輸出範例）
+        ├── tokyo-5days.html         東京 5 天 HTML 輸出範例（Tailwind + OpenStreetMap 數字標記地圖）
+        ├── fukuoka-5days.html       福岡 5 天 HTML 輸出範例（繁體中文，含多天次景點）
+        ├── tokyo-5days.md           東京 5 天 Markdown 輸出範例（原始格式）
+        └── fukuoka-5days.md         福岡 5 天 Markdown 輸出範例（繁體中文）
 ```
 
-## 擴充
+## 輸出格式
 
-- 改 `SKILL.md` 的 `description` 來調整觸發情境
-- 在 workflow 段落加入新步驟或品質規則
-- 把 `examples/` 換成你自己偏好的輸出格式樣板
+最終行程規劃輸出為**自包含 HTML 檔案**（預設格式，見 `examples/reference/*.html`）：
+
+- **Tailwind CSS**（CDN）負責所有樣式；CSS 直接嵌入 HTML，不需外部檔案或建置流程
+- **OpenStreetMap + Leaflet**（CDN）互動地圖，每個景點以**數字編號圓形標記**呈現，顏色依景點類別區分；飯店以 "H" 標記
+- **天數分頁（Tab）**：切換「總覽 / Day 1–5」分頁時只顯示當天行程，地圖自動聚焦（fitBounds）於當天景點；點擊行程中的景點名稱會自動切到對應天數分頁
+- 桌面版地圖固定側邊欄、手機版地圖置頂；支援列印（列印時隱藏地圖）
+- 使用者明確要求 Markdown 時可輸出 Markdown（`examples/reference/*.md` 為原始格式範例）

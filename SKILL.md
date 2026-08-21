@@ -161,7 +161,7 @@ Ask for any missing item, in priority order. **Sub-step 5b is required only when
 - **Age range** — used to estimate stamina; affects step 4 spot recommendations (skip strenuous ones for low-stamina travelers) and step 10 day-plan intensity (rest breaks, daily walking budget). If the user is uncomfortable sharing, take "prefer not to say" and rely on the stamina question below.
 - **Physical condition / stamina** — direct self-rating: high (can hike 8+ km/day, hills OK) / moderate (~5 km/day, some hills OK) / low (frequent rest, flat terrain preferred) / limited (mobility aids, very short walks). Use this together with age to size the daily plan.
 - **Meal pacing** — quick counter / casual sit-down / leisurely multi-course. This calibrates how much time to budget per meal in step 10; helps prevent over-dense scheduling. **Do not force restaurant reservations** — if the user prefers to eat spontaneously, just note the pacing and skip restaurant work entirely.
-- **Restaurant preferences** (optional) — any specific restaurants the user wants to visit? cuisine types they prefer or avoid? Captured only for optional use in step 12 (Dining Suggestions); does **not** lock meal rows in step 10.
+- **Restaurant preferences** (optional) — any specific restaurants the user wants to visit? cuisine types they prefer or avoid? Captured only for optional use in step 12 (itinerary meal suggestions); does **not** lock meal rows in step 10.
 
 #### 5b. Accommodation needs (overnight trips only)
 Ask the user about lodging preferences. These inputs feed the itinerary (hotel address becomes the transit origin / destination for each day's start and end) and the budget (lodging category).
@@ -315,13 +315,18 @@ Capture: drive time, estimated fare, **source URL**.
 Capture: drive time, parking notes, **source URL**.
 
 If the destination has no public transit (rural area), state that explicitly, note the gap, and suggest alternative modes.
+
+### 10. Build the day-by-day itinerary
+
+Assemble each day's time-blocked table from the researched data (steps 8 and 9).
+
+Row rules:
 - One row = one continuous activity. Split a leg with a wait > 15 min into two rows if the wait matters.
 - `Location / Activity` column must include the activity type in parentheses: `(visit)` / `(transit)` / `(meal)` / `(check-in)` / `(departure)` / `(rest)`.
 - `Transit & method` column must describe the mode and fare (or `walk`, `—` for non-transit rows).
 - Times must be realistic: arrival + visit duration + transit duration + buffer = start of next slot.
 - **Always reserve the first half-day for arrival logistics and the last half-day for departure.**
 - Alternate high-intensity and low-intensity days.
-- Include 2–3 meal suggestions per day as **flexible options** — named area or cuisine ("Lunch near Senso-ji" / "Try conveyor sushi in Tsukiji"), **not** locked restaurant bookings. Do **not** bake in wait times unless the user explicitly opted into restaurant-specific research in step 5a. If the user wants leisurely pacing, allocate more meal time; if quick, allocate less. Never let meal rows force tighter-than-asked spacing between spots.
 - Add one contingency option per day (rain plan / indoor alternative).
 - **Visit times must fall within the attraction's opening hours from step 8** — never schedule a visit outside open hours or on a closed day. If the only way to fit a spot is during closed hours, flag and ask the user before moving it.
 - Total day plan must fit within the user's pace preference.
@@ -331,19 +336,6 @@ If the destination has no public transit (rural area), state that explicitly, no
 | `09:00–10:30` | `Hotel → Narita Airport` (transit) | `~90 min` | `JR Narita Express; JPY 3,070` | `<URL>` |
 | `10:30–12:00` | `Senso-ji Temple + Nakamise` (visit) | `1.5 hr` | `(walk from station)` | `<URL>` |
 | `12:00–13:00` | `Lunch in Asakusa` (meal) | `1 hr` | `—` | `—` |
-
-Row rules:
-- One row = one continuous activity. Split a leg with a wait > 15 min into two rows if the wait matters.
-- `Location / Activity` column must include the activity type in parentheses: `(visit)` / `(transit)` / `(meal)` / `(check-in)` / `(departure)` / `(rest)`.
-- `Transit & method` column must describe the mode and fare (or `walk`, `—` for non-transit rows).
-- Times must be realistic: arrival + visit duration + transit duration + buffer = start of next slot.
-- Include 2–3 meal suggestions per day as **flexible options** — named area or cuisine ("Lunch near Senso-ji" / "Try conveyor sushi in Tsukiji"), **not** locked restaurant bookings. Do **not** bake in wait times unless the user explicitly opted into restaurant-specific research in step 5a. If the user wants leisurely pacing, allocate more meal time; if quick, allocate less. Never let meal rows force tighter-than-asked spacing between spots.
-- Include 2–3 meal suggestions per day (mix of cuisine and price tier).
-- Add one contingency option per day (rain plan / indoor alternative).
-- Total day plan must fit within the user's pace preference.
-- **Day count must match the duration from step 3** — if spots overflow, flag and ask before cutting.
-- If any leg crosses rush hour, note it explicitly (e.g. "crosses 17:30–19:30 rush — buffer +10 min").
-- **Every row needs a source URL** (or `—` for items with no research value, like generic meals / rest).
 
 ### 11. Add logistics
 - Booking lead times for popular restaurants, museums, tours
@@ -402,7 +394,9 @@ This rule applies to **all user-facing content**:
 - Notes and recommendations
 
 `SKILL.md` itself stays in English (the skill definition is portable).
-Output a complete markdown file. **Required top-level sections** (in this order):
+**Output format**: the final plan is a **self-contained HTML file** (`.html`). If the user explicitly asks for markdown, produce markdown instead — but HTML is the default. See sub-section 12d for the HTML template specification.
+
+Output a complete file. **Required top-level sections** (in this order):
 
 1. **Title block** — H1: `[City/Region, Country] [N]-Day Itinerary — [Month Year]`. Sub-line with origin, destination, dates, duration, travelers, trip type, transport mode, pace, stated preferences, age + stamina.
 2. **行前注意事項 / Pre-trip Notes** — see sub-section 12b below for checklist + trip-specific notes
@@ -422,7 +416,7 @@ Output a complete markdown file. **Required top-level sections** (in this order)
 13. **Packing list** — tailored to destination, season, and trip type
 14. **Local tips** — language basics, customs, emergency numbers
 15. **If international**: entry requirements summary (visa, passport validity, vaccinations), time zone, currency, embassy contact
-16. **Review Notes** — checklist output from step 13
+16. **Review Notes** — checklist output from step 12b
 
 #### 12b. Pre-trip Notes (行前注意事項)
 Two sub-blocks: a **checklist** and **trip-specific notes**.
@@ -470,6 +464,33 @@ Pull from step 6 (destination research) and tailor to the trip dates. Cover:
 - In step 4 Branch B, the recommended spot count must be scaled to the duration from step 3.
 - In step 4 Branch B, every recommended spot must include a one-line rationale tied back to the refined preferences.
 - For international trips, the agent must surface the visa requirement early (step 6) — if the user cannot get a visa, the rest of the plan is moot.
+
+#### 12d. HTML output template
+The final HTML file **must follow this specification** (see `examples/reference/*.html` for complete working examples):
+
+**Self-containment rules**:
+- One single `.html` file — no external CSS or JS files. All custom CSS/JS is embedded in `<style>`/`<script>` tags inside the file.
+- External CDNs allowed (and required): **Tailwind CSS** via `<script src="https://cdn.tailwindcss.com"></script>`, **Leaflet** CSS + JS via unpkg CDN. No build step, no npm.
+- Use Tailwind utility classes for all styling (layout, typography, colors, cards, tables). Avoid hand-written CSS except for marker icons, scroll-margin, and print styles.
+
+**Map (OpenStreetMap + Leaflet)**:
+- Load OpenStreetMap tiles via Leaflet: `L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", ...)` with attribution `&copy; OpenStreetMap`.
+- **Every attraction gets a numbered marker** (①–⑳ style: a colored circle with the spot's number rendered via `L.divIcon`). Numbering matches the spot list and the appendix tables.
+- Markers are colored by category (culture / food / shopping / nature / view / art) with a shared palette.
+- The **hotel** gets a distinct marker (letter "H", different color).
+- **Day tabs** (總覽 / Day 1 / … / Day N) sit in a sticky bar above the itinerary content. Switching a tab: shows **only that day's itinerary section**, filters the map markers to that day, **refits the map bounds to focus on those spots**, and scrolls to top. The 總覽 tab shows everything (overview + all days + appendix).
+- Clicking a marker opens a popup with the spot name + day(s); clicking a spot name in the itinerary **switches to that spot's day tab**, scrolls to the section, and opens the marker popup (`scrollToSpot`).
+- A spot visited on multiple days stores `days` as an **array** in the spot data.
+
+**Layout**:
+- Desktop (lg+): map in a **sticky sidebar** (~2/5 width) beside the scrollable itinerary content (~3/5).
+- Mobile: map **on top** (fixed height ~420px), itinerary below.
+- Header bar with trip title + one-line summary; overview cards (origin / destination / transport / budget).
+- Each day is a `<section id="dayN">` with a time-blocked table: `時間` | `地點 / 活動` | `時長` | `交通方式` | `來源` (source link). Spot rows carry the numbered marker reference and category tags.
+- Appendix sections after the itinerary: durations & hours, hotel, specialties, budget, packing list, local tips.
+- `@media print` hides the map, tabs, and filter buttons.
+
+**Verification before delivery**: open the file in a browser and confirm — Leaflet loads, all markers render, tab switching changes both visible sections and marker counts with map refocus, no JS console errors.
 
 ## Example triggers
 
@@ -519,4 +540,4 @@ User: [picks a subset, adds two of their own]
 Agent: [continues through steps 5–12 → produces tokyo-5days.md]
 ```
 
-See [`examples/tokyo-5days.md`](./examples/tokyo-5days.md) for a full reference output that shows the destination recommendation, spot proposal, source-citation tables, day-by-day plan, and international-trip logistics.
+See [`examples/reference/tokyo-5days.html`](./examples/reference/tokyo-5days.html) for a full reference HTML output (Tailwind + OpenStreetMap numbered markers), and [`examples/reference/fukuoka-5days.html`](./examples/reference/fukuoka-5days.html) for a Traditional-Chinese example with multi-day spots. The original markdown versions are kept alongside as [`examples/reference/tokyo-5days.md`](./examples/reference/tokyo-5days.md) and [`examples/reference/fukuoka-5days.md`](./examples/reference/fukuoka-5days.md).
