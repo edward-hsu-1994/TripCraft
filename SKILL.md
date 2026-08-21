@@ -354,46 +354,64 @@ const itinerary = reactive({
 
 **Output format**: The final plan is a **self-contained HTML file** saved into `templates/<destination>-travel.html` (e.g. [`templates/okayama-travel.html`](./templates/okayama-travel.html)).
 
-#### 12a. HTML Template Specifications
+#### 12a. HTML Template Strict Specifications
+
+The generated HTML file must strictly reproduce the architecture and design language of [`templates/okayama-travel.html`](./templates/okayama-travel.html):
 
 1. **CDN Libraries & Styling**:
    - Tailwind CSS CDN (`<script src="https://cdn.tailwindcss.com"></script>`)
    - Vue 3 Global CDN (`<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>`)
    - Leaflet CSS & JS (`<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />`, `<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>`)
-   - Google Fonts: `Noto Sans TC`
-   - Custom z-index rule: `.leaflet-pane { z-index: 10 !important; }` (prevents overlapping headers).
+   - Google Fonts: `@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap');`
+   - Custom z-index rule: `.leaflet-pane { z-index: 10 !important; }`, `.leaflet-top, .leaflet-bottom { z-index: 15 !important; }`
+   - Body & Root: `<body class="bg-gray-50 text-slate-800 antialiased min-h-screen">` and `<div id="app" class="max-w-4xl mx-auto px-4 py-8">`.
 
-2. **Top Header & Sticky Navigation**:
-   - Header card with trip title, date range badge, and description block.
-   - Sticky Tab navigation bar (`day-tab`, `day-detail-tab`) with URL hash synchronization (`#overview`, `#day1`...`#dayN`).
+2. **Top Header Card**:
+   - Card wrapper: `bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8 mb-6`
+   - Title: `<h1 class="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">{{ trip.title }}</h1>`
+   - Date range: `<div class="mt-3 text-slate-500 font-medium text-sm md:text-base tracking-wide">{{ trip.dateRange }}</div>`
+   - Description block: `<div class="mt-5 border-l-2 border-slate-300 pl-4 py-0.5"><p class="text-sm md:text-base text-slate-500 leading-relaxed">{{ trip.description }}</p></div>`
 
-3. **Overview Tab Content**:
-   - **行程筆記 (Notes)** card.
-   - **天氣與穿著 (Weather)** 3-column grid cards.
-   - **注意事項 (Notices)** numbered pink checklist cards.
+3. **Sticky Navigation Tab Bar (Clean Text Pill Design)**:
+   - Sticky bar wrapper: `sticky top-3 z-30 mb-6`
+   - Pill container with internal padding: `<nav class="bg-white/95 backdrop-blur-md rounded-[26px] p-3 md:p-3.5 shadow-sm border border-slate-200/80 flex items-center gap-2 md:gap-2.5 overflow-x-auto custom-scrollbar">`
+   - Tab buttons (Strictly text only, NO icons):
+     - Classes: `'px-4 py-2.5 rounded-[16px] text-sm font-bold whitespace-nowrap transition-all select-none cursor-pointer'`
+     - Active state: `bg-[#e11d48] text-white shadow-xs`
+     - Inactive state: `text-slate-700 hover:text-slate-900 hover:bg-slate-50`
+     - Semantic classes: `day-tab`, `day-detail-tab` for daily tabs, `overview-tab` for overview.
+     - Two-way URL hash sync (`#overview`, `#day1` ... `#dayN`).
 
-4. **Daily Detail Tab Content (`day-detail-section`, `day-detail-content`)**:
-   - **OpenStreetMap Container** (`:id="'map-' + day.id"`):
-     - Located above the spot list for each day.
-     - Numbered circular markers (`1`, `2`, `3`...) matching the itinerary spot numbers.
-     - Dashed connecting route line (`#e11d48`).
-     - Reset view button (`🔄 檢視全部景點` calling `resetMapView(day.id)`).
-     - **Leaflet Lifecycle Fix**: Always call `if (mapInstances[dayId]) { mapInstances[dayId].remove(); delete mapInstances[dayId]; }` on tab switch before instantiating the new map on the newly mounted DOM container.
+4. **Tab Content Container**:
+   - Outer card: `<div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 md:p-8">`
+
+5. **Overview Tab (3 Standard Sections)**:
+   - **行程筆記 (Notes)**: `<div class="bg-slate-50 rounded-xl p-4 md:p-5 border border-slate-200/80 text-slate-700 leading-relaxed text-sm md:text-base">{{ overview.notes }}</div>`
+   - **天氣資訊 (Weather)**: 3-column grid of `<div class="bg-sky-50/50 rounded-xl p-4 border border-sky-100 flex flex-col justify-between">` containing `title` badge (`text-xs font-semibold text-sky-800 bg-sky-100 px-2 py-0.5 rounded-full`), icon, `value`, and `desc`.
+   - **注意事項 (Notices)**: `<div class="bg-amber-50/40 rounded-xl p-5 border border-amber-200/60">` with `text-amber-500 font-bold •` bullet items.
+
+6. **Daily Detail Tabs (`day-detail-section`, `day-detail-content`)**:
+   - **OpenStreetMap Container** (`:id="'map-' + day.id"`, `w-full h-64 md:h-80 rounded-xl overflow-hidden`):
+     - Positioned directly above the spot list for each day.
+     - Header includes title and `🔄 檢視全部景點` reset button.
+     - Numbered circular red markers (`1`, `2`, `3`...) matching the spot numbers.
+     - Dashed connecting route line (`#e11d48`, weight: 3.5, dashArray: '5, 8').
+     - **Leaflet Lifecycle**: Must execute `if (mapInstances[dayId]) { mapInstances[dayId].remove(); delete mapInstances[dayId]; }` on tab switch before instantiating the new Leaflet map on `nextTick`.
    - **Bidirectional Map Interaction**:
      - Clicking the red number badge (`index + 1`) on any spot card triggers `focusSpotOnMap(day.id, index)`: smoothly scrolls to the map, flies/zooms in close (Zoom Level 17), and automatically opens the marker popup.
-     - Clicking the active Tab button or the `🔄 檢視全部景點` button triggers `resetMapView(day.id)`: smoothly restores the view to fit all spots for that day (`fitBounds`).
-   - **Spot Card Timeline**:
-     - No external image dependencies.
-     - Rose number badge `1`, `2`, `3`...
-     - Type icon badge (✈️, 🛏️, 🚆, 🚌, 🛍️, ℹ️, 🏯, ⛩️, 🌿, 🚢, 🗼, 📍).
-     - Spot name, duration / departure status.
-     - Connecting vertical line with transit mode, line name, and duration.
+     - Clicking the active Tab button or the `🔄 檢視全部景點` button triggers `resetMapView(day.id)`: smoothly restores the map view to fit all spots for that day (`fitBounds`).
+   - **Spot Card Timeline (No Image Dependencies)**:
+     - Card: `bg-[#f0f4f9] rounded-2xl p-4 md:p-5 flex items-center gap-4 shadow-sm border border-slate-200/50 hover:bg-[#e8eff7] transition`
+     - Left number badge: `w-9 h-9 md:w-10 md:h-10 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-sm md:text-base flex items-center justify-center shadow-sm flex-shrink-0 cursor-pointer select-none`
+     - Right info: Type icon in circle border + time + optional tag + spot name `h3` + duration `p`.
+     - Transit connector between cards: `py-3 pl-8 md:pl-9 flex items-center gap-3 text-slate-500 text-xs md:text-sm font-medium` with emoji and transit line / walk time.
+     - Fallback placeholder included for days without data.
 
 **Verification before delivery**: Open the template HTML in a browser to confirm:
-- Vue 3 loads and tabs switch smoothly.
-- Leaflet map initializes without gray/white artifacts when switching back and forth between days.
+- Vue 3 loads and tabs switch smoothly with URL hash sync.
+- Leaflet map initializes cleanly without gray/white blank tile artifacts when switching between days.
 - Clicking spot number badges zooms into the location; clicking tabs/reset button restores the full-day view.
-- All coordinates and transit information match researched data.
+- All coordinates, transit lines, and schedules match researched data.
 
 ## Example triggers
 
