@@ -58,7 +58,7 @@
 
     <!-- Sticky Navigation Tab Bar -->
     <div class="sticky top-3 z-30 mb-6">
-      <nav class="bg-white/95 backdrop-blur-md rounded-[22px] p-2 shadow-sm border border-slate-200/80 flex items-center gap-1.5 overflow-x-auto custom-scrollbar">
+      <nav class="bg-white/95 backdrop-blur-md rounded-[26px] p-3 md:p-3.5 shadow-sm border border-slate-200/80 flex items-center gap-2 md:gap-2.5 overflow-x-auto custom-scrollbar">
         <button
           v-for="tab in tabs"
           :key="tab.id"
@@ -67,7 +67,7 @@
           :class="[
             'day-tab',
             tab.id !== 'overview' ? 'day-detail-tab' : 'overview-tab',
-            'px-4 py-2 rounded-[14px] text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1.5 select-none cursor-pointer',
+            'px-4 py-2.5 rounded-[16px] text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1.5 select-none cursor-pointer',
             activeTab === tab.id
               ? 'bg-[#e11d48] text-white shadow-xs'
               : 'text-slate-700 hover:text-slate-900 hover:bg-slate-50'
