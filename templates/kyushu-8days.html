@@ -264,7 +264,7 @@
         const trip = reactive({
           title: '2027初春九州福岡深度八天七夜旅遊',
           dateRange: '2027/03/13 - 2027/03/20',
-          description: '本次旅遊進出機場為福岡國際機場(FUK)，以博多為核心輻射遊歷北九州精華。行程涵蓋福岡城跡、大濠公園、住吉神社、櫛田神社、太宰府天滿宮、柳川水鄉遊船、門司港懷舊街區、熊本城與由布院溫泉仙境。全程利用 JR 九州鐵道與西鐵大眾運輸，並精選熱騰騰熟食美饌。'
+          description: '本次旅遊進出機場為福岡國際機場(FUK)，以博多為核心樞紐輻射遊歷北九州精華。行程涵蓋福岡城跡、大濠公園、住吉神社、櫛田神社、太宰府天滿宮、柳川水鄉遊船、門司港懷舊街區與關門海峽跨海環狀線、熊本城與由布院溫泉仙境。住宿採 7 晚全程連續入住博多站前大和ROYNET飯店（零換房、無搬運行李負擔），並精選熱騰騰熟食美饌。'
         });
 
         const activeTab = ref('day1');
@@ -282,17 +282,17 @@
         ]);
 
         const overview = reactive({
-          notes: '本次旅遊進出機場為福岡國際機場 (FUK)，機場至市中心博多車站搭乘地下鐵僅需 5 分鐘，極為便利。住宿以博多站前大和ROYNET飯店為主要樞紐（第5晚安排由布院日式溫泉旅館一泊二食體驗）。\n\n餐食嚴選九州熱騰騰熟食名物（博多水炊地雞鍋、元祖本吉屋現蒸鰻魚飯、門司港現烤燒咖哩、熊本黑麻油拉麵、由布院大分豐後牛熟食御膳與鐵鍋煎餃），無任何生食負擔。交通使用 JR 九州鐵路周遊券 (北九州版) 搭配西鐵電車與地下鐵。',
+          notes: '本次旅遊進出機場為福岡國際機場 (FUK)，機場至市中心博多車站搭乘地下鐵僅需 5 分鐘，極為便利。住宿採「7 晚全程連續入住博多站前大和ROYNET飯店」，完全免去每日收拾行李與搬運換房的奔波，每日輕裝出遊、晚間返回同一舒適房間。\n\n全日行程皆善用九州頂級鐵道路網（JR 九州新幹線 32 分直達熊本、特急音速號 45 分直達小倉門司港、觀光列車由布院之森一日悠遊由布院仙境）。餐食嚴選九州熱騰騰熟食名物（博多水炊地雞鍋、元祖本吉屋現蒸鰻魚飯、門司港現烤燒咖哩、熊本黑麻油拉麵、由布院大分豐後牛熟食御膳與鐵鍋煎餃），無任何生食負擔。',
           weather: [
             { title: '平均氣溫', icon: '🌡️', value: '10°C ~ 18°C', desc: '初春時節，九州日間氣候和煦溫暖，早晚微風稍涼。' },
             { title: '晴雨概況', icon: '☀️', value: '晴朗少雨', desc: '春光明媚宜人，適合戶外名城、庭園與水鄉漫遊。' },
             { title: '穿著建議', icon: '👕', value: '洋蔥式穿搭 + 薄外套', desc: '白天穿著長袖上衣，早晚備防風夾克或輕羽絨外套。' }
           ],
           notices: [
+            '連續住宿：7 晚全程連續入住博多站前，行李固定放置房間，每日僅需隨身輕便包即可出遊。',
             '機場交通：福岡機場國際線可搭乘免費接駁巴士至國內線航廈轉乘地下鐵，5 分鐘直達博多車站。',
             '鐵道預約：「由布院之森 (Yufuin no Mori)」為全車指定席人氣觀光列車，建議提前於 JR 九州官網劃位。',
-            '交通票券：準備 ICOCA / Suica 實體卡或手機交通卡，適用於西鐵、福岡市地下鐵與市區巴士。',
-            '營業時間：神社寺廟與歷史名城（如熊本城天守閣、太宰府天滿宮寶物殿）多於 17:00 閉門。'
+            '交通票券：準備 ICOCA / Suica 實體卡或手機交通卡，適用於西鐵、福岡市地下鐵與市區巴士。'
           ]
         });
 
@@ -658,7 +658,7 @@
               time: '08:30',
               tag: '',
               type: 'hotel',
-              duration: '辦理退房與輕便行李準備',
+              duration: '出發',
               coords: [33.5890, 130.4185],
               transit: { icon: 'walk', text: '步行 4 分' }
             },
@@ -676,7 +676,7 @@
               time: '09:40',
               tag: '',
               type: 'train',
-              duration: '停留 0 時 20 分（寄存行李或飯店 Check-in）',
+              duration: '停留 0 時 15 分',
               coords: [32.7898, 130.6888],
               transit: { icon: 'bus', text: '熊本市電（路面電車）15 分' }
             },
@@ -718,126 +718,16 @@
             },
             {
               name: '熊本黑亭拉麵 / 阿蘇黑毛和牛熟食燒肉晚膳',
-              time: '18:00',
+              time: '17:35',
               tag: '',
               type: 'food',
-              duration: '停留 1 時 45 分（熱騰騰黑麻油蒜香熊本拉麵與極品熟食和牛燒肉）',
+              duration: '停留 1 時 30 分（熱騰騰黑麻油蒜香熊本拉麵與極品熟食和牛燒肉）',
               coords: [32.7915, 130.6905],
-              transit: { icon: 'walk', text: '步行 5 分' }
-            },
-            {
-              name: '熊本站前Richmond飯店 (Richmond Hotel Kumamoto)',
-              time: '19:50',
-              tag: '',
-              type: 'hotel',
-              coords: [32.7900, 130.6895],
-              duration: '返回飯店休息'
-            }
-          ],
-          day5: [
-            {
-              name: '熊本站前Richmond飯店',
-              time: '08:30',
-              tag: '',
-              type: 'hotel',
-              duration: '辦理退房',
-              coords: [32.7900, 130.6895],
-              transit: { icon: 'train', text: 'JR 九州新幹線 32 分至博多' }
+              transit: { icon: 'train', text: 'JR 九州新幹線 (櫻花號) 32 分直達返回博多' }
             },
             {
               name: '博多車站',
-              time: '09:20',
-              tag: '',
-              type: 'train',
-              duration: '停留 0 時 25 分',
-              coords: [33.5902, 130.4207],
-              transit: { icon: 'train', text: 'JR 特急由布 (Yufu) 2 時 05 分' }
-            },
-            {
-              name: '由布院車站 (Yufuin Station)',
-              time: '12:00',
-              tag: '',
-              type: 'train',
-              duration: '停留 0 時 20 分（車站寄放行李或溫泉旅館接駁）',
-              coords: [33.2625, 131.3553],
-              transit: { icon: 'walk', text: '步行 5 分' }
-            },
-            {
-              name: '湯之坪街道 (Yunotsubo Street 漫步與午膳)',
-              time: '12:30',
-              tag: '',
-              type: 'shopping',
-              duration: '停留 2 時 00 分（熱騰騰豐後牛可樂餅、B-speak 蛋糕捲、童話村巡禮）',
-              coords: [33.2660, 131.3620],
-              transit: { icon: 'walk', text: '步行 10 分' }
-            },
-            {
-              name: '金鱗湖 (Kinrin Lake 湖畔晨昏絕景)',
-              time: '14:40',
-              tag: '',
-              type: 'park',
-              duration: '停留 1 時 30 分（探訪清水與溫泉匯聚的夢幻湖泊、水上鳥居打卡）',
-              coords: [33.2662, 131.3690],
-              transit: { icon: 'walk', text: '步行 12 分' }
-            },
-            {
-              name: '由布院日式溫泉旅館 (秀峰館 / 花之舞)',
-              time: '16:25',
-              tag: '',
-              type: 'hotel',
-              duration: '辦理入住與享受露天風呂溫泉（停留 2 時 00 分）',
-              coords: [33.2605, 131.3600],
-              transit: { icon: 'walk', text: '步行 1 分' }
-            },
-            {
-              name: '由布院頂級大分豐後牛熟食會席晚宴',
-              time: '18:30',
-              tag: '',
-              type: 'food',
-              duration: '停留 2 時 00 分（日式溫泉旅館一泊二食、極品豐後牛熟食陶板燒饗宴）',
-              coords: [33.2605, 131.3600],
-              transit: { icon: 'walk', text: '步行 1 分' }
-            },
-            {
-              name: '由布院日式溫泉旅館 (秀峰館 / 花之舞)',
-              time: '20:30',
-              tag: '',
-              type: 'hotel',
-              coords: [33.2605, 131.3600],
-              duration: '返回飯店休息'
-            }
-          ],
-          day6: [
-            {
-              name: '由布院日式溫泉旅館',
-              time: '07:30',
-              tag: '',
-              type: 'hotel',
-              duration: '享用日式朝食後退房',
-              coords: [33.2605, 131.3600],
-              transit: { icon: 'walk', text: '步行 10 分' }
-            },
-            {
-              name: '金鱗湖 晨霧秘境散策',
-              time: '08:30',
-              tag: '',
-              type: 'park',
-              duration: '停留 0 時 45 分（早晨溫泉蒸氣繚繞湖面、極致仙境晨景）',
-              coords: [33.2662, 131.3690],
-              transit: { icon: 'walk', text: '步行 15 分' }
-            },
-            {
-              name: '由布院車站',
-              time: '09:35',
-              tag: '',
-              type: 'train',
-              duration: '停留 0 時 30 分',
-              coords: [33.2625, 131.3553],
-              transit: { icon: 'train', text: '搭乘觀光列車「由布院之森」02:15 飽覽山景' }
-            },
-            {
-              name: '博多車站',
-              time: '12:35',
+              time: '19:45',
               tag: '',
               type: 'train',
               duration: '停留 0 時 15 分',
@@ -846,52 +736,153 @@
             },
             {
               name: '博多站前大和ROYNET飯店 (Daiwa Roynet Hotel)',
-              time: '13:00',
+              time: '20:10',
               tag: '',
               type: 'hotel',
-              duration: '寄存行李（停留 0 時 30 分）',
               coords: [33.5890, 130.4185],
-              transit: { icon: 'train', text: '福岡市地下鐵空港線 8 分' }
+              duration: '返回飯店休息'
+            }
+          ],
+          day5: [
+            {
+              name: '博多站前大和ROYNET飯店',
+              time: '08:30',
+              tag: '',
+              type: 'hotel',
+              duration: '出發',
+              coords: [33.5890, 130.4185],
+              transit: { icon: 'walk', text: '步行 4 分' }
+            },
+            {
+              name: '博多車站',
+              time: '08:45',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 30 分',
+              coords: [33.5902, 130.4207],
+              transit: { icon: 'train', text: '搭乘人氣觀光列車「由布院之森 (Yufuin no Mori)」02:15 飽覽山景' }
+            },
+            {
+              name: '由布院車站 (Yufuin Station)',
+              time: '11:35',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 15 分',
+              coords: [33.2625, 131.3553],
+              transit: { icon: 'walk', text: '步行 5 分' }
+            },
+            {
+              name: '湯之坪街道 (Yunotsubo Street 漫步與午膳)',
+              time: '12:00',
+              tag: '',
+              type: 'shopping',
+              duration: '停留 2 時 00 分（熱騰騰豐後牛可樂餅、地雞蕎麥麵、B-speak 蛋糕捲、童話村巡禮）',
+              coords: [33.2660, 131.3620],
+              transit: { icon: 'walk', text: '步行 10 分' }
+            },
+            {
+              name: '金鱗湖 (Kinrin Lake 湖畔晨昏絕景)',
+              time: '14:15',
+              tag: '',
+              type: 'park',
+              duration: '停留 1 時 30 分（探訪清水與溫泉匯聚的夢幻湖泊、水上鳥居打卡）',
+              coords: [33.2662, 131.3690],
+              transit: { icon: 'walk', text: '步行 12 分' }
+            },
+            {
+              name: '由布院日歸露天溫泉體驗 (Yufuin Onsen)',
+              time: '16:00',
+              tag: '',
+              type: 'sight',
+              duration: '停留 1 時 30 分（享受由布岳山麓天然露天風呂溫泉、舒壓放鬆）',
+              coords: [33.2605, 131.3600],
+              transit: { icon: 'walk', text: '步行 10 分' }
+            },
+            {
+              name: '由布院車站',
+              time: '17:45',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 20 分',
+              coords: [33.2625, 131.3553],
+              transit: { icon: 'train', text: 'JR 特急由布 / 由布院之森 02:05 返回博多' }
+            },
+            {
+              name: '博多車站 / 熟食晚膳 (大分地雞 / 博多拉麵)',
+              time: '20:15',
+              tag: '',
+              type: 'food',
+              duration: '停留 1 時 15 分',
+              coords: [33.5902, 130.4207],
+              transit: { icon: 'walk', text: '步行 4 分' }
+            },
+            {
+              name: '博多站前大和ROYNET飯店 (Daiwa Roynet Hotel)',
+              time: '21:35',
+              tag: '',
+              type: 'hotel',
+              coords: [33.5890, 130.4185],
+              duration: '返回飯店休息'
+            }
+          ],
+          day6: [
+            {
+              name: '博多站前大和ROYNET飯店',
+              time: '09:00',
+              tag: '',
+              type: 'hotel',
+              duration: '出發',
+              coords: [33.5890, 130.4185],
+              transit: { icon: 'train', text: '福岡市地下鐵空港線 8 分直達大濠公園' }
             },
             {
               name: '大濠公園 (Ohori Park)',
-              time: '13:45',
+              time: '09:20',
               tag: '',
               type: 'park',
-              duration: '停留 1 時 30 分（仿西湖造型湖泊、湖心島石橋與景觀咖啡）',
+              duration: '停留 2 時 00 分（仿西湖造型湖泊、湖心島石橋與湖畔景觀咖啡漫步）',
               coords: [33.5860, 130.3762],
               transit: { icon: 'walk', text: '步行 3 分' }
             },
             {
               name: '福岡城跡 (舞鶴公園天守台展望台 Fukuoka Castle)',
-              time: '15:20',
+              time: '11:25',
               tag: '',
               type: 'castle',
-              duration: '停留 1 時 15 分（黑田官兵衛築城遺跡、登天守台 360 度俯瞰福岡市景）',
+              duration: '停留 1 時 30 分（黑田官兵衛築城遺跡、登天守台 360 度俯瞰福岡市景）',
               coords: [33.5855, 130.3830],
+              transit: { icon: 'walk', text: '步行 8 分' }
+            },
+            {
+              name: '福岡市區熱熟食午膳 (炙燒和牛漢堡排 / 烏龍麵定食)',
+              time: '13:05',
+              tag: '',
+              type: 'food',
+              duration: '停留 1 時 15 分',
+              coords: [33.5870, 130.3800],
               transit: { icon: 'bus', text: '西鐵巴士 15 分' }
             },
             {
               name: '福岡塔 (Fukuoka Tower) & 百道海濱公園',
-              time: '17:00',
+              time: '14:40',
               tag: '',
               type: 'tower',
-              duration: '停留 2 時 00 分（全日本最高海濱塔、234米展望台俯瞰博多灣夕陽百萬夜景）',
+              duration: '停留 2 時 30 分（全日本最高海濱塔、234米展望台俯瞰博多灣夕陽百萬夜景）',
               coords: [33.5933, 130.3515],
               transit: { icon: 'bus', text: '西鐵巴士 20 分' }
             },
             {
               name: '天神屋台街 / 炭烤串燒熟食晚膳',
-              time: '19:30',
+              time: '17:35',
               tag: '',
               type: 'food',
-              duration: '停留 1 時 45 分（品嚐道地熱騰騰炙燒串烤與熟食關東煮）',
+              duration: '停留 2 時 00 分（品嚐道地熱騰騰炙燒串烤與熟食關東煮）',
               coords: [33.5897, 130.3999],
               transit: { icon: 'train', text: '地下鐵 6 分返回博多' }
             },
             {
               name: '博多站前大和ROYNET飯店 (Daiwa Roynet Hotel)',
-              time: '21:30',
+              time: '19:45',
               tag: '',
               type: 'hotel',
               coords: [33.5890, 130.4185],
@@ -1047,7 +1038,7 @@
                   border: 2px solid #ffffff;
                   box-shadow: 0 2px 6px rgba(0,0,0,0.35);
                   font-family: inherit;
-                ">${idx + 1}</div>`,
+                ">` + (idx + 1) + `</div>`,
                 iconSize: [26, 26],
                 iconAnchor: [13, 13],
                 popupAnchor: [0, -13]
@@ -1056,8 +1047,8 @@
               const marker = L.marker(spot.coords, { icon: markerIcon }).addTo(map);
               marker.bindPopup(`
                 <div style="font-family: inherit; font-size: 13px; line-height: 1.4;">
-                  <strong style="color: #e11d48;">${idx + 1}. ${spot.name}</strong><br/>
-                  <span style="color: #64748b; font-size: 12px;">⏰ ${spot.time} · ${spot.duration}</span>
+                  <strong style="color: #e11d48;">` + (idx + 1) + `. ` + spot.name + `</strong><br/>
+                  <span style="color: #64748b; font-size: 12px;">⏰ ` + spot.time + ` · ` + spot.duration + `</span>
                 </div>
               `);
               markerInstances[dayId].push(marker);
