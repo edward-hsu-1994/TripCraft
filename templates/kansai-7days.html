@@ -81,15 +81,13 @@
           :class="[
             'day-tab',
             tab.id !== 'overview' ? 'day-detail-tab' : 'overview-tab',
-            'px-4 py-2.5 rounded-[16px] text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1.5 select-none cursor-pointer',
+            'px-4 py-2.5 rounded-[16px] text-sm font-bold whitespace-nowrap transition-all select-none cursor-pointer',
             activeTab === tab.id
               ? 'bg-[#e11d48] text-white shadow-xs'
               : 'text-slate-700 hover:text-slate-900 hover:bg-slate-50'
           ]"
         >
-          <span v-if="tab.id === 'overview'">📋</span>
-          <span v-else>📍</span>
-          <span>{{ tab.name }}</span>
+          {{ tab.name }}
         </button>
       </nav>
     </div>
