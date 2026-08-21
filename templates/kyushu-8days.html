@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2027初春九州福岡深度八天七夜旅遊</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Vue 3 -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <!-- Leaflet (OpenStreetMap) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap');
+    body {
+      font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    /* Hide scrollbar for tabs */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      height: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    /* Leaflet z-index fix */
+    .leaflet-pane {
+      z-index: 10 !important;
+    }
+    .leaflet-top, .leaflet-bottom {
+      z-index: 15 !important;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-slate-800 antialiased min-h-screen">
+  <div id="app" class="max-w-4xl mx-auto px-4 py-8">
+    
+    <!-- Top Header Card -->
+    <header class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8 mb-6">
+      <!-- Title -->
+      <h1 class="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">
+        {{ trip.title }}
+      </h1>
+
+      <!-- Date Range -->
+      <div class="mt-3 text-slate-500 font-medium text-sm md:text-base tracking-wide">
+        {{ trip.dateRange }}
+      </div>
+
+      <!-- Description Block with Left Border -->
+      <div class="mt-5 border-l-2 border-slate-300 pl-4 py-0.5">
+        <p class="text-sm md:text-base text-slate-500 leading-relaxed">
+          {{ trip.description }}
+        </p>
+      </div>
+    </header>
+
+    <!-- Sticky Navigation Tab Bar -->
+    <div class="sticky top-3 z-30 mb-6">
+      <nav class="bg-white/95 backdrop-blur-md rounded-[26px] p-3 md:p-3.5 shadow-sm border border-slate-200/80 flex items-center gap-2 md:gap-2.5 overflow-x-auto custom-scrollbar">
+        <button
+          v-for="tab in tabs"
+          :key="tab.id"
+          :data-tab="tab.id"
+          @click="switchTab(tab.id)"
+          :class="[
+            'day-tab',
+            tab.id !== 'overview' ? 'day-detail-tab' : 'overview-tab',
+            'px-4 py-2.5 rounded-[16px] text-sm font-bold whitespace-nowrap transition-all select-none cursor-pointer',
+            activeTab === tab.id
+              ? 'bg-[#e11d48] text-white shadow-xs'
+              : 'text-slate-700 hover:text-slate-900 hover:bg-slate-50'
+          ]"
+        >
+          {{ tab.name }}
+        </button>
+      </nav>
+    </div>
+
+    <!-- Tab Content Area -->
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 md:p-8">
+      <div>
+        
+        <!-- 1. Overview Tab Content (總覽頁) -->
+        <div v-if="activeTab === 'overview'" class="overview-content space-y-8">
+          
+          <!-- 行程筆記 -->
+          <section>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-lg">📝</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">行程筆記</h2>
+            </div>
+            <div class="bg-slate-50 rounded-xl p-4 md:p-5 border border-slate-200/80 text-slate-700 leading-relaxed text-sm md:text-base">
+              {{ overview.notes }}
+            </div>
+          </section>
+
+          <!-- 天氣資訊 -->
+          <section>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-lg">🌤️</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">天氣資訊</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div 
+                v-for="(item, idx) in overview.weather" 
+                :key="idx"
+                class="bg-sky-50/50 rounded-xl p-4 border border-sky-100 flex flex-col justify-between"
+              >
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-semibold text-sky-800 bg-sky-100 px-2 py-0.5 rounded-full">{{ item.title }}</span>
+                  <span class="text-xl">{{ item.icon }}</span>
+                </div>
+                <div class="text-lg font-bold text-slate-800">{{ item.value }}</div>
+                <p class="text-xs text-slate-500 mt-1 leading-normal">{{ item.desc }}</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- 注意事項 -->
+          <section>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-lg">⚠️</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">注意事項</h2>
+            </div>
+            <div class="bg-amber-50/40 rounded-xl p-5 border border-amber-200/60">
+              <ul class="space-y-2.5 text-sm md:text-base text-slate-700">
+                <li 
+                  v-for="(notice, idx) in overview.notices" 
+                  :key="idx"
+                  class="flex items-start gap-2.5"
+                >
+                  <span class="text-amber-500 mt-0.5 font-bold">•</span>
+                  <span class="leading-relaxed">{{ notice }}</span>
+                </li>
+              </ul>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- 2. Daily Timeline Content (第1天 ~ 第8天) -->
+        <div v-for="day in dayList" :key="day.id" class="day-detail-section" :data-day="day.id">
+          <div v-if="activeTab === day.id" class="day-detail-content">
+            
+            <!-- If itinerary items exist for this day -->
+            <div v-if="itinerary[day.id] && itinerary[day.id].length > 0" class="max-w-2xl mx-auto py-2">
+              
+              <!-- OpenStreetMap Map Block -->
+              <div class="mb-8 bg-white rounded-2xl p-3 md:p-4 border border-slate-200/80 shadow-sm">
+                <div class="flex items-center justify-between mb-2.5 px-1">
+                  <div class="flex items-center gap-2 font-bold text-slate-800 text-sm md:text-base">
+                    <span>🗺️</span>
+                    <span>當日景點路線地圖 (OpenStreetMap)</span>
+                  </div>
+                  <button 
+                    @click="resetMapView(day.id)"
+                    class="text-xs text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 active:scale-95 px-2.5 py-1 rounded-lg font-medium transition cursor-pointer flex items-center gap-1"
+                    title="重設地圖縮放至顯示全部景點"
+                  >
+                    <span>🔄</span>
+                    <span>檢視全部景點</span>
+                  </button>
+                </div>
+                <div :id="'map-' + day.id" class="w-full h-64 md:h-80 rounded-xl overflow-hidden z-0 border border-slate-100"></div>
+              </div>
+
+              <div v-for="(spot, index) in itinerary[day.id]" :key="index" class="relative">
+                
+                <!-- Spot Card (No Image) -->
+                <div class="bg-[#f0f4f9] rounded-2xl p-4 md:p-5 flex items-center gap-4 shadow-sm border border-slate-200/50 hover:bg-[#e8eff7] transition">
+                  
+                  <!-- Left: Number Badge (Clickable to Focus on Map) -->
+                  <div 
+                    @click="focusSpotOnMap(day.id, index)"
+                    class="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-sm md:text-base flex items-center justify-center shadow-sm flex-shrink-0 cursor-pointer transition-all select-none"
+                    title="點擊於地圖上定位此景點"
+                  >
+                    {{ index + 1 }}
+                  </div>
+
+                  <!-- Right: Spot Info -->
+                  <div class="flex-1 min-w-0 pr-1">
+                    <!-- Time & Type Icon -->
+                    <div class="flex items-center gap-1.5 text-rose-600 font-bold text-sm md:text-base">
+                      <!-- Type Icon -->
+                      <span class="w-6 h-6 rounded-full border border-rose-500/80 flex items-center justify-center text-xs">
+                        <template v-if="spot.type === 'flight'">✈️</template>
+                        <template v-else-if="spot.type === 'hotel'">🛏️</template>
+                        <template v-else-if="spot.type === 'train'">🚆</template>
+                        <template v-else-if="spot.type === 'bus'">🚌</template>
+                        <template v-else-if="spot.type === 'shopping'">🛍️</template>
+                        <template v-else-if="spot.type === 'info'">ℹ️</template>
+                        <template v-else-if="spot.type === 'castle'">🏯</template>
+                        <template v-else-if="spot.type === 'shrine'">⛩️</template>
+                        <template v-else-if="spot.type === 'park'">🌿</template>
+                        <template v-else-if="spot.type === 'cruise'">🚢</template>
+                        <template v-else-if="spot.type === 'tower'">🗼</template>
+                        <template v-else-if="spot.type === 'sight'">🎡</template>
+                        <template v-else-if="spot.type === 'food'">🍜</template>
+                        <template v-else>📍</template>
+                      </span>
+                      <span>{{ spot.time }}</span>
+                      <span v-if="spot.tag" class="text-xs text-slate-400 font-normal">({{ spot.tag }})</span>
+                    </div>
+
+                    <!-- Spot Name -->
+                    <h3 class="font-bold text-slate-800 text-base md:text-lg mt-0.5 tracking-tight truncate">
+                      {{ spot.name }}
+                    </h3>
+
+                    <!-- Duration / Departure -->
+                    <p class="text-xs md:text-sm text-slate-400 font-medium mt-0.5">
+                      {{ spot.duration }}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Transit Connector (Between cards) -->
+                <div v-if="index < itinerary[day.id].length - 1" class="py-3 pl-8 md:pl-9 flex items-center gap-3 text-slate-500 text-xs md:text-sm font-medium">
+                  <!-- Vertical dashed line indicator -->
+                  <div class="flex items-center gap-2">
+                    <span v-if="spot.transit?.icon === 'plane'" class="text-base">✈️</span>
+                    <span v-else-if="spot.transit?.icon === 'bus'" class="text-base">🚌</span>
+                    <span v-else-if="spot.transit?.icon === 'walk'" class="text-base">🚶</span>
+                    <span v-else-if="spot.transit?.icon === 'train'" class="text-base">🚆</span>
+                    <span v-else class="text-base">➡️</span>
+                    <span>{{ spot.transit?.text }}</span>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- Fallback Placeholder for days with no data yet -->
+            <div v-else class="py-12 text-center text-slate-400 border-2 border-dashed border-slate-200 rounded-xl">
+              <div class="text-4xl mb-2">🗓️</div>
+              <h3 class="text-base font-semibold text-slate-600">{{ day.name }} 行程內容區塊（Placeholder）</h3>
+              <p class="text-sm text-slate-400 mt-1">即將填入景點排程、交通時間、停留時間與備註</p>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const { createApp, ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } = Vue;
+
+    createApp({
+      setup() {
+        const trip = reactive({
+          title: '2027初春九州福岡深度八天七夜旅遊',
+          dateRange: '2027/03/13 - 2027/03/20',
+          description: '本次旅遊進出機場為福岡國際機場(FUK)，以博多為核心輻射遊歷北九州精華。行程涵蓋福岡城跡、大濠公園、住吉神社、櫛田神社、太宰府天滿宮、柳川水鄉遊船、門司港懷舊街區、熊本城與由布院溫泉仙境。全程利用 JR 九州鐵道與西鐵大眾運輸，並精選熱騰騰熟食美饌。'
+        });
+
+        const activeTab = ref('day1');
+
+        const tabs = reactive([
+          { id: 'overview', name: '總覽頁' },
+          { id: 'day1', name: '第1天' },
+          { id: 'day2', name: '第2天' },
+          { id: 'day3', name: '第3天' },
+          { id: 'day4', name: '第4天' },
+          { id: 'day5', name: '第5天' },
+          { id: 'day6', name: '第6天' },
+          { id: 'day7', name: '第7天' },
+          { id: 'day8', name: '第8天' }
+        ]);
+
+        const overview = reactive({
+          notes: '本次旅遊進出機場為福岡國際機場 (FUK)，機場至市中心博多車站搭乘地下鐵僅需 5 分鐘，極為便利。住宿以博多站前大和ROYNET飯店為主要樞紐（第5晚安排由布院日式溫泉旅館一泊二食體驗）。\n\n餐食嚴選九州熱騰騰熟食名物（博多水炊地雞鍋、元祖本吉屋現蒸鰻魚飯、門司港現烤燒咖哩、熊本黑麻油拉麵、由布院大分豐後牛熟食御膳與鐵鍋煎餃），無任何生食負擔。交通使用 JR 九州鐵路周遊券 (北九州版) 搭配西鐵電車與地下鐵。',
+          weather: [
+            { title: '平均氣溫', icon: '🌡️', value: '10°C ~ 18°C', desc: '初春時節，九州日間氣候和煦溫暖，早晚微風稍涼。' },
+            { title: '晴雨概況', icon: '☀️', value: '晴朗少雨', desc: '春光明媚宜人，適合戶外名城、庭園與水鄉漫遊。' },
+            { title: '穿著建議', icon: '👕', value: '洋蔥式穿搭 + 薄外套', desc: '白天穿著長袖上衣，早晚備防風夾克或輕羽絨外套。' }
+          ],
+          notices: [
+            '機場交通：福岡機場國際線可搭乘免費接駁巴士至國內線航廈轉乘地下鐵，5 分鐘直達博多車站。',
+            '鐵道預約：「由布院之森 (Yufuin no Mori)」為全車指定席人氣觀光列車，建議提前於 JR 九州官網劃位。',
+            '交通票券：準備 ICOCA / Suica 實體卡或手機交通卡，適用於西鐵、福岡市地下鐵與市區巴士。',
+            '營業時間：神社寺廟與歷史名城（如熊本城天守閣、太宰府天滿宮寶物殿）多於 17:00 閉門。'
+          ]
+        });
+
+        // Itinerary data organized by days
+        const itinerary = reactive({
+          day1: [
+            {
+              name: '臺灣桃園國際機場',
+              time: '08:00',
+              tag: '',
+              type: 'flight',
+              duration: '10:00 起飛',
+              coords: [25.0797, 121.2342],
+              transit: { icon: 'plane', text: '航班飛行 02:15' }
+            },
+            {
+              name: '福岡國際機場 (FUK)',
+              time: '13:15',
+              tag: '',
+              type: 'flight',
+              duration: '停留 0 時 45 分（入境與取票）',
+              coords: [33.5859, 130.4507],
+              transit: { icon: 'train', text: '福岡市地下鐵空港線 5 分直達博多' }
+            },
+            {
+              name: '博多車站',
+              time: '14:20',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 10 分',
+              coords: [33.5902, 130.4207],
+              transit: { icon: 'walk', text: '步行 4 分' }
+            },
+            {
+              name: '博多站前大和ROYNET飯店 (Daiwa Roynet Hotel)',
+              time: '14:35',
+              tag: '',
+              type: 'hotel',
+              duration: '停留 0 時 40 分（辦理入住）',
+              coords: [33.5890, 130.4185],
+              transit: { icon: 'walk', text: '步行 8 分' }
+            },
+            {
+              name: '住吉神社 (Sumiyoshi Shrine)',
+              time: '15:25',
+              tag: '',
+              type: 'shrine',
+              duration: '停留 1 時 00 分（日本三大住吉之一、筑前國一之宮古老神域）',
+              coords: [33.5861, 130.4137],
+              transit: { icon: 'walk', text: '步行 10 分' }
+            },
+            {
+              name: '櫛田神社 (Kushida Shrine)',
+              time: '16:35',
+              tag: '',
+              type: 'shrine',
+              duration: '停留 1 時 00 分（博多總鎮守、參觀宏偉博多祇園山笠飾山台）',
+              coords: [33.5930, 130.4106],
+              transit: { icon: 'walk', text: '步行 3 分' }
+            },
+            {
+              name: '博多運河城 (Canal City Hakata)',
+              time: '17:45',
+              tag: '',
+              type: 'shopping',
+              duration: '停留 1 時 30 分（觀賞音樂噴泉水舞秀與商場散步）',
+              coords: [33.5898, 130.4108],
+              transit: { icon: 'walk', text: '步行 6 分' }
+            },
+            {
+              name: '博多華味鳥 / 濱田屋 水炊地雞鍋熟食晚膳',
+              time: '19:25',
+              tag: '',
+              type: 'food',
+              duration: '停留 1 時 30 分（品嚐熱騰騰濃郁博多地雞水炊鍋料理）',
+              coords: [33.5910, 130.4120],
+              transit: { icon: 'walk', text: '步行 8 分' }
+            },
+            {
+              name: '博多站前大和ROYNET飯店 (Daiwa Roynet Hotel)',
+              time: '21:10',
+              tag: '',
+              type: 'hotel',
+              coords: [33.5890, 130.4185],
+              duration: '返回飯店休息'
+            }
+          ],
+          day2: [
+            {
+              name: '博多站前大和ROYNET飯店',
+              time: '08:30',
+              tag: '',
+              type: 'hotel',
+              duration: '出發',
+              coords: [33.5890, 130.4185],
+              transit: { icon: 'train', text: '地下鐵 6 分至西鐵福岡(天神)站' }
+            },
+            {
+              name: '西鐵福岡(天神)站',
+              time: '08:50',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 15 分',
+              coords: [33.5897, 130.3999],
+              transit: { icon: 'train', text: '西鐵天神大牟田線（特急）49 分' }
+            },
+            {
+              name: '西鐵柳川站',
+              time: '09:55',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 10 分',
+              coords: [33.1685, 130.4180],
+              transit: { icon: 'walk', text: '步行 5 分' }
+            },
+            {
+              name: '柳川水鄉遊船 (松月乘船場)',
+              time: '10:10',
+              tag: '',
+              type: 'cruise',
+              duration: '停留 1 時 15 分（乘搖櫓木舟漫遊垂柳運河、聽船夫吟唱）',
+              coords: [33.1672, 130.4075],
+              transit: { icon: 'walk', text: '步行 4 分' }
+            },
+            {
+              name: '元祖本吉屋 柳川現蒸鰻魚飯 (Motoyoshiya)',
+              time: '11:35',
+              tag: '',
+              type: 'food',
+              duration: '停留 1 時 30 分（300年名店品嚐熱騰騰現蒸蒲燒鰻魚蒸籠飯）',
+              coords: [33.1650, 130.4080],
+              transit: { icon: 'bus', text: '西鐵電車 / 巴士 38 分' }
+            },
+            {
+              name: '太宰府天滿宮 (Dazaifu Tenmangu)',
+              time: '13:55',
+              tag: '',
+              type: 'shrine',
+              duration: '停留 1 時 45 分（學問之神菅原道真總本社、參拜飛梅神木與御本殿）',
+              coords: [33.5215, 130.5349],
+              transit: { icon: 'walk', text: '步行 2 分' }
+            },
+            {
+              name: '太宰府表參道 & 現烤梅枝餅',
+              time: '15:45',
+              tag: '',
+              type: 'shopping',
+              duration: '停留 1 時 15 分（品嚐現烤外酥內軟熱梅枝餅、隈研吾星巴克巡禮）',
+              coords: [33.5222, 130.5318],
+              transit: { icon: 'train', text: '西鐵太宰府線 / 天神大牟田線 35 分' }
+            },
+            {
+              name: '博多車站 / 阪急百貨美食街',
+              time: '17:45',
+              tag: '',
+              type: 'shopping',
+              duration: '停留 1 時 30 分',
+              coords: [33.5902, 130.4207],
+              transit: { icon: 'walk', text: '步行 5 分' }
+            },
+            {
+              name: '博多一口鐵鍋煎餃 / 炙燒串烤熟食晚膳',
+              time: '19:25',
+              tag: '',
+              type: 'food',
+              duration: '停留 1 時 30 分（熱騰騰現煎酥脆鐵鍋餃子與炭火串燒）',
+              coords: [33.5895, 130.4190],
+              transit: { icon: 'walk', text: '步行 4 分' }
+            },
+            {
+              name: '博多站前大和ROYNET飯店 (Daiwa Roynet Hotel)',
+              time: '21:05',
+              tag: '',
+              type: 'hotel',
+              coords: [33.5890, 130.4185],
+              duration: '返回飯店休息'
+            }
+          ],
+          day3: [
+            {
+              name: '博多站前大和ROYNET飯店',
+              time: '08:30',
+              tag: '',
+              type: 'hotel',
+              duration: '出發',
+              coords: [33.5890, 130.4185],
+              transit: { icon: 'walk', text: '步行 4 分' }
+            },
+            {
+              name: '博多車站',
+              time: '08:45',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 15 分',
+              coords: [33.5902, 130.4207],
+              transit: { icon: 'train', text: 'JR 特急音速號 (Sonic) 45 分直達小倉' }
+            },
+            {
+              name: '小倉車站',
+              time: '09:45',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 10 分',
+              coords: [33.8869, 130.8828],
+              transit: { icon: 'walk', text: '步行 12 分' }
+            },
+            {
+              name: '小倉城 (Kokura Castle)',
+              time: '10:05',
+              tag: '',
+              type: 'castle',
+              duration: '停留 1 時 30 分（細川忠興名城、勝山公園與天守閣視野）',
+              coords: [33.8845, 130.8742],
+              transit: { icon: 'walk', text: '步行 12 分' }
+            },
+            {
+              name: '小倉車站',
+              time: '11:45',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 10 分',
+              coords: [33.8869, 130.8828],
+              transit: { icon: 'train', text: 'JR 鹿兒島本線 13 分直達門司港' }
+            },
+            {
+              name: '門司港車站 (Mojiko Station)',
+              time: '12:10',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 20 分（文藝復興風格木造國寶車站建築巡禮）',
+              coords: [33.9452, 130.9610],
+              transit: { icon: 'walk', text: '步行 3 分' }
+            },
+            {
+              name: 'BEAR FRUITS 門司港名物現烤熱燒咖哩 (Yaki Curry)',
+              time: '12:35',
+              tag: '',
+              type: 'food',
+              duration: '停留 1 時 15 分（現烤起司半熟蛋熱騰騰濃郁燒咖哩熟食）',
+              coords: [33.9458, 130.9625],
+              transit: { icon: 'walk', text: '步行 5 分' }
+            },
+            {
+              name: '門司港懷舊街區 (Mojiko Retro)',
+              time: '13:55',
+              tag: '',
+              type: 'sight',
+              duration: '停留 2 時 00 分（舊門司三井俱樂部、舊大阪商船大正紅磚洋樓）',
+              coords: [33.9452, 130.9610],
+              transit: { icon: 'walk', text: '步行 10 分' }
+            },
+            {
+              name: '關門海峽大橋展望 (Kanmon Strait)',
+              time: '16:05',
+              tag: '',
+              type: 'sight',
+              duration: '停留 1 時 00 分（眺望本州與九州交界海峽、藍翼門司吊橋開橋秀）',
+              coords: [33.9575, 130.9620],
+              transit: { icon: 'train', text: 'JR 鹿兒島本線 / 特急 55 分返回博多' }
+            },
+            {
+              name: '博多拉麵街 / 黑毛和牛熟食定食',
+              time: '18:15',
+              tag: '',
+              type: 'food',
+              duration: '停留 1 時 30 分',
+              coords: [33.5902, 130.4207],
+              transit: { icon: 'walk', text: '步行 4 分' }
+            },
+            {
+              name: '博多站前大和ROYNET飯店 (Daiwa Roynet Hotel)',
+              time: '19:55',
+              tag: '',
+              type: 'hotel',
+              coords: [33.5890, 130.4185],
+              duration: '返回飯店休息'
+            }
+          ],
+          day4: [
+            {
+              name: '博多站前大和ROYNET飯店',
+              time: '08:30',
+              tag: '',
+              type: 'hotel',
+              duration: '辦理退房與輕便行李準備',
+              coords: [33.5890, 130.4185],
+              transit: { icon: 'walk', text: '步行 4 分' }
+            },
+            {
+              name: '博多車站',
+              time: '08:50',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 15 分',
+              coords: [33.5902, 130.4207],
+              transit: { icon: 'train', text: 'JR 九州新幹線 (櫻花號 Sakura) 32 分直達熊本' }
+            },
+            {
+              name: '熊本車站',
+              time: '09:40',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 15 分（寄存行李或飯店 Check-in）',
+              coords: [32.7898, 130.6888],
+              transit: { icon: 'bus', text: '熊本市電（路面電車）15 分' }
+            },
+            {
+              name: '熊本城 (大天守閣 Kumamoto Castle)',
+              time: '10:10',
+              tag: '',
+              type: 'castle',
+              duration: '停留 2 時 00 分（日本三大名城、加藤清正築城奇蹟、登天守閣俯瞰熊本全景）',
+              coords: [32.8062, 130.7058],
+              transit: { icon: 'walk', text: '步行 5 分' }
+            },
+            {
+              name: '櫻之馬場 城彩苑 (Josaien 熟食小吃巡禮)',
+              time: '12:15',
+              tag: '',
+              type: 'food',
+              duration: '停留 1 時 30 分（江戶風情城下町、品嚐熱騰騰太平燕、阿蘇和牛可樂餅、芥末蓮藕）',
+              coords: [32.8028, 130.7042],
+              transit: { icon: 'bus', text: '熊本市電 15 分' }
+            },
+            {
+              name: '水前寺成趣園 (Suizenji Jojuen)',
+              time: '14:05',
+              tag: '',
+              type: 'park',
+              duration: '停留 1 時 30 分（細川藩桃山式池泉回遊庭園、仿東海道五十三次富士山造景）',
+              coords: [32.7905, 130.7340],
+              transit: { icon: 'bus', text: '熊本市電 12 分' }
+            },
+            {
+              name: '熊本熊部長辦公室 (Kumamon Square)',
+              time: '15:50',
+              tag: '',
+              type: 'sight',
+              duration: '停留 1 時 15 分（見面會互動、熊本熊限定紀念品）',
+              coords: [32.8010, 130.7108],
+              transit: { icon: 'bus', text: '熊本市電 10 分' }
+            },
+            {
+              name: '熊本黑亭拉麵 / 阿蘇黑毛和牛熟食燒肉晚膳',
+              time: '17:25',
+              tag: '',
+              type: 'food',
+              duration: '停留 1 時 45 分（熱騰騰黑麻油蒜香熊本拉麵與極品熟食和牛燒肉）',
+              coords: [32.7915, 130.6905],
+              transit: { icon: 'walk', text: '步行 5 分' }
+            },
+            {
+              name: '熊本站前Richmond飯店 (Richmond Hotel Kumamoto)',
+              time: '19:20',
+              tag: '',
+              type: 'hotel',
+              coords: [32.7900, 130.6895],
+              duration: '返回飯店休息'
+            }
+          ],
+          day5: [
+            {
+              name: '熊本站前Richmond飯店',
+              time: '08:30',
+              tag: '',
+              type: 'hotel',
+              duration: '辦理退房',
+              coords: [32.7900, 130.6895],
+              transit: { icon: 'train', text: 'JR 九州新幹線 32 分至博多' }
+            },
+            {
+              name: '博多車站',
+              time: '09:20',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 25 分',
+              coords: [33.5902, 130.4207],
+              transit: { icon: 'train', text: 'JR 特急由布 (Yufu) 2 時 05 分' }
+            },
+            {
+              name: '由布院車站 (Yufuin Station)',
+              time: '12:00',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 20 分（車站寄放行李或溫泉旅館接駁）',
+              coords: [33.2625, 131.3553],
+              transit: { icon: 'walk', text: '步行 5 分' }
+            },
+            {
+              name: '湯之坪街道 (Yunotsubo Street 漫步與午膳)',
+              time: '12:30',
+              tag: '',
+              type: 'shopping',
+              duration: '停留 2 時 00 分（熱騰騰豐後牛可樂餅、B-speak 蛋糕捲、童話村巡禮）',
+              coords: [33.2660, 131.3620],
+              transit: { icon: 'walk', text: '步行 10 分' }
+            },
+            {
+              name: '金鱗湖 (Kinrin Lake 湖畔晨昏絕景)',
+              time: '14:40',
+              tag: '',
+              type: 'park',
+              duration: '停留 1 時 30 分（探訪清水與溫泉匯聚的夢幻湖泊、水上鳥居打卡）',
+              coords: [33.2662, 131.3690],
+              transit: { icon: 'walk', text: '步行 12 分' }
+            },
+            {
+              name: '由布院日式溫泉旅館 (秀峰館 / 花之舞)',
+              time: '16:25',
+              tag: '',
+              type: 'hotel',
+              duration: '辦理入住與享受露天風呂溫泉（停留 2 時 00 分）',
+              coords: [33.2605, 131.3600],
+              transit: { icon: 'walk', text: '步行 1 分' }
+            },
+            {
+              name: '由布院頂級大分豐後牛熟食會席晚宴',
+              time: '18:30',
+              tag: '',
+              type: 'food',
+              duration: '停留 2 時 00 分（日式溫泉旅館一泊二食、極品豐後牛熟食陶板燒饗宴）',
+              coords: [33.2605, 131.3600],
+              transit: { icon: 'walk', text: '步行 1 分' }
+            },
+            {
+              name: '由布院日式溫泉旅館 (秀峰館 / 花之舞)',
+              time: '20:30',
+              tag: '',
+              type: 'hotel',
+              coords: [33.2605, 131.3600],
+              duration: '返回飯店休息'
+            }
+          ],
+          day6: [
+            {
+              name: '由布院日式溫泉旅館',
+              time: '07:30',
+              tag: '',
+              type: 'hotel',
+              duration: '享用日式朝食後退房',
+              coords: [33.2605, 131.3600],
+              transit: { icon: 'walk', text: '步行 10 分' }
+            },
+            {
+              name: '金鱗湖 晨霧秘境散策',
+              time: '08:30',
+              tag: '',
+              type: 'park',
+              duration: '停留 0 時 45 分（早晨溫泉蒸氣繚繞湖面、極致仙境晨景）',
+              coords: [33.2662, 131.3690],
+              transit: { icon: 'walk', text: '步行 15 分' }
+            },
+            {
+              name: '由布院車站',
+              time: '09:35',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 30 分',
+              coords: [33.2625, 131.3553],
+              transit: { icon: 'train', text: '搭乘觀光列車「由布院之森」02:15 飽覽山景' }
+            },
+            {
+              name: '博多車站',
+              time: '12:35',
+              tag: '',
+              type: 'train',
+              duration: '停留 0 時 15 分',
+              coords: [33.5902, 130.4207],
+              transit: { icon: 'walk', text: '步行 4 分' }
+            },
+            {
+              name: '博多站前大和ROYNET飯店 (Daiwa Roynet Hotel)',
+              time: '13:00',
+              tag: '',
+              type: 'hotel',
+              duration: '寄存行李（停留 0 時 30 分）',
+              coords: [33.5890, 130.4185],
+              transit: { icon: 'train', text: '福岡市地下鐵空港線 8 分' }
+            },
+            {
+              name: '大濠公園 (Ohori Park)',
+              time: '13:45',
+              tag: '',
+              type: 'park',
+              duration: '停留 1 時 30 分（仿西湖造型湖泊、湖心島石橋與景觀咖啡）',
+              coords: [33.5860, 130.3762],
+              transit: { icon: 'walk', text: '步行 3 分' }
+            },
+            {
+              name: '福岡城跡 (舞鶴公園天守台展望台 Fukuoka Castle)',
+              time: '15:20',
+              tag: '',
+              type: 'castle',
+              duration: '停留 1 時 15 分（黑田官兵衛築城遺跡、登天守台 360 度俯瞰福岡市景）',
+              coords: [33.5855, 130.3830],
+              transit: { icon: 'bus', text: '西鐵巴士 15 分' }
+            },
+            {
+              name: '福岡塔 (Fukuoka Tower) & 百道海濱公園',
+              time: '17:00',
+              tag: '',
+              type: 'tower',
+              duration: '停留 2 時 00 分（全日本最高海濱塔、234米展望台俯瞰博多灣夕陽百萬夜景）',
+              coords: [33.5933, 130.3515],
+              transit: { icon: 'bus', text: '西鐵巴士 20 分' }
+            },
+            {
+              name: '天神屋台街 / 炭烤串燒熟食晚膳',
+              time: '19:30',
+              tag: '',
+              type: 'food',
+              duration: '停留 1 時 45 分（品嚐道地熱騰騰炙燒串烤與熟食關東煮）',
+              coords: [33.5897, 130.3999],
+              transit: { icon: 'train', text: '地下鐵 6 分返回博多' }
+            },
+            {
+              name: '博多站前大和ROYNET飯店 (Daiwa Roynet Hotel)',
+              time: '21:30',
+              tag: '',
+              type: 'hotel',
+              coords: [33.5890, 130.4185],
+              duration: '返回飯店休息'
+            }
+          ],
+          day7: [
+            {
+              name: '博多站前大和ROYNET飯店',
+              time: '09:00',
+              tag: '',
+              type: 'hotel',
+              duration: '出發',
+              coords: [33.5890, 130.4185],
+              transit: { icon: 'bus', text: '西鐵巴士直達 20 分' }
+            },
+            {
+              name: 'LaLaport 福岡 (實體等身大 1:1 Nu 鋼彈立像)',
+              time: '09:30',
+              tag: '',
+              type: 'shopping',
+              duration: '停留 3 時 00 分（朝聖 24.8 米超震撼鋼彈立像、GUNDAM SIDE-F 與大型購物中心午餐）',
+              coords: [33.5658, 130.4412],
+              transit: { icon: 'bus', text: '西鐵巴士 20 分' }
+            },
+            {
+              name: '天神地下街 & 百貨商圈 (Tenjin Shopping)',
+              time: '13:00',
+              tag: '',
+              type: 'shopping',
+              duration: '停留 3 時 00 分（全長 600 米歐風石板地下街、岩田屋、福岡 PARCO 潮流選物伴手禮）',
+              coords: [33.5912, 130.4005],
+              transit: { icon: 'walk', text: '步行 8 分' }
+            },
+            {
+              name: '中洲川端運河水岸夜景',
+              time: '16:30',
+              tag: '',
+              type: 'sight',
+              duration: '停留 1 時 30 分（那珂川水岸漫步、璀璨都會霓虹）',
+              coords: [33.5930, 130.4055],
+              transit: { icon: 'walk', text: '步行 5 分' }
+            },
+            {
+              name: '博多黑毛和牛壽喜燒 / 熟食鰻魚飯盛宴',
+              time: '18:15',
+              tag: '',
+              type: 'food',
+              duration: '停留 2 時 00 分（熱騰騰 A5 黑毛和牛壽喜燒御膳）',
+              coords: [33.5905, 130.4080],
+              transit: { icon: 'walk', text: '步行 10 分' }
+            },
+            {
+              name: '博多站前大和ROYNET飯店 (Daiwa Roynet Hotel)',
+              time: '20:30',
+              tag: '',
+              type: 'hotel',
+              coords: [33.5890, 130.4185],
+              duration: '返回飯店休息'
+            }
+          ],
+          day8: [
+            {
+              name: '博多站前大和ROYNET飯店',
+              time: '09:00',
+              tag: '',
+              type: 'hotel',
+              duration: '辦理退房與行李整理',
+              coords: [33.5890, 130.4185],
+              transit: { icon: 'walk', text: '步行 4 分' }
+            },
+            {
+              name: '博多車站 (AMU PLAZA / 阪急百貨最後伴手禮採買)',
+              time: '09:20',
+              tag: '',
+              type: 'shopping',
+              duration: '停留 2 時 00 分（採購博多通饅頭、福砂屋長崎蛋糕、明太子熟食仙貝）',
+              coords: [33.5902, 130.4207],
+              transit: { icon: 'train', text: '福岡市地下鐵空港線 5 分直達機場' }
+            },
+            {
+              name: '福岡國際機場 (FUK)',
+              time: '11:45',
+              tag: '',
+              type: 'flight',
+              duration: '停留 2 時 30 分（辦理登機出境手續、免稅店採購）',
+              coords: [33.5859, 130.4507],
+              transit: { icon: 'plane', text: '航班飛行 02:30' }
+            },
+            {
+              name: '臺灣桃園國際機場',
+              time: '16:00',
+              tag: '',
+              type: 'flight',
+              coords: [25.0797, 121.2342],
+              duration: '平安返抵國門'
+            }
+          ]
+        });
+
+        const dayList = computed(() => {
+          return tabs.filter(t => t.id !== 'overview');
+        });
+
+        // OpenStreetMap Map Renderer
+        const mapInstances = {};
+        const markerInstances = {};
+
+        function renderMap(dayId) {
+          if (dayId === 'overview') return;
+          nextTick(() => {
+            const containerId = 'map-' + dayId;
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const spots = itinerary[dayId] || [];
+            const validSpots = spots.filter(s => s.coords && s.coords.length === 2);
+            if (validSpots.length === 0) return;
+
+            // Destroy existing map instance to cleanly re-attach to the newly mounted DOM node
+            if (mapInstances[dayId]) {
+              try {
+                mapInstances[dayId].remove();
+              } catch (e) {}
+              delete mapInstances[dayId];
+            }
+
+            const map = L.map(containerId, {
+              scrollWheelZoom: false
+            });
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+              maxZoom: 18
+            }).addTo(map);
+            mapInstances[dayId] = map;
+
+            markerInstances[dayId] = [];
+            const latLngs = [];
+            validSpots.forEach((spot, idx) => {
+              const markerIcon = L.divIcon({
+                className: 'custom-osm-marker',
+                html: `<div style="
+                  background-color: #e11d48;
+                  color: #ffffff;
+                  width: 26px;
+                  height: 26px;
+                  border-radius: 50%;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-weight: 700;
+                  font-size: 12px;
+                  border: 2px solid #ffffff;
+                  box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+                  font-family: inherit;
+                ">${idx + 1}</div>`,
+                iconSize: [26, 26],
+                iconAnchor: [13, 13],
+                popupAnchor: [0, -13]
+              });
+
+              const marker = L.marker(spot.coords, { icon: markerIcon }).addTo(map);
+              marker.bindPopup(`
+                <div style="font-family: inherit; font-size: 13px; line-height: 1.4;">
+                  <strong style="color: #e11d48;">${idx + 1}. ${spot.name}</strong><br/>
+                  <span style="color: #64748b; font-size: 12px;">⏰ ${spot.time} · ${spot.duration}</span>
+                </div>
+              `);
+              markerInstances[dayId].push(marker);
+              latLngs.push(spot.coords);
+            });
+
+            // Draw route polyline between local spots
+            if (latLngs.length > 1) {
+              const localSpots = latLngs.filter(c => c[0] > 30);
+              if (localSpots.length > 1) {
+                L.polyline(localSpots, {
+                  color: '#e11d48',
+                  weight: 3.5,
+                  opacity: 0.75,
+                  dashArray: '5, 8'
+                }).addTo(map);
+              }
+            }
+
+            // Fit bounds with padding
+            const localCoords = latLngs.filter(c => c[0] > 30);
+            const fitCoords = (localCoords.length > 0) ? localCoords : latLngs;
+            if (fitCoords.length === 1) {
+              map.setView(fitCoords[0], 14);
+            } else if (fitCoords.length > 1) {
+              const bounds = L.latLngBounds(fitCoords);
+              map.fitBounds(bounds, {
+                padding: [40, 40],
+                maxZoom: 15
+              });
+            }
+
+            setTimeout(() => {
+              map.invalidateSize();
+            }, 120);
+          });
+        }
+
+        // Focus spot on map when red number is clicked (Zoom into location)
+        function focusSpotOnMap(dayId, spotIndex) {
+          const targetDay = dayId || activeTab.value;
+          const map = mapInstances[targetDay];
+          const spot = itinerary[targetDay] && itinerary[targetDay][spotIndex];
+          if (!map || !spot || !spot.coords) return;
+
+          // Scroll map smoothly into view
+          const mapContainer = document.getElementById('map-' + targetDay);
+          if (mapContainer) {
+            mapContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+
+          map.invalidateSize();
+
+          // Pan & zoom in close to spot location (Zoom level 17)
+          map.flyTo(spot.coords, 17, {
+            duration: 0.8
+          });
+
+          // Open marker popup
+          const markers = markerInstances[targetDay];
+          if (markers && markers[spotIndex]) {
+            setTimeout(() => {
+              markers[spotIndex].openPopup();
+            }, 400);
+          }
+        }
+
+        // Reset map view to show all spots for that day (Auto Zoom)
+        function resetMapView(dayId) {
+          const targetDay = dayId || activeTab.value;
+          if (!targetDay || targetDay === 'overview') return;
+
+          const map = mapInstances[targetDay];
+          const spots = itinerary[targetDay] || [];
+          const validSpots = spots.filter(s => s.coords && s.coords.length === 2);
+          if (!map || validSpots.length === 0) return;
+
+          // Close any open popup
+          map.closePopup();
+          map.invalidateSize();
+
+          const latLngs = validSpots.map(s => s.coords);
+          const localCoords = latLngs.filter(c => c[0] > 30);
+          const fitCoords = (localCoords.length > 0) ? localCoords : latLngs;
+
+          if (fitCoords.length === 1) {
+            map.flyTo(fitCoords[0], 14, { duration: 0.8 });
+          } else if (fitCoords.length > 1) {
+            const bounds = L.latLngBounds(fitCoords);
+            map.fitBounds(bounds, {
+              padding: [40, 40],
+              maxZoom: 15,
+              animate: true
+            });
+          }
+        }
+
+        // Tab Switching & URL Hash Sync
+        function switchTab(tabId) {
+          if (activeTab.value === tabId) {
+            // Clicking current active tab resets map view to show all spots
+            if (tabId !== 'overview') {
+              resetMapView(tabId);
+            }
+            return;
+          }
+
+          activeTab.value = tabId;
+          if (window.location.hash !== '#' + tabId) {
+            window.location.hash = tabId;
+          }
+          if (tabId !== 'overview') {
+            renderMap(tabId);
+          }
+        }
+
+        function handleHashChange() {
+          const hash = window.location.hash.replace('#', '');
+          if (tabs.some(t => t.id === hash)) {
+            activeTab.value = hash;
+            if (hash !== 'overview') {
+              renderMap(hash);
+            }
+          }
+        }
+
+        watch(activeTab, (newTab) => {
+          if (newTab !== 'overview') {
+            renderMap(newTab);
+          }
+        });
+
+        onMounted(() => {
+          const hash = window.location.hash.replace('#', '');
+          if (hash && tabs.some(t => t.id === hash)) {
+            activeTab.value = hash;
+          } else {
+            window.location.hash = activeTab.value;
+          }
+          if (activeTab.value !== 'overview') {
+            renderMap(activeTab.value);
+          }
+          window.addEventListener('hashchange', handleHashChange);
+        });
+
+        onUnmounted(() => {
+          window.removeEventListener('hashchange', handleHashChange);
+        });
+
+        return {
+          trip,
+          activeTab,
+          tabs,
+          overview,
+          itinerary,
+          dayList,
+          switchTab,
+          focusSpotOnMap,
+          resetMapView
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>
