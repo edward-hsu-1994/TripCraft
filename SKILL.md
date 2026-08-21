@@ -28,9 +28,10 @@ description: This skill should be used when the user says they want to travel, a
 4. **Always ask the trip duration** after the destination is picked. Duration determines how many spots to recommend.
 5. **Always check with the user about spots** at the picked destination. Either use the user's named spots, or — if they don't know — refine the step-2 preferences at the spot level and recommend a count that fits the duration.
 6. **Always ask the user about transport mode** between locations. Do not assume.
-7. **Always web-research visit duration** for each attraction. Cite the source.
-8. **Always web-research transit data** (transit time + waiting time + fare) for each leg. Cite the source.
+7. **Always web-research visit duration AND coordinates** (`coords: [lat, lng]`) for each attraction and hub. Accurately pin them on OpenStreetMap.
+8. **Always web-research transit data** (transit line name, train name, travel time, walking time e.g. "步行 X 分", and fare) for each leg.
 9. **Total day plan = sum of (visit durations + transit times + waiting times + meals + buffer)**. No hand-waving.
+10. **Output format is an interactive single-file Vue 3 + Tailwind CSS + OpenStreetMap HTML** placed in `templates/<destination>-travel.html`.
 
 ## Workflow
 
@@ -252,256 +253,147 @@ Limit to **5–10 items total** (mix of products and experiences). These feed th
 - Rental car — proceed to step 9c
 - Mixed (e.g., transit by day, taxi at night) — split legs and apply 9a / 9b per leg
 
-### 8. Research visit durations and opening hours
-For each picked attraction, **search the web** for typical visit duration AND business hours. Never fabricate either.
+### 8. Research visit durations, opening hours, and coordinates
+For each picked attraction and transit hub (airport, stations, hotels), **search the web** for typical visit duration, business hours, and accurate coordinates (`coords: [lat, lng]`). Never fabricate data.
 
 Query patterns:
-- `"<attraction>" average visit duration`
-- `how long to spend at "<attraction>"`
-- `"<attraction>" typical time`
-- `"<attraction>" opening hours`
-- `"<attraction>" opening hours <day-of-week>`
-- `"<attraction>" closed days`
-- `"<attraction>" last entry time`
+- `"<attraction>" average visit duration` / `how long to spend at "<attraction>"`
+- `"<attraction>" opening hours` / `closed days` / `last entry time`
+- `"<attraction>" coordinates latitude longitude` or geocode via OpenStreetMap
 
-Record per attraction:
-- Attraction name
-- **Typical visit duration** (with range; median if conflicting)
-- **Opening hours** by day of week
-- **Closed days** (e.g. "closed Mondays", "closed 2nd & 4th Tuesday")
-- **Last-entry / cut-off time** if any (e.g. "last entry 30 min before close")
-- **Time-of-day restrictions** (e.g. "mornings only for guided tours")
-- **Source URL** for both duration and hours
-
-If web research fails, fall back to a clearly-labeled estimate and tell the user which items need verification.
+Record per spot:
+- **Spot name** (official name in destination + original script)
+- **Coordinates** — `coords: [latitude, longitude]` (essential for Leaflet pin rendering)
+- **Typical visit duration** (e.g. `停留 1 時 30 分`, `08:30 離開`, `返回飯店休息`, `返抵國門`)
+- **Opening hours & closed days**
+- **Type classification**: `flight` ✈️, `hotel` 🛏️, `train` 🚆, `bus` 🚌, `shopping` 🛍️, `info` ℹ️, `castle` 🏯, `shrine` ⛩️, `park` 🌿, `cruise` 🚢, `tower` 🗼, `sight` 📍.
 
 ### 9. Research transit segments
-For every leg between consecutive points, **search the web** for actual data. For public transit (9a), break the leg into four sub-times and web-search each:
+For every leg between consecutive points, **search the web** for transit method, duration, and line names:
 
-- **Walk-to-station** — minutes from origin (hotel / previous attraction) to the boarding station
-- **Wait / headway** — typical frequency at the planned time of day (off-peak + peak)
-- **Ride** — minutes on the vehicle, including transfers
-- **Walk-from-station** — minutes from alighting station to the next attraction / hotel
+- **Walking**: Explicitly research and state walking time (e.g. `步行 6 分`).
+- **Trains / Metro**: Explicitly state the railway operator, line name, and train service (e.g. `JR 瀨戶大橋線（特急南風 Nanpu / 特急潮風 Shiokaze）47 分`, `JR 山陽新幹線 25 分`, `JR 吉備線（桃太郎線）24 分`).
+- **Buses / Shuttles**: Specific line name (e.g. `機場接駁巴士 35 分`, `岡山路面電車 / 巴士 20 分`, `City Loop 巴士 15 分`).
+- **Flights**: Airline flight code and flight time (e.g. `台灣虎航 IT214 02:35`).
 
-**Total transit time used in step 10 = walk-to-station + wait + ride + walk-from-station.** Do not silently drop any of the four.
+### 10. Build the reactive itinerary data structure
+Organize the entire trip into a Vue 3 reactive data structure matching `templates/okayama-travel.html`:
 
-**9a. Public transit** — search:
-- `"<from>" to "<to>" by metro <city>` (overall leg)
-- `"<station> to <station> metro <city>"` (ride only)
-- `"<city> <line> schedule / frequency <time of day>"` (wait / headway)
-- `"walk from <hotel> to <station> minutes"` (walk-to-station)
-- `"walk from <station> to <attraction> minutes"` (walk-from-station)
-- `"<from>" to "<to>" bus route <city>`
+```javascript
+const trip = reactive({
+  title: '2026山陽關西夏末八天七夜旅遊',
+  dateRange: '2026/09/05 - 2026/09/12',
+  description: '詳細旅遊規劃背景、航班接駁與時間安排說明。'
+});
 
-Capture per leg:
-- Walk-to-station minutes
-- Wait / headway minutes (off-peak + peak separately if both occur)
-- Ride minutes (with transfers if any)
-- Walk-from-station minutes
-- Total leg time (sum)
-- Fare
-- **Source URL** for each component
+const activeTab = ref('day1'); // or 'overview'
 
-**9b. Taxi / rideshare** — search:
-- `taxi fare "<from>" to "<to>" <city>`
-- `drive time "<from>" to "<to>" <city>`
+const tabs = reactive([
+  { id: 'overview', name: '總覽頁' },
+  { id: 'day1', name: '第1天' },
+  { id: 'day2', name: '第2天' },
+  // ...
+]);
 
-Capture: drive time, estimated fare, **source URL**.
+const overview = reactive({
+  notes: '本次旅遊進出機場為...，交通注意事項...',
+  weather: [
+    { title: '平均氣溫', icon: '🌡️', value: '23°C ~ 30°C', desc: '夏末初秋，日間溫暖微熱，早晚微風舒適。' },
+    { title: '晴雨概況', icon: '☀️', value: '晴朗少雨', desc: '降雨機率低但午後偶有陣雨。' },
+    { title: '穿著建議', icon: '👕', value: '透氣夏裝 + 薄外套', desc: '白天穿著短袖透氣衣物，室內冷氣房備薄開衫。' }
+  ],
+  notices: [
+    '機場交通：岡山機場往返市區搭乘接駁巴士...',
+    '交通票券：建議準備 ICOCA 或 Suica 交通卡...',
+    '營業時間：日本部分老街店鋪多於 17:00 休息...'
+  ]
+});
 
-**9c. Rental car** — search:
-- `driving "<from>" to "<to>" <city>`
-- `parking near "<attraction>" <city>`
+const itinerary = reactive({
+  day1: [
+    {
+      name: '臺灣桃園國際機場',
+      time: '08:30',
+      tag: '',
+      type: 'flight',
+      duration: '11:30 起飛',
+      coords: [25.0797, 121.2342],
+      transit: { icon: 'plane', text: '台灣虎航 IT214 02:35' }
+    },
+    {
+      name: '岡山機場',
+      time: '14:05',
+      tag: '',
+      type: 'flight',
+      duration: '停留 0 時 45 分',
+      coords: [34.7570, 133.8550],
+      transit: { icon: 'bus', text: '機場接駁巴士 35 分' }
+    },
+    // ...
+    {
+      name: '岡山站前大和ROYNET飯店 (Daiwa Roynet Hotel)',
+      time: '20:30',
+      tag: '',
+      type: 'hotel',
+      coords: [34.6657, 133.9202],
+      duration: '返回飯店休息'
+    }
+  ],
+  // day2, day3 ... dayN
+});
+```
 
-Capture: drive time, parking notes, **source URL**.
+### 11. Add logistics & contingency
+- Ensure opening hours are strictly respected for each day's sequence.
+- Reserve buffer for customs/immigration on arrival day and airport check-in on departure day.
+- Hotel is the start and final rest spot of every day.
 
-If the destination has no public transit (rural area), state that explicitly, note the gap, and suggest alternative modes.
+### 12. Produce final interactive HTML template
 
-### 10. Build the day-by-day itinerary
+**Output language rule**: The final output **must be written in the same language the user used** (e.g. Traditional Chinese 繁體中文).
 
-Assemble each day's time-blocked table from the researched data (steps 8 and 9).
+**Output format**: The final plan is a **self-contained HTML file** saved into `templates/<destination>-travel.html` (e.g. [`templates/okayama-travel.html`](./templates/okayama-travel.html)).
 
-Row rules:
-- One row = one continuous activity. Split a leg with a wait > 15 min into two rows if the wait matters.
-- `Location / Activity` column must include the activity type in parentheses: `(visit)` / `(transit)` / `(meal)` / `(check-in)` / `(departure)` / `(rest)`.
-- `Transit & method` column must describe the mode and fare (or `walk`, `—` for non-transit rows).
-- Times must be realistic: arrival + visit duration + transit duration + buffer = start of next slot.
-- **Always reserve the first half-day for arrival logistics and the last half-day for departure.**
-- Alternate high-intensity and low-intensity days.
-- Add one contingency option per day (rain plan / indoor alternative).
-- **Visit times must fall within the attraction's opening hours from step 8** — never schedule a visit outside open hours or on a closed day. If the only way to fit a spot is during closed hours, flag and ask the user before moving it.
-- Total day plan must fit within the user's pace preference.
-- **Day count must match the duration from step 3** — if spots overflow, flag and ask before cutting.
-- If any leg crosses rush hour, note it explicitly (e.g. "crosses 17:30–19:30 rush — buffer +10 min").
-- **Every row needs a source URL** (or `—` for items with no research value, like generic meals / rest).
-| `09:00–10:30` | `Hotel → Narita Airport` (transit) | `~90 min` | `JR Narita Express; JPY 3,070` | `<URL>` |
-| `10:30–12:00` | `Senso-ji Temple + Nakamise` (visit) | `1.5 hr` | `(walk from station)` | `<URL>` |
-| `12:00–13:00` | `Lunch in Asakusa` (meal) | `1 hr` | `—` | `—` |
+#### 12a. HTML Template Specifications
 
-### 11. Add logistics
-- Booking lead times for popular restaurants, museums, tours
-- Connectivity (SIM / pocket WiFi / eSIM)
-- Day-level contingency for legs with unreliable transit time
+1. **CDN Libraries & Styling**:
+   - Tailwind CSS CDN (`<script src="https://cdn.tailwindcss.com"></script>`)
+   - Vue 3 Global CDN (`<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>`)
+   - Leaflet CSS & JS (`<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />`, `<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>`)
+   - Google Fonts: `Noto Sans TC`
+   - Custom z-index rule: `.leaflet-pane { z-index: 10 !important; }` (prevents overlapping headers).
 
-**If international** (from step 1):
-- International flight booking lead time and rough price range (earlier for longer duration)
-- Travel insurance (medical + trip cancellation)
-- Currency exchange / international card with no foreign transaction fee
-- eSIM for destination (data plan)
-- Vaccinations if required
-- Power adapter / voltage for destination
-- Embassy / consulate contact in destination
-- Arrival logistics: airport transfers, immigration wait time estimate
+2. **Top Header & Sticky Navigation**:
+   - Header card with trip title, date range badge, and description block.
+   - Sticky Tab navigation bar (`day-tab`, `day-detail-tab`) with URL hash synchronization (`#overview`, `#day1`...`#dayN`).
 
-**If domestic**: skip the international items above.
+3. **Overview Tab Content**:
+   - **行程筆記 (Notes)** card.
+   - **天氣與穿著 (Weather)** 3-column grid cards.
+   - **注意事項 (Notices)** numbered pink checklist cards.
 
-### 12. Produce final plan
-
-**Transit leg structure**: every transit leg between two consecutive non-transit activities is broken into **multiple time-blocked rows** showing each phase:
-
-1. **Departure prep** at origin (only if origin is the hotel): wake up, freshen up, pack, etc. (activity type `(departure)`).
-2. **Walk-to origin station** (activity type `(walk)`).
-3. **Wait for the vehicle** at the boarding station (activity type `(transit)` with mode "wait at X station").
-4. **Ride** on the vehicle (activity type `(transit)` with the line / mode + fare).
-5. **Arrive at destination station** (activity type `(arrival)` — typically zero-duration, marks the handoff).
-6. **Walk from station** to the next visit / hotel (activity type `(walk)`).
-7. **Arrive at destination** (activity type `(arrival)` — zero-duration marker before the next visit).
-
-Example for "Hotel in Okayama → Kurashiki Bikan Historical Quarter":
-
-| Time | Location / Activity | Duration | Transit & method | Source |
-| --- | --- | --- | --- | --- |
-| `07:30–08:00` | Hotel wake up + get ready (departure) | 30 min | — | — |
-| `08:00–08:15` | Walk to Okayama Station (walk) | 15 min | walk | <URL> |
-| `08:15–08:20` | Wait for JR train (transit) | 5 min | JR Okayama, platform 5–7 | <URL> |
-| `08:20–08:45` | Ride JR to Kurashiki (transit) | ~25 min | JR Sanyo Line; JPY 330 | <URL> |
-| `08:45` | Arrive Kurashiki Station (arrival) | — | — | — |
-| `08:45–08:55` | Walk to Bikan Historical Quarter (walk) | 10 min | walk | <URL> |
-- Include 2–3 meal suggestions per day as **flexible options** — restaurants/eateries **near the current or next attraction** (e.g., "Lunch near Senso-ji" → walkable from the temple; "Dinner after Shibuya Sky" → near Shibuya Station), not locked restaurant bookings. **Pick the meal location based on what's nearby at that point in the day**, not based on some unrelated "best restaurant" lookup. **Do not bake in wait times** — meal rows are flexible placeholders, not locked bookings. If the user wants leisurely pacing, allocate more meal time; if quick, allocate less. Never let meal rows force tighter-than-asked spacing between spots.
-| `08:55` | Arrive at Bikan Historical Quarter (arrival) | — | — | — |
-| `08:55–10:25` | Kurashiki Bikan Historical Quarter (visit) | 1.5 hr | — | <URL> |
-
-Skip rows that are zero or near-zero in the user's context (e.g. a same-station transfer where walk is < 2 min — fold into the next row). For the airport arrival at the start of a trip, the departure prep comes *before* leaving for the airport.
-
-
-**Output language rule**: the final markdown **must be written in the same language the user used to talk to you**. If the user wrote in Traditional Chinese (繁體中文), the output is in Traditional Chinese — including the title, all section headers, descriptions, checklist items, and any commentary. If the user wrote in English, the output is in English. If the user mixed languages, follow the dominant language; switch only for proper nouns (place names, brand names) and source quotes.
-
-This rule applies to **all user-facing content**:
-- Title block
-- Section headers
-- Section descriptions / intros
-- Row content in tables (translations of place names are OK to keep in original script)
-- Checklist items
-- Notes and recommendations
-
-`SKILL.md` itself stays in English (the skill definition is portable).
-**Output format**: the final plan is a **self-contained HTML file** (`.html`). If the user explicitly asks for markdown, produce markdown instead — but HTML is the default. See sub-section 12d for the HTML template specification.
-
-Output a complete file. **Required top-level sections** (in this order):
-
-1. **Title block** — H1: `[City/Region, Country] [N]-Day Itinerary — [Month Year]`. Sub-line with origin, destination, dates, duration, travelers, trip type, transport mode, pace, stated preferences, age + stamina.
-2. **行前注意事項 / Pre-trip Notes** — see sub-section 12b below for checklist + trip-specific notes
-3. **氣候資訊 / Climate Information** — see sub-section 12c below for weather summary + clothing
-4. **行程表 / Itinerary** — one **time-blocked table per day** with columns: `Time` | `Location / Activity` | `Duration` | `Transit & method` | `Source`. Each row is one continuous activity (visit / transit / meal / check-in / rest / departure); transit rows include the walk + wait + ride + walk-from breakdown from step 9; every row carries a source URL. Title each day with date + area.
-
-**Appendix sections** (after the itinerary, for reference and verification):
-
-5. **Recommended destinations on the table** — the list from step 2 (with per-preference rationale)
-6. **Proposed spots considered** — the candidate list from step 4 (with per-preference rationale + physical demand tags)
-7. **Hotel recommendation** — from step 5c (3–5 options with rating, price, source)
-8. **Local Specialties & Experiences** — from step 6a (5–10 items: products, souvenirs, signature experiences)
-9. **Attraction visit durations & opening hours** — table: name, duration, opening hours, closed days, source URL
-10. **Transit segments** — table: from→to, mode, walk-to + wait + ride + walk-from, fare, source URL
-11. **Tickets & Passes** — from step 11 (city passes, attraction tickets, lead times)
-12. **Budget estimate** — by category (lodging, transit, food, activities, **flights if international**, contingency)
-13. **Packing list** — tailored to destination, season, and trip type
-14. **Local tips** — language basics, customs, emergency numbers
-15. **If international**: entry requirements summary (visa, passport validity, vaccinations), time zone, currency, embassy contact
-16. **Review Notes** — checklist output from step 12b
-
-#### 12b. Pre-trip Notes (行前注意事項)
-Two sub-blocks: a **checklist** and **trip-specific notes**.
-
-**Checklist** — markdown checkbox list. Cover at minimum:
-- [ ] Travel insurance purchased (medical + trip cancellation)
-- [ ] Passport validity verified (≥ 6 months past trip end)
-- [ ] Visa / entry permit secured (if international)
-- [ ] International flight booked (or domestic transport booked)
-- [ ] Hotel booked (address confirmed)
-- [ ] Tickets / passes booked (museum passes, timed-entry attractions, etc.)
-- [ ] eSIM or pocket WiFi ordered
-- [ ] Currency exchanged / international card activated
-- [ ] Vaccinations updated (if required)
-- [ ] Embassy / consulate contact saved offline
-- [ ] Travel insurance policy number saved offline
-- [ ] Emergency contacts (family, doctor) shared with traveling companion
-- [ ] Photocopy of passport stored separately from the original
-
-Adapt the list to the trip — drop irrelevant items (e.g. embassy for domestic), add trip-specific ones (e.g. trekking permit for a hike-heavy trip).
-
-**Trip-specific notes** — destination-specific reminders:
-- Visa requirement (if international)
-- Travel advisory level
-- Local laws / customs to be aware of
-- Health precautions (water, food, altitude)
-- Common scams / tourist traps to avoid
-- Emergency numbers (police, ambulance, embassy)
-
-#### 12c. Climate Information (氣候資訊)
-Pull from step 6 (destination research) and tailor to the trip dates. Cover:
-
-- **Weather summary** — expected high / low temperatures for the trip dates, rainfall / humidity, typhoon / snow season risk, sunrise / sunset times if relevant. Source URLs required.
-- **Clothing recommendations** — derived from weather + planned activities:
-  - Day / night temperature ranges and layering
-  - Footwear for the walking budget (e.g., "comfortable walking shoes — expect 10–15 km/day")
-  - Activity-specific needs ("temples require removable shoes" → slip-ons; "rainy season" → quick-dry layers)
-  - Cultural / venue dress codes if any
-  - Rain / cold protection (foldable umbrella, light jacket, etc.)
-- Do not skip step 2. Destination selection is a user decision, not an agent assumption.
-- Do not skip step 3. Duration drives spot count and day-by-day sizing.
-- Do not skip step 4. Spot selection is a user decision, not an agent assumption.
-- Do not skip step 7. Transport mode is a user decision, not an agent assumption.
-- In step 2 Branch A, every recommended country must include both a "why it appeals to <origin> travelers" rationale and a "why it matches the user's preferences" rationale.
-- In step 4 Branch B, the recommended spot count must be scaled to the duration from step 3.
-- In step 4 Branch B, every recommended spot must include a one-line rationale tied back to the refined preferences.
-- For international trips, the agent must surface the visa requirement early (step 6) — if the user cannot get a visa, the rest of the plan is moot.
-
-#### 12d. HTML output template
-The final HTML file **must follow this template specification** (see [`templates/okayama-travel.html`](./templates/okayama-travel.html) for the complete standard reference implementation):
-
-**Self-containment rules**:
-- One single `.html` file inside `templates/` — no external CSS or JS build files.
-- External CDNs required: **Vue 3** (`https://unpkg.com/vue@3/dist/vue.global.js`), **Tailwind CSS** (`https://cdn.tailwindcss.com`), and **Leaflet (OpenStreetMap)** CSS + JS (`https://unpkg.com/leaflet@1.9.4/dist/leaflet.css` & `https://unpkg.com/leaflet@1.9.4/dist/leaflet.js`).
-- Google Font: `Noto Sans TC` for clean, professional typography.
-
-**Structure & Layout**:
-1. **Top Header Card**:
-   - Trip Title (e.g. `2026山陽關西夏末八天七夜旅遊`)
-   - Date range (e.g. `2026/09/05 - 2026/09/12`)
-   - Description block with clean left border.
-2. **Tab Navigation Bar & URL Hash Sync**:
-   - Tabs: `總覽頁` (`overview`) + `第1天` ~ `第N天` (`day1` ~ `dayN`).
-   - Two-way URL hash sync (`#overview`, `#day1`...`#dayN`) with `onMounted` detection and `hashchange` listener.
-   - Semantic classes: Day N tab buttons carry `day-tab` and `day-detail-tab` classes (with `:data-tab="tab.id"`), and day panels carry `day-detail-section` and `day-detail-content`.
-3. **Overview Tab (`overview`)**:
-   - **行程筆記 (Notes)**: Trip summary, flight and hub transit notes.
-   - **天氣資訊 (Weather)**: Average temperature, sky conditions, and clothing recommendations.
-   - **注意事項 (Notices)**: Airport transit, IC cards, business hours, and payment/cash tips.
-4. **Daily Detail Tabs (`day1` ~ `dayN`)**:
-   - **OpenStreetMap Block**: Embedded before the spot list with clean container and `🔄 檢視全部景點` reset button.
-     - Numbered circle markers (`1`, `2`, `3`...) matching the list card numbering.
-     - Connecting dashed polyline showing the travel sequence.
-     - Auto `fitBounds` on tab switch or day activation.
-     - Recreates Leaflet map on tab switch to prevent stale DOM container white screens.
-   - **Interactive Number Badge Focus**:
-     - Clicking the red/rose number badge on any card scrolls smoothly to the map, flies/zooms in close (Zoom Level 17), and opens the spot's popup.
-     - Clicking the active Tab button or the `🔄 檢視全部景點` button smoothly restores the map view to show all spots for that day.
-   - **Spot Timeline Cards (No Image dependency)**:
-     - Rose/pink number badge (`1`, `2`, `3`...) on the left.
-     - Type icon badge (✈️ flight, 🛏️ hotel, 🚆 train, 🚌 bus, 🛍️ shopping, ℹ️ info, 🏯 castle, ⛩️ shrine, 🌿 park, 🚢 cruise, 🗼 tower, 📍 sight).
+4. **Daily Detail Tab Content (`day-detail-section`, `day-detail-content`)**:
+   - **OpenStreetMap Container** (`:id="'map-' + day.id"`):
+     - Located above the spot list for each day.
+     - Numbered circular markers (`1`, `2`, `3`...) matching the itinerary spot numbers.
+     - Dashed connecting route line (`#e11d48`).
+     - Reset view button (`🔄 檢視全部景點` calling `resetMapView(day.id)`).
+     - **Leaflet Lifecycle Fix**: Always call `if (mapInstances[dayId]) { mapInstances[dayId].remove(); delete mapInstances[dayId]; }` on tab switch before instantiating the new map on the newly mounted DOM container.
+   - **Bidirectional Map Interaction**:
+     - Clicking the red number badge (`index + 1`) on any spot card triggers `focusSpotOnMap(day.id, index)`: smoothly scrolls to the map, flies/zooms in close (Zoom Level 17), and automatically opens the marker popup.
+     - Clicking the active Tab button or the `🔄 檢視全部景點` button triggers `resetMapView(day.id)`: smoothly restores the view to fit all spots for that day (`fitBounds`).
+   - **Spot Card Timeline**:
+     - No external image dependencies.
+     - Rose number badge `1`, `2`, `3`...
+     - Type icon badge (✈️, 🛏️, 🚆, 🚌, 🛍️, ℹ️, 🏯, ⛩️, 🌿, 🚢, 🗼, 📍).
      - Spot name, duration / departure status.
-     - Transit connector below each card clearly specifying transit method, line name (e.g. JR routes), and duration (explicitly writing `步行 X 分` for walks).
+     - Connecting vertical line with transit mode, line name, and duration.
 
-**Verification before delivery**: Open the template HTML in a browser to confirm — Vue 3 renders, Leaflet tiles load, number markers match cards, clicking red badges zooms into spots, tab switching and URL hash sync work flawlessly without JS errors.
+**Verification before delivery**: Open the template HTML in a browser to confirm:
+- Vue 3 loads and tabs switch smoothly.
+- Leaflet map initializes without gray/white artifacts when switching back and forth between days.
+- Clicking spot number badges zooms into the location; clicking tabs/reset button restores the full-day view.
+- All coordinates and transit information match researched data.
 
 ## Example triggers
 
