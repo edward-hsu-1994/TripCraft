@@ -1063,15 +1063,18 @@
 
         // Focus spot on map when red number is clicked (Zoom into location)
         function focusSpotOnMap(dayId, spotIndex) {
-          const map = mapInstances[dayId];
-          const spot = itinerary[dayId] && itinerary[dayId][spotIndex];
+          const targetDay = dayId || activeTab.value;
+          const map = mapInstances[targetDay];
+          const spot = itinerary[targetDay] && itinerary[targetDay][spotIndex];
           if (!map || !spot || !spot.coords) return;
 
           // Scroll map smoothly into view
-          const mapContainer = document.getElementById('map-' + dayId);
+          const mapContainer = document.getElementById('map-' + targetDay);
           if (mapContainer) {
             mapContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }
+
+          map.invalidateSize();
 
           // Pan & zoom in close to spot location (Zoom level 17)
           map.flyTo(spot.coords, 17, {
@@ -1079,7 +1082,7 @@
           });
 
           // Open marker popup
-          const markers = markerInstances[dayId];
+          const markers = markerInstances[targetDay];
           if (markers && markers[spotIndex]) {
             setTimeout(() => {
               markers[spotIndex].openPopup();
@@ -1089,13 +1092,17 @@
 
         // Reset map view to show all spots for that day (Auto Zoom)
         function resetMapView(dayId) {
-          const map = mapInstances[dayId];
-          const spots = itinerary[dayId] || [];
+          const targetDay = dayId || activeTab.value;
+          if (!targetDay || targetDay === 'overview') return;
+
+          const map = mapInstances[targetDay];
+          const spots = itinerary[targetDay] || [];
           const validSpots = spots.filter(s => s.coords && s.coords.length === 2);
           if (!map || validSpots.length === 0) return;
 
           // Close any open popup
           map.closePopup();
+          map.invalidateSize();
 
           const latLngs = validSpots.map(s => s.coords);
           const localCoords = latLngs.filter(c => c[0] > 30);
@@ -1104,10 +1111,11 @@
           if (fitCoords.length === 1) {
             map.flyTo(fitCoords[0], 14, { duration: 0.8 });
           } else if (fitCoords.length > 1) {
-            map.flyToBounds(fitCoords, {
+            const bounds = L.latLngBounds(fitCoords);
+            map.fitBounds(bounds, {
               padding: [40, 40],
               maxZoom: 15,
-              duration: 0.8
+              animate: true
             });
           }
         }
