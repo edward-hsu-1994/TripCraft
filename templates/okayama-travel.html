@@ -976,23 +976,22 @@
             const validSpots = spots.filter(s => s.coords && s.coords.length === 2);
             if (validSpots.length === 0) return;
 
-            let map = mapInstances[dayId];
-            if (!map) {
-              map = L.map(containerId, {
-                scrollWheelZoom: false
-              });
-              L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                maxZoom: 18
-              }).addTo(map);
-              mapInstances[dayId] = map;
-            } else {
-              map.eachLayer((layer) => {
-                if (layer instanceof L.Marker || layer instanceof L.Polyline) {
-                  map.removeLayer(layer);
-                }
-              });
+            // Destroy existing map instance to cleanly re-attach to the new DOM node
+            if (mapInstances[dayId]) {
+              try {
+                mapInstances[dayId].remove();
+              } catch (e) {}
+              delete mapInstances[dayId];
             }
+
+            const map = L.map(containerId, {
+              scrollWheelZoom: false
+            });
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+              maxZoom: 18
+            }).addTo(map);
+            mapInstances[dayId] = map;
 
             markerInstances[dayId] = [];
             const latLngs = [];
