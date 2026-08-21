@@ -72,7 +72,7 @@
 
     <!-- Sticky Navigation Tab Bar -->
     <div class="sticky top-3 z-30 mb-6">
-      <nav class="bg-white/95 backdrop-blur-md rounded-2xl p-1.5 shadow-md border border-slate-200/80 flex gap-1 overflow-x-auto custom-scrollbar">
+      <nav class="bg-white/95 backdrop-blur-md rounded-[22px] p-2 shadow-sm border border-slate-200/80 flex items-center gap-1.5 overflow-x-auto custom-scrollbar">
         <button
           v-for="tab in tabs"
           :key="tab.id"
@@ -80,16 +80,16 @@
           @click="switchTab(tab.id)"
           :class="[
             'day-tab',
-            tab.id !== 'overview' ? 'day-detail-tab' : '',
-            'px-3.5 py-2 rounded-xl text-xs md:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1.5 select-none cursor-pointer',
+            tab.id !== 'overview' ? 'day-detail-tab' : 'overview-tab',
+            'px-4 py-2 rounded-[14px] text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1.5 select-none cursor-pointer',
             activeTab === tab.id
-              ? 'bg-rose-600 text-white shadow-sm shadow-rose-200'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+              ? 'bg-[#e11d48] text-white shadow-xs'
+              : 'text-slate-700 hover:text-slate-900 hover:bg-slate-50'
           ]"
         >
           <span v-if="tab.id === 'overview'">📋</span>
           <span v-else>📍</span>
-          {{ tab.name }}
+          <span>{{ tab.name }}</span>
         </button>
       </nav>
     </div>

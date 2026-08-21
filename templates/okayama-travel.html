@@ -56,31 +56,33 @@
       </div>
     </header>
 
-    <!-- Tab Control Section -->
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
-      <!-- Tab Header Bar -->
-      <div class="border-b border-slate-200">
-        <nav class="flex space-x-6 md:space-x-8 overflow-x-auto no-scrollbar -mb-px" aria-label="Tabs">
-          <button
-            v-for="tab in tabs"
-            :key="tab.id"
-            @click="switchTab(tab.id)"
-            :class="[
-              activeTab === tab.id
-                ? 'border-sky-500 text-slate-900 font-bold'
-                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 font-medium',
-              tab.id !== 'overview' ? 'day-tab day-detail-tab' : 'overview-tab',
-              'whitespace-nowrap pb-3 px-1 border-b-2 text-base md:text-lg transition-colors cursor-pointer'
-            ]"
-            :data-tab="tab.id"
-          >
-            {{ tab.name }}
-          </button>
-        </nav>
-      </div>
+    <!-- Sticky Navigation Tab Bar -->
+    <div class="sticky top-3 z-30 mb-6">
+      <nav class="bg-white/95 backdrop-blur-md rounded-[22px] p-2 shadow-sm border border-slate-200/80 flex items-center gap-1.5 overflow-x-auto custom-scrollbar">
+        <button
+          v-for="tab in tabs"
+          :key="tab.id"
+          :data-tab="tab.id"
+          @click="switchTab(tab.id)"
+          :class="[
+            'day-tab',
+            tab.id !== 'overview' ? 'day-detail-tab' : 'overview-tab',
+            'px-4 py-2 rounded-[14px] text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1.5 select-none cursor-pointer',
+            activeTab === tab.id
+              ? 'bg-[#e11d48] text-white shadow-xs'
+              : 'text-slate-700 hover:text-slate-900 hover:bg-slate-50'
+          ]"
+        >
+          <span v-if="tab.id === 'overview'">📋</span>
+          <span v-else>📍</span>
+          <span>{{ tab.name }}</span>
+        </button>
+      </nav>
+    </div>
 
-      <!-- Tab Content Area -->
-      <div class="mt-8">
+    <!-- Tab Content Area -->
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 md:p-8">
+      <div>
         
         <!-- 1. Overview Tab Content (總覽頁) -->
         <div v-if="activeTab === 'overview'" class="overview-content space-y-8">
