@@ -1,28 +1,28 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>2026初春關西深度七天六夜旅遊行程</title>
-
-  <!-- Tailwind CSS CDN -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2026初春關西深度七天六夜旅遊</title>
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Vue 3 CDN -->
+  <!-- Vue 3 -->
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-
-  <!-- Leaflet CSS & JS for OpenStreetMap -->
+  <!-- Leaflet (OpenStreetMap) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <!-- Google Font: Noto Sans TC -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
-
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap');
     body {
       font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    /* Hide scrollbar for tabs */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
     }
     .custom-scrollbar::-webkit-scrollbar {
       height: 4px;
@@ -31,7 +31,7 @@
       background: #cbd5e1;
       border-radius: 4px;
     }
-    /* Ensure Leaflet markers & panes don't cover headers */
+    /* Leaflet z-index fix */
     .leaflet-pane {
       z-index: 10 !important;
     }
@@ -40,37 +40,30 @@
     }
   </style>
 </head>
-<body class="bg-[#f8fafc] text-slate-700 min-h-screen pb-16 antialiased">
-  <div id="app" class="max-w-4xl mx-auto px-3 sm:px-4 md:px-6 pt-6">
-
-    <!-- Top Main Header Card -->
-    <header class="bg-white rounded-3xl p-5 md:p-8 shadow-sm border border-slate-200/80 mb-6 transition">
-      <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-600 border border-rose-100">
-          <span>🌸</span> 關西二訪深度巡禮
-        </span>
-        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
-          <span>📅</span> {{ trip.dateRange }}
-        </span>
-      </div>
-
-      <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight mb-3">
+<body class="bg-gray-50 text-slate-800 antialiased min-h-screen">
+  <div id="app" class="max-w-4xl mx-auto px-4 py-8">
+    
+    <!-- Top Header Card -->
+    <header class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8 mb-6">
+      <!-- Title -->
+      <h1 class="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">
         {{ trip.title }}
       </h1>
 
-      <p class="text-slate-600 text-sm md:text-base leading-relaxed border-l-4 border-rose-500 pl-3.5 my-3 bg-slate-50/70 py-2 rounded-r-xl">
-        {{ trip.description }}
-      </p>
+      <!-- Date Range -->
+      <div class="mt-3 text-slate-500 font-medium text-sm md:text-base tracking-wide">
+        {{ trip.dateRange }}
+      </div>
 
-      <div class="flex flex-wrap gap-2 pt-2 text-xs font-medium text-slate-500">
-        <span class="bg-slate-100 px-2.5 py-1 rounded-lg">🛫 台北 (TPE) ⇄ 關西 (KIX)</span>
-        <span class="bg-slate-100 px-2.5 py-1 rounded-lg">🚆 JR特急Haruka / 近鐵 / 阪神電鐵 / 南海Rapi:t</span>
-        <span class="bg-slate-100 px-2.5 py-1 rounded-lg">🏨 3晚京都 + 3晚大阪</span>
-        <span class="bg-slate-100 px-2.5 py-1 rounded-lg">🍲 嚴選熟食無生食（和牛燒肉/壽喜燒/神戶牛排）</span>
+      <!-- Description Block with Left Border -->
+      <div class="mt-5 border-l-2 border-slate-300 pl-4 py-0.5">
+        <p class="text-sm md:text-base text-slate-500 leading-relaxed">
+          {{ trip.description }}
+        </p>
       </div>
     </header>
 
-    <!-- Sticky Navigation Tab Bar (Clean Text Pill Design with Generous Padding) -->
+    <!-- Sticky Navigation Tab Bar -->
     <div class="sticky top-3 z-30 mb-6">
       <nav class="bg-white/95 backdrop-blur-md rounded-[26px] p-3 md:p-3.5 shadow-sm border border-slate-200/80 flex items-center gap-2 md:gap-2.5 overflow-x-auto custom-scrollbar">
         <button
@@ -92,176 +85,175 @@
       </nav>
     </div>
 
-    <!-- Main Dynamic Content Area -->
-    <main>
-      
-      <!-- 1. Overview Tab Content -->
-      <section v-if="activeTab === 'overview'" class="space-y-6">
+    <!-- Tab Content Area -->
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 md:p-8">
+      <div>
         
-        <!-- Notes Card -->
-        <div class="bg-white rounded-3xl p-5 md:p-7 shadow-sm border border-slate-200/80">
-          <div class="flex items-center gap-2.5 mb-4">
-            <span class="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold">📝</span>
-            <h2 class="text-lg md:text-xl font-bold text-slate-900">行程特色與規劃筆記</h2>
-          </div>
-          <p class="text-slate-600 text-sm md:text-base leading-relaxed whitespace-pre-line">
-            {{ overview.notes }}
-          </p>
-        </div>
-
-        <!-- Weather Grid -->
-        <div class="bg-white rounded-3xl p-5 md:p-7 shadow-sm border border-slate-200/80">
-          <div class="flex items-center gap-2.5 mb-4">
-            <span class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">☀️</span>
-            <h2 class="text-lg md:text-xl font-bold text-slate-900">三月中旬氣候與穿著建議</h2>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div v-for="(item, idx) in overview.weather" :key="idx" class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-              <div class="flex items-center gap-2 mb-1.5 font-bold text-slate-800 text-sm">
-                <span>{{ item.icon }}</span>
-                <span>{{ item.title }}</span>
-              </div>
-              <div class="text-rose-600 font-extrabold text-lg mb-1">{{ item.value }}</div>
-              <p class="text-xs text-slate-500 leading-relaxed">{{ item.desc }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Notices Card -->
-        <div class="bg-white rounded-3xl p-5 md:p-7 shadow-sm border border-slate-200/80">
-          <div class="flex items-center gap-2.5 mb-4">
-            <span class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">💡</span>
-            <h2 class="text-lg md:text-xl font-bold text-slate-900">行前與旅途注意事項</h2>
-          </div>
-          <ul class="space-y-3 text-sm md:text-base text-slate-600">
-            <li v-for="(notice, idx) in overview.notices" :key="idx" class="flex items-start gap-2.5">
-              <span class="w-5 h-5 rounded-full bg-rose-100 text-rose-700 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{{ idx + 1 }}</span>
-              <span class="leading-relaxed">{{ notice }}</span>
-            </li>
-          </ul>
-        </div>
-
-        <!-- 7-Day Quick Overview Grid -->
-        <div class="bg-white rounded-3xl p-5 md:p-7 shadow-sm border border-slate-200/80">
-          <div class="flex items-center gap-2.5 mb-4">
-            <span class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">🗺️</span>
-            <h2 class="text-lg md:text-xl font-bold text-slate-900">7 天行程精華速覽</h2>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div 
-              v-for="d in dayList" 
-              :key="d.id"
-              @click="switchTab(d.id)"
-              class="p-3.5 rounded-2xl bg-slate-50 hover:bg-rose-50/60 border border-slate-100 hover:border-rose-200 transition cursor-pointer flex items-center justify-between group"
-            >
-              <div>
-                <span class="text-xs font-bold text-rose-600 block">{{ d.name }}</span>
-                <span class="text-sm font-semibold text-slate-800">{{ getDaySummary(d.id) }}</span>
-              </div>
-              <span class="text-slate-400 group-hover:text-rose-600 transition">➔</span>
-            </div>
-          </div>
-        </div>
-
-      </section>
-
-      <!-- 2. Daily Timeline Content (Day 1 ~ Day 7) -->
-      <div v-for="day in dayList" :key="day.id" class="day-detail-section" :data-day="day.id">
-        <div v-if="activeTab === day.id" class="day-detail-content">
+        <!-- 1. Overview Tab Content (總覽頁) -->
+        <div v-if="activeTab === 'overview'" class="overview-content space-y-8">
           
-          <div v-if="itinerary[day.id] && itinerary[day.id].length > 0" class="max-w-2xl mx-auto py-2">
-            
-            <!-- OpenStreetMap Map Block -->
-            <div class="mb-8 bg-white rounded-2xl p-3 md:p-4 border border-slate-200/80 shadow-sm">
-              <div class="flex items-center justify-between mb-2.5 px-1">
-                <div class="flex items-center gap-2 font-bold text-slate-800 text-sm md:text-base">
-                  <span>🗺️</span>
-                  <span>當日景點路線地圖 (OpenStreetMap)</span>
+          <!-- 行程筆記 -->
+          <section>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-lg">📝</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">行程筆記</h2>
+            </div>
+            <div class="bg-slate-50 rounded-xl p-4 md:p-5 border border-slate-200/80 text-slate-700 leading-relaxed text-sm md:text-base">
+              {{ overview.notes }}
+            </div>
+          </section>
+
+          <!-- 天氣資訊 -->
+          <section>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-lg">🌤️</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">天氣資訊</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div 
+                v-for="(item, idx) in overview.weather" 
+                :key="idx"
+                class="bg-sky-50/50 rounded-xl p-4 border border-sky-100 flex flex-col justify-between"
+              >
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-semibold text-sky-800 bg-sky-100 px-2 py-0.5 rounded-full">{{ item.title }}</span>
+                  <span class="text-xl">{{ item.icon }}</span>
                 </div>
-                <button 
-                  @click="resetMapView(day.id)"
-                  class="text-xs text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 active:scale-95 px-2.5 py-1 rounded-lg font-medium transition cursor-pointer flex items-center gap-1"
-                  title="重設地圖縮放至顯示全部景點"
-                >
-                  <span>🔄</span>
-                  <span>檢視全部景點</span>
-                </button>
+                <div class="text-lg font-bold text-slate-800">{{ item.value }}</div>
+                <p class="text-xs text-slate-500 mt-1 leading-normal">{{ item.desc }}</p>
               </div>
-              <div :id="'map-' + day.id" class="w-full h-64 md:h-80 rounded-xl overflow-hidden z-0 border border-slate-100"></div>
+            </div>
+          </section>
+
+          <!-- 注意事項 -->
+          <section>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-lg">⚠️</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">注意事項</h2>
+            </div>
+            <div class="bg-amber-50/40 rounded-xl p-5 border border-amber-200/60">
+              <ul class="space-y-2.5 text-sm md:text-base text-slate-700">
+                <li 
+                  v-for="(notice, idx) in overview.notices" 
+                  :key="idx"
+                  class="flex items-start gap-2.5"
+                >
+                  <span class="text-amber-500 mt-0.5 font-bold">•</span>
+                  <span class="leading-relaxed">{{ notice }}</span>
+                </li>
+              </ul>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- 2. Daily Timeline Content (第1天 ~ 第7天) -->
+        <div v-for="day in dayList" :key="day.id" class="day-detail-section" :data-day="day.id">
+          <div v-if="activeTab === day.id" class="day-detail-content">
+            
+            <!-- If itinerary items exist for this day -->
+            <div v-if="itinerary[day.id] && itinerary[day.id].length > 0" class="max-w-2xl mx-auto py-2">
+              
+              <!-- OpenStreetMap Map Block -->
+              <div class="mb-8 bg-white rounded-2xl p-3 md:p-4 border border-slate-200/80 shadow-sm">
+                <div class="flex items-center justify-between mb-2.5 px-1">
+                  <div class="flex items-center gap-2 font-bold text-slate-800 text-sm md:text-base">
+                    <span>🗺️</span>
+                    <span>當日景點路線地圖 (OpenStreetMap)</span>
+                  </div>
+                  <button 
+                    @click="resetMapView(day.id)"
+                    class="text-xs text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 active:scale-95 px-2.5 py-1 rounded-lg font-medium transition cursor-pointer flex items-center gap-1"
+                    title="重設地圖縮放至顯示全部景點"
+                  >
+                    <span>🔄</span>
+                    <span>檢視全部景點</span>
+                  </button>
+                </div>
+                <div :id="'map-' + day.id" class="w-full h-64 md:h-80 rounded-xl overflow-hidden z-0 border border-slate-100"></div>
+              </div>
+
+              <div v-for="(spot, index) in itinerary[day.id]" :key="index" class="relative">
+                
+                <!-- Spot Card (No Image) -->
+                <div class="bg-[#f0f4f9] rounded-2xl p-4 md:p-5 flex items-center gap-4 shadow-sm border border-slate-200/50 hover:bg-[#e8eff7] transition">
+                  
+                  <!-- Left: Number Badge (Clickable to Focus on Map) -->
+                  <div 
+                    @click="focusSpotOnMap(day.id, index)"
+                    class="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-sm md:text-base flex items-center justify-center shadow-sm flex-shrink-0 cursor-pointer transition-all select-none"
+                    title="點擊於地圖上定位此景點"
+                  >
+                    {{ index + 1 }}
+                  </div>
+
+                  <!-- Right: Spot Info -->
+                  <div class="flex-1 min-w-0 pr-1">
+                    <!-- Time & Type Icon -->
+                    <div class="flex items-center gap-1.5 text-rose-600 font-bold text-sm md:text-base">
+                      <!-- Type Icon -->
+                      <span class="w-6 h-6 rounded-full border border-rose-500/80 flex items-center justify-center text-xs">
+                        <template v-if="spot.type === 'flight'">✈️</template>
+                        <template v-else-if="spot.type === 'hotel'">🛏️</template>
+                        <template v-else-if="spot.type === 'train'">🚆</template>
+                        <template v-else-if="spot.type === 'bus'">🚌</template>
+                        <template v-else-if="spot.type === 'shopping'">🛍️</template>
+                        <template v-else-if="spot.type === 'info'">ℹ️</template>
+                        <template v-else-if="spot.type === 'castle'">🏯</template>
+                        <template v-else-if="spot.type === 'shrine'">⛩️</template>
+                        <template v-else-if="spot.type === 'park'">🌿</template>
+                        <template v-else-if="spot.type === 'cruise'">🚢</template>
+                        <template v-else-if="spot.type === 'tower'">🗼</template>
+                        <template v-else-if="spot.type === 'sight'">🎡</template>
+                        <template v-else-if="spot.type === 'food'">🍜</template>
+                        <template v-else>📍</template>
+                      </span>
+                      <span>{{ spot.time }}</span>
+                      <span v-if="spot.tag" class="text-xs text-slate-400 font-normal">({{ spot.tag }})</span>
+                    </div>
+
+                    <!-- Spot Name -->
+                    <h3 class="font-bold text-slate-800 text-base md:text-lg mt-0.5 tracking-tight truncate">
+                      {{ spot.name }}
+                    </h3>
+
+                    <!-- Duration / Departure -->
+                    <p class="text-xs md:text-sm text-slate-400 font-medium mt-0.5">
+                      {{ spot.duration }}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Transit Connector (Between cards) -->
+                <div v-if="index < itinerary[day.id].length - 1" class="py-3 pl-8 md:pl-9 flex items-center gap-3 text-slate-500 text-xs md:text-sm font-medium">
+                  <!-- Vertical dashed line indicator -->
+                  <div class="flex items-center gap-2">
+                    <span v-if="spot.transit?.icon === 'plane'" class="text-base">✈️</span>
+                    <span v-else-if="spot.transit?.icon === 'bus'" class="text-base">🚌</span>
+                    <span v-else-if="spot.transit?.icon === 'walk'" class="text-base">🚶</span>
+                    <span v-else-if="spot.transit?.icon === 'train'" class="text-base">🚆</span>
+                    <span v-else class="text-base">➡️</span>
+                    <span>{{ spot.transit?.text }}</span>
+                  </div>
+                </div>
+
+              </div>
+
             </div>
 
-            <!-- Spot Cards Loop -->
-            <div v-for="(spot, index) in itinerary[day.id]" :key="index" class="relative">
-              
-              <!-- Spot Card (Clean Design) -->
-              <div class="bg-[#f0f4f9] rounded-2xl p-4 md:p-5 flex items-center gap-4 shadow-sm border border-slate-200/50 hover:bg-[#e8eff7] transition">
-                
-                <!-- Left: Number Badge (Clickable to Focus on Map) -->
-                <div 
-                  @click="focusSpotOnMap(day.id, index)"
-                  class="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-sm md:text-base flex items-center justify-center shadow-sm flex-shrink-0 cursor-pointer transition-all select-none"
-                  title="點擊於地圖上定位此景點"
-                >
-                  {{ index + 1 }}
-                </div>
-
-                <!-- Right: Spot Info -->
-                <div class="flex-1 min-w-0 pr-1">
-                  <!-- Time & Type Icon -->
-                  <div class="flex items-center gap-1.5 text-rose-600 font-bold text-sm md:text-base">
-                    <span class="w-6 h-6 rounded-full border border-rose-500/80 flex items-center justify-center text-xs">
-                      <template v-if="spot.type === 'flight'">✈️</template>
-                      <template v-else-if="spot.type === 'hotel'">🛏️</template>
-                      <template v-else-if="spot.type === 'train'">🚆</template>
-                      <template v-else-if="spot.type === 'bus'">🚌</template>
-                      <template v-else-if="spot.type === 'shopping'">🛍️</template>
-                      <template v-else-if="spot.type === 'info'">ℹ️</template>
-                      <template v-else-if="spot.type === 'castle'">🏯</template>
-                      <template v-else-if="spot.type === 'shrine'">⛩️</template>
-                      <template v-else-if="spot.type === 'park'">🌿</template>
-                      <template v-else-if="spot.type === 'cruise'">🚢</template>
-                      <template v-else-if="spot.type === 'tower'">🗼</template>
-                      <template v-else-if="spot.type === 'sight'">📍</template>
-                      <template v-else-if="spot.type === 'food'">🍜</template>
-                      <template v-else>📍</template>
-                    </span>
-                    <span>{{ spot.time }}</span>
-                  </div>
-
-                  <!-- Spot Name -->
-                  <div class="font-bold text-slate-800 text-base md:text-lg tracking-tight mt-0.5 truncate">
-                    {{ spot.name }}
-                  </div>
-
-                  <!-- Duration / Note -->
-                  <div class="text-xs md:text-sm text-slate-500 font-normal mt-0.5">
-                    {{ spot.duration }}
-                  </div>
-                </div>
-              </div>
-
-              <!-- Transit Connection Connector -->
-              <div v-if="spot.transit" class="py-2.5 px-4 my-0.5 ml-4 md:ml-5 border-l-2 border-dashed border-slate-300 flex items-center gap-3">
-                <span class="w-7 h-7 rounded-full bg-white border border-slate-200 shadow-xs flex items-center justify-center text-xs flex-shrink-0">
-                  <template v-if="spot.transit.icon === 'plane'">✈️</template>
-                  <template v-else-if="spot.transit.icon === 'bus'">🚌</template>
-                  <template v-else-if="spot.transit.icon === 'train'">🚆</template>
-                  <template v-else-if="spot.transit.icon === 'walk'">🚶</template>
-                  <template v-else>➡️</template>
-                </span>
-                <span class="text-xs md:text-sm text-slate-500 font-medium leading-tight">
-                  {{ spot.transit.text }}
-                </span>
-              </div>
-
+            <!-- Fallback Placeholder for days with no data yet -->
+            <div v-else class="py-12 text-center text-slate-400 border-2 border-dashed border-slate-200 rounded-xl">
+              <div class="text-4xl mb-2">🗓️</div>
+              <h3 class="text-base font-semibold text-slate-600">{{ day.name }} 行程內容區塊（Placeholder）</h3>
+              <p class="text-sm text-slate-400 mt-1">即將填入景點排程、交通時間、停留時間與備註</p>
             </div>
 
           </div>
-
         </div>
-      </div>
 
-    </main>
+      </div>
+    </div>
+
   </div>
 
   <script>
@@ -289,7 +281,7 @@
         ]);
 
         const overview = reactive({
-          notes: '本次旅遊進出機場為關西國際機場 (KIX)，住宿採「前 3 晚京都（京都車站前）+ 後 3 晚大阪（難波商圈）」雙城配置。\n\n全日餐食精心挑選頂級熱熟食（黑毛和牛燒肉、近江牛壽喜燒、神戶牛排、京都拉麵小路、天婦羅與現炸串炸），無任何生食負擔。交通全程使用 ICOCA / Suica 搭配 JR Haruka 特急券及私鐵，便利度極高。',
+          notes: '本次旅遊進出機場為關西國際機場 (KIX)，住宿採「前 3 晚京都（京都車站前大和ROYNET飯店）+ 後 3 晚大阪（難波相鐵FRESA INN飯店）」雙城配置。\n\n全日餐食精心挑選頂級熱熟食（黑毛和牛燒肉、近江牛壽喜燒、神戶牛排、京都拉麵小路、天婦羅與現炸串炸），無任何生食負擔。交通全程使用 ICOCA / Suica 搭配 JR Haruka 特急券及私鐵，便利度極高。',
           weather: [
             { title: '平均氣溫', icon: '🌡️', value: '8°C ~ 16°C', desc: '初春時節，日間陽光和煦溫暖，早晚涼風微寒。' },
             { title: '晴雨概況', icon: '☀️', value: '晴朗乾燥', desc: '降雨機率低，春光明媚，偶有早櫻初綻。' },
@@ -297,7 +289,7 @@
           ],
           notices: [
             '機場交通：關西機場前往京都請搭乘「JR 特急 Haruka」（約 80 分鐘直達京都車站）。',
-            '交通票券：準備 ICOCA / Suica 實體卡或手機 Apple Wallet / Google 錢包，暢行關西電車、地鐵與巴士。',
+            '交通票券：建議準備 ICOCA / Suica 交通卡或綁定手機支付，適用於關西各線電車、地鐵與巴士。',
             '行李移動：Day 4 從京都移動至大阪，可直接搭乘近鐵攜帶行李，或利用飯店行李宅急便服務當日送達大阪飯店。',
             '餐飲預約：熱門和牛熟食名店（如近江牛千成亭、神戶牛排）建議提前預訂；神社寺廟一般於 17:00 閉門。'
           ]
@@ -334,7 +326,7 @@
               transit: { icon: 'walk', text: '步行 4 分' }
             },
             {
-              name: '京都站前大和ROYNET飯店 (Daiwa Roynet Hotel)',
+              name: '京都站前大和ROYNET飯店',
               time: '16:35',
               tag: '',
               type: 'hotel',
@@ -347,7 +339,7 @@
               time: '17:35',
               tag: '',
               type: 'shopping',
-              duration: '停留 2 時 00 分（古都商圈夜遊）',
+              duration: '停留 2 時 00 分',
               coords: [35.0037, 135.7686],
               transit: { icon: 'walk', text: '步行 8 分' }
             },
@@ -356,7 +348,7 @@
               time: '19:45',
               tag: '',
               type: 'food',
-              duration: '停留 1 時 30 分（品嚐道地熱拉麵與炙燒熟食）',
+              duration: '停留 1 時 30 分',
               coords: [34.9855, 135.7580],
               transit: { icon: 'walk', text: '步行 5 分' }
             },
@@ -375,7 +367,7 @@
               time: '08:30',
               tag: '',
               type: 'hotel',
-              duration: '出發',
+              duration: '停留 0 時 30 分',
               coords: [34.9870, 135.7595],
               transit: { icon: 'bus', text: '京都巴士 4號 / 205號 28 分' }
             },
@@ -384,7 +376,7 @@
               time: '09:00',
               tag: '',
               type: 'shrine',
-              duration: '停留 1 時 30 分（古老神域、水籤占卜與萬坪原生林）',
+              duration: '停留 1 時 30 分',
               coords: [35.0392, 135.7730],
               transit: { icon: 'walk', text: '步行 3 分' }
             },
@@ -393,7 +385,7 @@
               time: '10:35',
               tag: '',
               type: 'food',
-              duration: '停留 0 時 30 分（發源老舖熱騰騰甜醬糰子）',
+              duration: '停留 0 時 30 分',
               coords: [35.0378, 135.7710],
               transit: { icon: 'walk', text: '步行 10 分' }
             },
@@ -402,16 +394,16 @@
               time: '11:15',
               tag: '',
               type: 'park',
-              duration: '停留 0 時 30 分（河畔跳石與悠閒水景）',
+              duration: '停留 0 時 30 分',
               coords: [35.0298, 135.7719],
-              transit: { icon: 'train', text: '京阪電車 / 巴士 12 分' }
+              transit: { icon: 'bus', text: '京阪電車 / 巴士 12 分' }
             },
             {
               name: '錦市場 (Nishiki Market)',
               time: '12:00',
               tag: '',
               type: 'food',
-              duration: '停留 1 時 30 分（熱熟食午膳：三木雞卵玉子燒、現烤鰻魚串、天婦羅）',
+              duration: '停留 1 時 30 分',
               coords: [35.0050, 135.7649],
               transit: { icon: 'bus', text: '市巴士 100號 / 17號 20 分' }
             },
@@ -420,7 +412,7 @@
               time: '13:50',
               tag: '',
               type: 'shrine',
-              duration: '停留 1 時 15 分（侘寂美學枯山水與向月台）',
+              duration: '停留 1 時 15 分',
               coords: [35.0272, 135.7982],
               transit: { icon: 'walk', text: '步行 15 分' }
             },
@@ -429,7 +421,7 @@
               time: '15:10',
               tag: '',
               type: 'park',
-              duration: '停留 0 時 40 分（疏水道旁清幽石板林道）',
+              duration: '停留 0 時 40 分',
               coords: [35.0220, 135.7945],
               transit: { icon: 'bus', text: '市巴士 / 步行 12 分' }
             },
@@ -438,7 +430,7 @@
               time: '16:05',
               tag: '',
               type: 'shrine',
-              duration: '停留 1 時 15 分（巨大朱紅鳥居與池泉名勝庭園）',
+              duration: '停留 1 時 15 分',
               coords: [35.0160, 135.7824],
               transit: { icon: 'walk', text: '步行 12 分' }
             },
@@ -447,7 +439,7 @@
               time: '17:30',
               tag: '',
               type: 'shrine',
-              duration: '停留 1 時 00 分（紅磚羅馬拱渠古蹟與宏偉三門）',
+              duration: '停留 1 時 00 分',
               coords: [35.0116, 135.7940],
               transit: { icon: 'bus', text: '市巴士 / 地鐵 15 分' }
             },
@@ -456,7 +448,7 @@
               time: '18:45',
               tag: '',
               type: 'sight',
-              duration: '停留 1 時 30 分（古色古香町家熱食晚膳：黑毛和牛壽喜燒）',
+              duration: '停留 1 時 30 分',
               coords: [35.0056, 135.7745],
               transit: { icon: 'bus', text: '市巴士 12 分' }
             },
@@ -502,7 +494,7 @@
               time: '09:55',
               tag: '',
               type: 'sight',
-              duration: '停留 1 時 30 分（江戶風情白壁土藏與石板古道漫步）',
+              duration: '停留 1 時 30 分',
               coords: [35.1388, 136.0910],
               transit: { icon: 'walk', text: '步行 4 分' }
             },
@@ -511,7 +503,7 @@
               time: '11:30',
               tag: '',
               type: 'shrine',
-              duration: '停留 0 時 45 分（古老山林守護神殿）',
+              duration: '停留 0 時 45 分',
               coords: [35.1398, 136.0935],
               transit: { icon: 'walk', text: '步行 3 分' }
             },
@@ -520,7 +512,7 @@
               time: '12:20',
               tag: '',
               type: 'food',
-              duration: '停留 1 時 30 分（品嚐極品近江牛壽喜燒 / 熟食和牛排御膳）',
+              duration: '停留 1 時 30 分',
               coords: [35.1382, 136.0905],
               transit: { icon: 'bus', text: '近江鐵道巴士 8 分' }
             },
@@ -529,7 +521,7 @@
               time: '14:05',
               tag: '',
               type: 'sight',
-              duration: '停留 2 時 00 分（宮崎駿風建築、現烤熱年輪蛋糕與茶點）',
+              duration: '停留 2 時 00 分',
               coords: [35.1500, 136.0920],
               transit: { icon: 'bus', text: '近江鐵道巴士 15 分' }
             },
@@ -547,7 +539,7 @@
               time: '17:15',
               tag: '',
               type: 'train',
-              duration: '停留 1 時 00 分（京都車站伊勢丹百貨伴手禮巡禮）',
+              duration: '停留 1 時 00 分',
               coords: [34.9858, 135.7588],
               transit: { icon: 'walk', text: '步行 8 分' }
             },
@@ -556,7 +548,7 @@
               time: '18:30',
               tag: '',
               type: 'food',
-              duration: '停留 1 時 45 分（熱騰騰日式熟食釜飯 / 炭烤串燒料理）',
+              duration: '停留 1 時 45 分',
               coords: [35.0090, 135.7705],
               transit: { icon: 'bus', text: '市巴士 15 分' }
             },
@@ -575,7 +567,7 @@
               time: '08:30',
               tag: '',
               type: 'hotel',
-              duration: '辦理退房（攜帶行李移動）',
+              duration: '辦理退房',
               coords: [34.9870, 135.7595],
               transit: { icon: 'walk', text: '步行 4 分' }
             },
@@ -586,7 +578,7 @@
               type: 'train',
               duration: '停留 0 時 15 分',
               coords: [34.9852, 135.7580],
-              transit: { icon: 'train', text: '近鐵特急 35 分直達奈良' }
+              transit: { icon: 'train', text: '近鐵特急 35 分' }
             },
             {
               name: '近鐵奈良站 (寄存行李於車站置物櫃)',
@@ -602,7 +594,7 @@
               time: '10:15',
               tag: '',
               type: 'shrine',
-              duration: '停留 1 時 30 分（世界最大木造建築與莊嚴大佛）',
+              duration: '停留 1 時 30 分',
               coords: [34.6890, 135.8398],
               transit: { icon: 'walk', text: '步行 5 分' }
             },
@@ -611,7 +603,7 @@
               time: '11:50',
               tag: '',
               type: 'park',
-              duration: '停留 1 時 00 分（綠茵林下與可愛小鹿親密互動）',
+              duration: '停留 1 時 00 分',
               coords: [34.6850, 135.8430],
               transit: { icon: 'walk', text: '步行 10 分' }
             },
@@ -620,16 +612,16 @@
               time: '12:55',
               tag: '',
               type: 'shrine',
-              duration: '停留 1 時 00 分（朱紅迴廊與三千座石燈籠）',
+              duration: '停留 1 時 00 分',
               coords: [34.6814, 135.8484],
               transit: { icon: 'walk', text: '步行 15 分' }
             },
             {
-              name: '奈良町老街 (Naramachi 午茶與釜飯午膳)',
+              name: '奈良町老街 (Naramachi 釜飯午膳)',
               time: '14:10',
               tag: '',
               type: 'shopping',
-              duration: '停留 1 時 45 分（熱騰騰大和地雞釜飯名店志津香、江戶町家咖啡）',
+              duration: '停留 1 時 45 分',
               coords: [34.6780, 135.8310],
               transit: { icon: 'walk', text: '步行 12 分' }
             },
@@ -640,7 +632,7 @@
               type: 'train',
               duration: '停留 0 時 15 分',
               coords: [34.6828, 135.8280],
-              transit: { icon: 'train', text: '近鐵奈良線（快速急行）38 分直達難波' }
+              transit: { icon: 'train', text: '近鐵奈良線（快速急行）38 分' }
             },
             {
               name: '大阪難波站',
@@ -656,7 +648,7 @@
               time: '17:20',
               tag: '',
               type: 'hotel',
-              duration: '辦理入住與行李整理（停留 0 時 40 分）',
+              duration: '停留 0 時 40 分（辦理入住）',
               coords: [34.6655, 135.5008],
               transit: { icon: 'walk', text: '步行 6 分' }
             },
@@ -665,7 +657,7 @@
               time: '18:10',
               tag: '',
               type: 'food',
-              duration: '停留 2 時 00 分（千房現煎大阪燒、黑毛和牛燒肉熱食）',
+              duration: '停留 2 時 00 分',
               coords: [34.6687, 135.5015],
               transit: { icon: 'walk', text: '步行 6 分' }
             },
@@ -695,7 +687,7 @@
               type: 'train',
               duration: '停留 0 時 10 分',
               coords: [34.6669, 135.5004],
-              transit: { icon: 'train', text: '阪神本線（快速急行）/ 地鐵 42 分' }
+              transit: { icon: 'train', text: '阪神本線（快速急行）42 分' }
             },
             {
               name: '新神戶站 (Shin-Kobe)',
@@ -711,7 +703,7 @@
               time: '10:05',
               tag: '',
               type: 'park',
-              duration: '停留 2 時 15 分（搭乘透明纜車眺望神戶港、漫步歐風溫室與草本莊園）',
+              duration: '停留 2 時 15 分',
               coords: [34.7107, 135.1925],
               transit: { icon: 'walk', text: '步行 12 分' }
             },
@@ -720,7 +712,7 @@
               time: '12:35',
               tag: '',
               type: 'sight',
-              duration: '停留 1 時 45 分（洋風建築巡禮：萌黃之館、風見雞之館與特色咖啡店）',
+              duration: '停留 1 時 45 分',
               coords: [34.7011, 135.1895],
               transit: { icon: 'walk', text: '步行 10 分' }
             },
@@ -729,7 +721,7 @@
               time: '14:30',
               tag: '',
               type: 'shrine',
-              duration: '停留 0 時 45 分（神戶最古老結緣神社與生田之森）',
+              duration: '停留 0 時 45 分',
               coords: [34.6946, 135.1906],
               transit: { icon: 'bus', text: 'City Loop 巴士 12 分' }
             },
@@ -738,7 +730,7 @@
               time: '15:40',
               tag: '',
               type: 'tower',
-              duration: '停留 2 時 00 分（現代海港景致、BE KOBE 打卡地標與夕陽港灣）',
+              duration: '停留 2 時 00 分',
               coords: [34.6828, 135.1878],
               transit: { icon: 'walk', text: '步行 10 分' }
             },
@@ -747,9 +739,9 @@
               time: '17:50',
               tag: '',
               type: 'food',
-              duration: '停留 2 時 00 分（極品 A5 神戶牛熱熟食鐵板牛排，外酥內嫩入口即化）',
+              duration: '停留 2 時 00 分',
               coords: [34.6920, 135.1915],
-              transit: { icon: 'train', text: '阪神本線（快速急行）35 分返回難波' }
+              transit: { icon: 'train', text: '阪神本線（快速急行）35 分' }
             },
             {
               name: '難波相鐵FRESA INN飯店 (Sotetsu Fresa Inn Namba)',
@@ -775,7 +767,7 @@
               time: '09:15',
               tag: '',
               type: 'sight',
-              duration: '停留 2 時 00 分（黑色巨石前衛建築、SHIP\'S CAT 當代藝術展覽）',
+              duration: '停留 2 時 00 分',
               coords: [34.6931, 135.4925],
               transit: { icon: 'walk', text: '步行 12 分' }
             },
@@ -784,7 +776,7 @@
               time: '11:30',
               tag: '',
               type: 'sight',
-              duration: '停留 1 時 15 分（大正時代紅磚洋樓巡禮、享用河畔熟食早午餐）',
+              duration: '停留 1 時 15 分',
               coords: [34.6925, 135.5050],
               transit: { icon: 'train', text: '大阪地下鐵 10 分' }
             },
@@ -793,16 +785,16 @@
               time: '13:00',
               tag: '',
               type: 'shopping',
-              duration: '停留 1 時 45 分（避開空襲的昭和傳統木造老巷、古著選物與喫茶）',
+              duration: '停留 1 時 45 分',
               coords: [34.7072, 135.5065],
-              transit: { icon: 'train', text: '大阪地下鐵谷町線 / 御堂筋線 16 分' }
+              transit: { icon: 'train', text: '大阪地下鐵 16 分' }
             },
             {
               name: '新世界 & 通天閣 (Shinsekai & Tsutenkaku)',
               time: '15:05',
               tag: '',
               type: 'tower',
-              duration: '停留 1 時 45 分（昭和復古下町風情，品嚐現炸酥脆「八重勝」串炸熟食）',
+              duration: '停留 1 時 45 分',
               coords: [34.6525, 135.5063],
               transit: { icon: 'walk', text: '步行 12 分' }
             },
@@ -811,7 +803,7 @@
               time: '17:05',
               tag: '',
               type: 'tower',
-              duration: '停留 2 時 15 分（日本第一高樓 300 米高空 360 度眺望夕陽轉化璀璨百萬夜景）',
+              duration: '停留 2 時 15 分',
               coords: [34.6459, 135.5140],
               transit: { icon: 'walk', text: '步行 3 分' }
             },
@@ -820,9 +812,9 @@
               time: '19:30',
               tag: '',
               type: 'food',
-              duration: '停留 1 時 30 分（熱騰騰炭烤鰻魚飯與精緻日式熟食定食）',
+              duration: '停留 1 時 30 分',
               coords: [34.6465, 135.5130],
-              transit: { icon: 'train', text: '大阪地下鐵御堂筋線 6 分返回難波' }
+              transit: { icon: 'train', text: '大阪地下鐵御堂筋線 6 分' }
             },
             {
               name: '難波相鐵FRESA INN飯店 (Sotetsu Fresa Inn Namba)',
@@ -848,25 +840,25 @@
               time: '09:30',
               tag: '',
               type: 'shopping',
-              duration: '停留 2 時 00 分（全長 2.6 公里庶民商店街、藥妝伴手禮與現烤仙貝小吃）',
+              duration: '停留 2 時 00 分',
               coords: [34.7093, 135.5126],
-              transit: { icon: 'train', text: '大阪地下鐵 14 分返回難波' }
+              transit: { icon: 'train', text: '大阪地下鐵 14 分' }
             },
             {
               name: '南海難波站 (取回行李與搭車)',
               time: '12:00',
               tag: '',
               type: 'train',
-              duration: '停留 0 時 30 分（午餐熟食外帶與整備）',
+              duration: '停留 0 時 30 分',
               coords: [34.6645, 135.5015],
-              transit: { icon: 'train', text: '南海電鐵特急 Rapi:t 38 分直達機場' }
+              transit: { icon: 'train', text: '南海電鐵特急 Rapi:t 38 分' }
             },
             {
               name: '關西國際機場 (KIX)',
               time: '13:10',
               tag: '',
               type: 'flight',
-              duration: '停留 2 時 45 分（辦理登機出境、免稅店最後採購伴手禮）',
+              duration: '停留 2 時 45 分',
               coords: [34.4320, 135.2304],
               transit: { icon: 'plane', text: '航班飛行 02:55' }
             },
@@ -884,19 +876,6 @@
         const dayList = computed(() => {
           return tabs.filter(t => t.id !== 'overview');
         });
-
-        function getDaySummary(dayId) {
-          const summaries = {
-            day1: '台北 ➔ 關西機場 ➔ 京都車站 ➔ 四條河原町',
-            day2: '下鴨神社 ➔ 錦市場 ➔ 銀閣寺 ➔ 平安神宮 ➔ 南禪寺',
-            day3: '滋賀近江八幡 ➔ 水鄉運河 ➔ 近江牛 ➔ La Collina',
-            day4: '奈良東大寺 ➔ 鹿群 ➔ 春日大社 ➔ 奈良町 ➔ 大阪難波',
-            day5: '神戶布引香草園纜車 ➔ 異人館 ➔ 神戶港塔 ➔ 神戶牛排',
-            day6: '中之島美術館 ➔ 北濱 ➔ 中崎町 ➔ 通天閣 ➔ 阿倍野夜景',
-            day7: '天神橋筋商店街 ➔ 南海Rapi:t ➔ 關西機場 ➔ 返抵台灣'
-          };
-          return summaries[dayId] || '';
-        }
 
         // OpenStreetMap Map Renderer
         const mapInstances = {};
@@ -1116,7 +1095,6 @@
           overview,
           itinerary,
           dayList,
-          getDaySummary,
           switchTab,
           focusSpotOnMap,
           resetMapView
