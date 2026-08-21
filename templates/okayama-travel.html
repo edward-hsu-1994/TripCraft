@@ -154,7 +154,14 @@
                     <span>🗺️</span>
                     <span>當日景點路線地圖 (OpenStreetMap)</span>
                   </div>
-                  <span class="text-xs text-slate-400 font-normal">依行程編號標記</span>
+                  <button 
+                    @click="resetMapView(day.id)"
+                    class="text-xs text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 active:scale-95 px-2.5 py-1 rounded-lg font-medium transition cursor-pointer flex items-center gap-1"
+                    title="重設地圖縮放至顯示全部景點"
+                  >
+                    <span>🔄</span>
+                    <span>檢視全部景點</span>
+                  </button>
                 </div>
                 <div :id="'map-' + day.id" class="w-full h-64 md:h-80 rounded-xl overflow-hidden z-0 border border-slate-100"></div>
               </div>
@@ -1054,7 +1061,7 @@
           });
         }
 
-        // Focus spot on map when red number is clicked
+        // Focus spot on map when red number is clicked (Zoom into location)
         function focusSpotOnMap(dayId, spotIndex) {
           const map = mapInstances[dayId];
           const spot = itinerary[dayId] && itinerary[dayId][spotIndex];
@@ -1066,8 +1073,8 @@
             mapContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }
 
-          // Pan & zoom to spot location
-          map.flyTo(spot.coords, 16, {
+          // Pan & zoom in close to spot location (Zoom level 17)
+          map.flyTo(spot.coords, 17, {
             duration: 0.8
           });
 
@@ -1080,8 +1087,41 @@
           }
         }
 
+        // Reset map view to show all spots for that day (Auto Zoom)
+        function resetMapView(dayId) {
+          const map = mapInstances[dayId];
+          const spots = itinerary[dayId] || [];
+          const validSpots = spots.filter(s => s.coords && s.coords.length === 2);
+          if (!map || validSpots.length === 0) return;
+
+          // Close any open popup
+          map.closePopup();
+
+          const latLngs = validSpots.map(s => s.coords);
+          const localCoords = latLngs.filter(c => c[0] > 30);
+          const fitCoords = (localCoords.length > 0) ? localCoords : latLngs;
+
+          if (fitCoords.length === 1) {
+            map.flyTo(fitCoords[0], 14, { duration: 0.8 });
+          } else if (fitCoords.length > 1) {
+            map.flyToBounds(fitCoords, {
+              padding: [40, 40],
+              maxZoom: 15,
+              duration: 0.8
+            });
+          }
+        }
+
         // Tab Switching & URL Hash Sync
         function switchTab(tabId) {
+          if (activeTab.value === tabId) {
+            // Clicking current active tab resets map view to show all spots
+            if (tabId !== 'overview') {
+              resetMapView(tabId);
+            }
+            return;
+          }
+
           activeTab.value = tabId;
           if (window.location.hash !== '#' + tabId) {
             window.location.hash = tabId;
@@ -1132,7 +1172,8 @@
           itinerary,
           dayList,
           switchTab,
-          focusSpotOnMap
+          focusSpotOnMap,
+          resetMapView
         };
       }
     }).mount('#app');
