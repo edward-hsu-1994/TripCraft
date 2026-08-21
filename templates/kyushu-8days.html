@@ -474,7 +474,7 @@
           day3: [
             {
               name: '博多站前大和ROYNET飯店',
-              time: '08:30',
+              time: '08:15',
               tag: '',
               type: 'hotel',
               duration: '出發',
@@ -483,7 +483,7 @@
             },
             {
               name: '博多車站',
-              time: '08:45',
+              time: '08:25',
               tag: '',
               type: 'train',
               duration: '停留 0 時 15 分',
@@ -492,25 +492,34 @@
             },
             {
               name: '小倉車站',
-              time: '09:45',
+              time: '09:25',
               tag: '',
               type: 'train',
               duration: '停留 0 時 10 分',
               coords: [33.8869, 130.8828],
-              transit: { icon: 'walk', text: '步行 12 分' }
+              transit: { icon: 'walk', text: '步行 10 分' }
             },
             {
               name: '小倉城 (Kokura Castle)',
-              time: '10:05',
+              time: '09:40',
               tag: '',
               type: 'castle',
-              duration: '停留 1 時 30 分（細川忠興名城、勝山公園與天守閣視野）',
+              duration: '停留 1 時 15 分（細川忠興名城、勝山公園與天守閣視野）',
               coords: [33.8845, 130.8742],
+              transit: { icon: 'walk', text: '步行 2 分' }
+            },
+            {
+              name: '小倉祇園 八坂神社 (Yasaka Shrine)',
+              time: '11:00',
+              tag: '',
+              type: 'shrine',
+              duration: '停留 0 時 35 分（小倉城境內守護古剎、小倉祇園祭發源地）',
+              coords: [33.8852, 130.8735],
               transit: { icon: 'walk', text: '步行 12 分' }
             },
             {
               name: '小倉車站',
-              time: '11:45',
+              time: '11:50',
               tag: '',
               type: 'train',
               duration: '停留 0 時 10 分',
@@ -519,52 +528,124 @@
             },
             {
               name: '門司港車站 (Mojiko Station)',
-              time: '12:10',
+              time: '12:15',
               tag: '',
               type: 'train',
-              duration: '停留 0 時 20 分（文藝復興風格木造國寶車站建築巡禮）',
+              duration: '停留 0 時 15 分（文藝復興大正風格木造國寶車站建築巡禮）',
               coords: [33.9452, 130.9610],
-              transit: { icon: 'walk', text: '步行 3 分' }
+              transit: { icon: 'walk', text: '步行 4 分' }
             },
             {
-              name: 'BEAR FRUITS 門司港名物現烤熱燒咖哩 (Yaki Curry)',
+              name: '九州鐵道紀念館 (Kyushu Railway History Museum)',
               time: '12:35',
               tag: '',
-              type: 'food',
-              duration: '停留 1 時 15 分（現烤起司半熟蛋熱騰騰濃郁燒咖哩熟食）',
-              coords: [33.9458, 130.9625],
+              type: 'sight',
+              duration: '停留 1 時 00 分（九州鐵道起點紅磚本館、實體珍貴蒸汽機關車與迷你鐵道公園）',
+              coords: [33.9430, 130.9585],
               transit: { icon: 'walk', text: '步行 5 分' }
             },
             {
-              name: '門司港懷舊街區 (Mojiko Retro)',
-              time: '13:55',
-              tag: '',
-              type: 'sight',
-              duration: '停留 2 時 00 分（舊門司三井俱樂部、舊大阪商船大正紅磚洋樓）',
-              coords: [33.9452, 130.9610],
-              transit: { icon: 'walk', text: '步行 10 分' }
-            },
-            {
-              name: '關門海峽大橋展望 (Kanmon Strait)',
-              time: '16:05',
-              tag: '',
-              type: 'sight',
-              duration: '停留 1 時 00 分（眺望本州與九州交界海峽、藍翼門司吊橋開橋秀）',
-              coords: [33.9575, 130.9620],
-              transit: { icon: 'train', text: 'JR 鹿兒島本線 / 特急 55 分返回博多' }
-            },
-            {
-              name: '博多拉麵街 / 黑毛和牛熟食定食',
-              time: '18:15',
+              name: 'BEAR FRUITS 門司港名物現烤熱燒咖哩 (Yaki Curry)',
+              time: '13:40',
               tag: '',
               type: 'food',
-              duration: '停留 1 時 30 分',
+              duration: '停留 1 時 00 分（品嚐現烤起司半熟蛋熱騰騰濃郁燒咖哩熟食午膳）',
+              coords: [33.9458, 130.9625],
+              transit: { icon: 'walk', text: '步行 4 分' }
+            },
+            {
+              name: '北九州市舊門司稅關 (Old Moji Customs)',
+              time: '14:45',
+              tag: '',
+              type: 'sight',
+              duration: '停留 0 時 40 分（明治大正時期紅磚海關洋樓建築、常設展覽與海港風情）',
+              coords: [33.9472, 130.9648],
+              transit: { icon: 'walk', text: '步行 2 分' }
+            },
+            {
+              name: '門司港懷舊展望室 (Mojiko Retro Observation Room)',
+              time: '15:30',
+              tag: '',
+              type: 'tower',
+              duration: '停留 0 時 45 分（黑川紀章設計高樓 31 層 360 度俯瞰關門海峽與門司港全景）',
+              coords: [33.9478, 130.9658],
+              transit: { icon: 'walk', text: '步行 5 分' }
+            },
+            {
+              name: '関門汽船 門司港乗り場 (Kanmon Ferry Moji Pier)',
+              time: '16:20',
+              tag: '',
+              type: 'cruise',
+              duration: '停留 0 時 10 分',
+              coords: [33.9460, 130.9615],
+              transit: { icon: 'plane', text: '搭乘關門汽船 5 分鐘跨越海峽直達本州下關唐戶碼頭' }
+            },
+            {
+              name: '龜山八幡宮（龜山宮 Kameyama Hachimangu）',
+              time: '16:40',
+              tag: '',
+              type: 'shrine',
+              duration: '停留 0 時 35 分（下關守護神鎮守之宮、日本最大青銅河豚像、遠眺關門海峽）',
+              coords: [33.9570, 130.9418],
+              transit: { icon: 'walk', text: '步行 6 分' }
+            },
+            {
+              name: '史跡春帆樓 日清講和談判場 (Shunpanro & Treaty Memorial Hall)',
+              time: '17:20',
+              tag: '',
+              type: 'sight',
+              duration: '停留 0 時 40 分（1895年李鴻章與伊藤博文簽署馬關條約歷史現場、日清講和紀念館）',
+              coords: [33.9592, 130.9455],
+              transit: { icon: 'walk', text: '步行 3 分' }
+            },
+            {
+              name: '赤間神宮 (Akama Shrine)',
+              time: '18:05',
+              tag: '',
+              type: 'shrine',
+              duration: '停留 0 時 45 分（朱紅水天門龍宮城造型神殿、源平合戰壇之浦安德天皇陵寢）',
+              coords: [33.9588, 130.9472],
+              transit: { icon: 'walk', text: '步行 12 分' }
+            },
+            {
+              name: '関門トンネル人道入口（下関側 Kanmon Pedestrian Tunnel）',
+              time: '19:00',
+              tag: '',
+              type: 'sight',
+              duration: '停留 0 時 20 分（步入關門海底人行隧道 780 公尺、腳跨本州山口縣與九州福岡縣界線）',
+              coords: [33.9620, 130.9585],
+              transit: { icon: 'walk', text: '步行海底人行步道 15 分直達門司側' }
+            },
+            {
+              name: '關門隧道人行道 門司側 (Moji Side Entrance)',
+              time: '19:35',
+              tag: '',
+              type: 'sight',
+              duration: '停留 0 時 10 分（重返九州福岡門司海濱）',
+              coords: [33.9595, 130.9622],
+              transit: { icon: 'walk', text: '步行 2 分' }
+            },
+            {
+              name: '和布刈神社 鳥居 (Mekari Shrine Torii)',
+              time: '19:50',
+              tag: '',
+              type: 'shrine',
+              duration: '停留 0 時 30 分（關門大橋下的千年海潮守護神、海中朱紅鳥居與璀璨關門海峽夜景）',
+              coords: [33.9602, 130.9635],
+              transit: { icon: 'bus', text: '西鐵巴士 10 分至門司港站 ➔ JR 鹿兒島本線 / 特急 55 分返回博多' }
+            },
+            {
+              name: '博多車站 / 熟食晚膳 (和牛燒肉 / 豚骨拉麵)',
+              time: '21:30',
+              tag: '',
+              type: 'food',
+              duration: '停留 1 時 00 分',
               coords: [33.5902, 130.4207],
               transit: { icon: 'walk', text: '步行 4 分' }
             },
             {
               name: '博多站前大和ROYNET飯店 (Daiwa Roynet Hotel)',
-              time: '19:55',
+              time: '22:35',
               tag: '',
               type: 'hotel',
               coords: [33.5890, 130.4185],
