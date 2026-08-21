@@ -466,31 +466,42 @@ Pull from step 6 (destination research) and tailor to the trip dates. Cover:
 - For international trips, the agent must surface the visa requirement early (step 6) — if the user cannot get a visa, the rest of the plan is moot.
 
 #### 12d. HTML output template
-The final HTML file **must follow this specification** (see `examples/reference/*.html` for complete working examples):
+The final HTML file **must follow this template specification** (see [`templates/okayama-travel.html`](./templates/okayama-travel.html) for the complete standard reference implementation):
 
 **Self-containment rules**:
-- One single `.html` file — no external CSS or JS files. All custom CSS/JS is embedded in `<style>`/`<script>` tags inside the file.
-- External CDNs allowed (and required): **Tailwind CSS** via `<script src="https://cdn.tailwindcss.com"></script>`, **Leaflet** CSS + JS via unpkg CDN. No build step, no npm.
-- Use Tailwind utility classes for all styling (layout, typography, colors, cards, tables). Avoid hand-written CSS except for marker icons, scroll-margin, and print styles.
+- One single `.html` file inside `templates/` — no external CSS or JS build files.
+- External CDNs required: **Vue 3** (`https://unpkg.com/vue@3/dist/vue.global.js`), **Tailwind CSS** (`https://cdn.tailwindcss.com`), and **Leaflet (OpenStreetMap)** CSS + JS (`https://unpkg.com/leaflet@1.9.4/dist/leaflet.css` & `https://unpkg.com/leaflet@1.9.4/dist/leaflet.js`).
+- Google Font: `Noto Sans TC` for clean, professional typography.
 
-**Map (OpenStreetMap + Leaflet)**:
-- Load OpenStreetMap tiles via Leaflet: `L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", ...)` with attribution `&copy; OpenStreetMap`.
-- **Every attraction gets a numbered marker** (①–⑳ style: a colored circle with the spot's number rendered via `L.divIcon`). Numbering matches the spot list and the appendix tables.
-- Markers are colored by category (culture / food / shopping / nature / view / art) with a shared palette.
-- The **hotel** gets a distinct marker (letter "H", different color).
-- **Day tabs** (總覽 / Day 1 / … / Day N) sit in a sticky bar above the itinerary content. Switching a tab: shows **only that day's itinerary section**, filters the map markers to that day, **refits the map bounds to focus on those spots**, and scrolls to top. The 總覽 tab shows everything (overview + all days + appendix).
-- Clicking a marker opens a popup with the spot name + day(s); clicking a spot name in the itinerary **switches to that spot's day tab**, scrolls to the section, and opens the marker popup (`scrollToSpot`).
-- A spot visited on multiple days stores `days` as an **array** in the spot data.
+**Structure & Layout**:
+1. **Top Header Card**:
+   - Trip Title (e.g. `2026山陽關西夏末八天七夜旅遊`)
+   - Date range (e.g. `2026/09/05 - 2026/09/12`)
+   - Description block with clean left border.
+2. **Tab Navigation Bar & URL Hash Sync**:
+   - Tabs: `總覽頁` (`overview`) + `第1天` ~ `第N天` (`day1` ~ `dayN`).
+   - Two-way URL hash sync (`#overview`, `#day1`...`#dayN`) with `onMounted` detection and `hashchange` listener.
+   - Semantic classes: Day N tab buttons carry `day-tab` and `day-detail-tab` classes (with `:data-tab="tab.id"`), and day panels carry `day-detail-section` and `day-detail-content`.
+3. **Overview Tab (`overview`)**:
+   - **行程筆記 (Notes)**: Trip summary, flight and hub transit notes.
+   - **天氣資訊 (Weather)**: Average temperature, sky conditions, and clothing recommendations.
+   - **注意事項 (Notices)**: Airport transit, IC cards, business hours, and payment/cash tips.
+4. **Daily Detail Tabs (`day1` ~ `dayN`)**:
+   - **OpenStreetMap Block**: Embedded before the spot list with clean container and `🔄 檢視全部景點` reset button.
+     - Numbered circle markers (`1`, `2`, `3`...) matching the list card numbering.
+     - Connecting dashed polyline showing the travel sequence.
+     - Auto `fitBounds` on tab switch or day activation.
+     - Recreates Leaflet map on tab switch to prevent stale DOM container white screens.
+   - **Interactive Number Badge Focus**:
+     - Clicking the red/rose number badge on any card scrolls smoothly to the map, flies/zooms in close (Zoom Level 17), and opens the spot's popup.
+     - Clicking the active Tab button or the `🔄 檢視全部景點` button smoothly restores the map view to show all spots for that day.
+   - **Spot Timeline Cards (No Image dependency)**:
+     - Rose/pink number badge (`1`, `2`, `3`...) on the left.
+     - Type icon badge (✈️ flight, 🛏️ hotel, 🚆 train, 🚌 bus, 🛍️ shopping, ℹ️ info, 🏯 castle, ⛩️ shrine, 🌿 park, 🚢 cruise, 🗼 tower, 📍 sight).
+     - Spot name, duration / departure status.
+     - Transit connector below each card clearly specifying transit method, line name (e.g. JR routes), and duration (explicitly writing `步行 X 分` for walks).
 
-**Layout**:
-- Desktop (lg+): map in a **sticky sidebar** (~2/5 width) beside the scrollable itinerary content (~3/5).
-- Mobile: map **on top** (fixed height ~420px), itinerary below.
-- Header bar with trip title + one-line summary; overview cards (origin / destination / transport / budget).
-- Each day is a `<section id="dayN">` with a time-blocked table: `時間` | `地點 / 活動` | `時長` | `交通方式` | `來源` (source link). Spot rows carry the numbered marker reference and category tags.
-- Appendix sections after the itinerary: durations & hours, hotel, specialties, budget, packing list, local tips.
-- `@media print` hides the map, tabs, and filter buttons.
-
-**Verification before delivery**: open the file in a browser and confirm — Leaflet loads, all markers render, tab switching changes both visible sections and marker counts with map refocus, no JS console errors.
+**Verification before delivery**: Open the template HTML in a browser to confirm — Vue 3 renders, Leaflet tiles load, number markers match cards, clicking red badges zooms into spots, tab switching and URL hash sync work flawlessly without JS errors.
 
 ## Example triggers
 
@@ -505,39 +516,10 @@ User: Culture + food, balanced pace, mid-range, temperate, couple.
 Agent: [step 2b → web-searches popular destinations from Taiwan matching these preferences → presents 5–8 countries with characteristics, Taiwan rationale, and preferences-match rationale]
 User: Japan.
 Agent: [step 3 → asks "How many days?"]
-User: 5 days.
+User: 8 days.
 Agent: [step 4 → asks "Any spots in mind, or want me to recommend?"]
-User: Senso-ji, Skytree, teamLab Borderless, Meiji Shrine, Harajuku, Shibuya, Tsukiji, Akihabara, Imperial Palace.
-Agent: [confirms list, suggests Shinjuku Gyoen as an addition, notes 10 spots / 5 days is on the busier side but doable at balanced pace]
-User: Yes. October, USD 4000, public transit.
-Agent: [continues through steps 5–12 with international logistics → produces tokyo-5days.md]
+User: Okayama, Kurashiki, Himeji, Kobe, Takamatsu.
+Agent: [confirms list, researches durations and transit, and generates interactive template in templates/okayama-travel.html]
 ```
 
-**Domestic — user picks from location recommendation**
-
-```
-User: 我想規劃一趟國內旅行
-Agent: [step 1 → asks "Where are you, and domestic or international?"]
-User: 人在台北，想在國內玩
-Agent: [step 2a → asks about preferences]
-User: 文化 + 美食，步調輕鬆，中價位，怕人多
-Agent: [step 2c → web-searches popular Taiwan destinations matching these → presents 5–8]
-User: 我想去台南
-Agent: [step 3 → asks "How many days?"]
-User: 3 天
-Agent: [step 4 → asks about spots; recommend 3–6 given the duration]
-... (domestic flow; step 6 / step 11 skip visa, currency, embassy)
-```
-
-**Branch B at step 4 — user wants spot recommendations**
-
-```
-User: ... [after picking Japan, 5 days, with stated culture+food preference] ... but I don't know which spots in Tokyo to pick.
-Agent: [step 4 Branch B → refines step-2a preferences for spot level]
-User: Mix of iconic and hidden, mostly outdoor, want to avoid huge crowds.
-Agent: [web-searches Tokyo culture + food spots → proposes 6–10 (scaled to 5 days) with rationale tied to refined preferences]
-User: [picks a subset, adds two of their own]
-Agent: [continues through steps 5–12 → produces tokyo-5days.md]
-```
-
-See [`examples/reference/tokyo-5days.html`](./examples/reference/tokyo-5days.html) for a full reference HTML output (Tailwind + OpenStreetMap numbered markers), and [`examples/reference/fukuoka-5days.html`](./examples/reference/fukuoka-5days.html) for a Traditional-Chinese example with multi-day spots. The original markdown versions are kept alongside as [`examples/reference/tokyo-5days.md`](./examples/reference/tokyo-5days.md) and [`examples/reference/fukuoka-5days.md`](./examples/reference/fukuoka-5days.md).
+See [`templates/okayama-travel.html`](./templates/okayama-travel.html) for the standard reference implementation (Vue 3 + Tailwind CSS + OpenStreetMap numbered markers + URL hash sync).

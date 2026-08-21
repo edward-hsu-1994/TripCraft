@@ -67,20 +67,18 @@ Agent 會依 [`SKILL.md`](./SKILL.md) 的 12 步 workflow 依序執行：
 TripCraft/
 ├── README.md                        專案說明
 ├── SKILL.md                         Skill 本體（給 Coding Agent 讀）
-└── examples/
-    └── reference/                   參考資料目錄（輸出範例）
-        ├── tokyo-5days.html         東京 5 天 HTML 輸出範例（Tailwind + OpenStreetMap 數字標記地圖）
-        ├── fukuoka-5days.html       福岡 5 天 HTML 輸出範例（繁體中文，含多天次景點）
-        ├── tokyo-5days.md           東京 5 天 Markdown 輸出範例（原始格式）
-        └── fukuoka-5days.md         福岡 5 天 Markdown 輸出範例（繁體中文）
+└── templates/
+    └── okayama-travel.html          岡山 8 天 7 夜行程標準 HTML 範本（Vue 3 + Tailwind CSS + OpenStreetMap 數字標記地圖）
 ```
 
 ## 輸出格式
 
-最終行程規劃輸出為**自包含 HTML 檔案**（預設格式，見 `examples/reference/*.html`）：
+最終行程規劃輸出為**自包含 HTML 檔案**（預設格式，見 [`templates/okayama-travel.html`](./templates/okayama-travel.html)）：
 
-- **Tailwind CSS**（CDN）負責所有樣式；CSS 直接嵌入 HTML，不需外部檔案或建置流程
-- **OpenStreetMap + Leaflet**（CDN）互動地圖，每個景點以**數字編號圓形標記**呈現，顏色依景點類別區分；飯店以 "H" 標記
-- **天數分頁（Tab）**：切換「總覽 / Day 1–5」分頁時只顯示當天行程，地圖自動聚焦（fitBounds）於當天景點；點擊行程中的景點名稱會自動切到對應天數分頁
-- 桌面版地圖固定側邊欄、手機版地圖置頂；支援列印（列印時隱藏地圖）
-- 使用者明確要求 Markdown 時可輸出 Markdown（`examples/reference/*.md` 為原始格式範例）
+- **Vue 3 + Tailwind CSS**（CDN）：負責所有響應式資料與現代美觀樣式；所有程式碼直接嵌入單一 HTML 檔案，不需外部建置流程。
+- **OpenStreetMap + Leaflet**（CDN）互動地圖：
+  - 每個景點以**玫瑰粉數字圓形標記**（`1`, `2`, `3`...）呈現，序號與下方行程卡片完全一致。
+  - 景點間自動繪製軌跡虛線，切換 TAB 時自動縮放至當日全景範圍（Auto `fitBounds`）。
+  - **雙向互動**：點擊下方行程卡片的紅色數字圖標可直接將地圖放大飛入該景點（Zoom 17）並開啟資訊氣泡；點擊當前 TAB 或「🔄 檢視全部景點」可一鍵平滑還原全景視野。
+- **天數分頁與網址 Hash 同步**：支援「總覽頁」與「第 1 天 ~ 第 N 天」，即時與 URL Hash（`#overview`, `#day1`...）雙向綁定。
+- **行程卡片設計**：時間、類型圖示（✈️, 🛏️, 🚆, 🏯, ⛩️ 等）、景點名稱與停留時間；景點間清楚標註具體路線與步行時間（如「步行 X 分」）。
