@@ -164,8 +164,12 @@
                 <!-- Spot Card (No Image) -->
                 <div class="bg-[#f0f4f9] rounded-2xl p-4 md:p-5 flex items-center gap-4 shadow-sm border border-slate-200/50 hover:bg-[#e8eff7] transition">
                   
-                  <!-- Left: Number Badge -->
-                  <div class="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-rose-600 text-white font-bold text-sm md:text-base flex items-center justify-center shadow-sm flex-shrink-0">
+                  <!-- Left: Number Badge (Clickable to Focus on Map) -->
+                  <div 
+                    @click="focusSpotOnMap(day.id, index)"
+                    class="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-sm md:text-base flex items-center justify-center shadow-sm flex-shrink-0 cursor-pointer transition-all select-none"
+                    title="點擊於地圖上定位此景點"
+                  >
                     {{ index + 1 }}
                   </div>
 
@@ -952,6 +956,7 @@
 
         // OpenStreetMap Map Renderer
         const mapInstances = {};
+        const markerInstances = {};
 
         function renderMap(dayId) {
           if (dayId === 'overview') return;
@@ -982,6 +987,7 @@
               });
             }
 
+            markerInstances[dayId] = [];
             const latLngs = [];
             validSpots.forEach((spot, idx) => {
               const markerIcon = L.divIcon({
@@ -1013,6 +1019,7 @@
                   <span style="color: #64748b; font-size: 12px;">⏰ ${spot.time} · ${spot.duration}</span>
                 </div>
               `);
+              markerInstances[dayId].push(marker);
               latLngs.push(spot.coords);
             });
 
@@ -1045,6 +1052,32 @@
               map.invalidateSize();
             }, 120);
           });
+        }
+
+        // Focus spot on map when red number is clicked
+        function focusSpotOnMap(dayId, spotIndex) {
+          const map = mapInstances[dayId];
+          const spot = itinerary[dayId] && itinerary[dayId][spotIndex];
+          if (!map || !spot || !spot.coords) return;
+
+          // Scroll map smoothly into view
+          const mapContainer = document.getElementById('map-' + dayId);
+          if (mapContainer) {
+            mapContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+
+          // Pan & zoom to spot location
+          map.flyTo(spot.coords, 16, {
+            duration: 0.8
+          });
+
+          // Open marker popup
+          const markers = markerInstances[dayId];
+          if (markers && markers[spotIndex]) {
+            setTimeout(() => {
+              markers[spotIndex].openPopup();
+            }, 400);
+          }
         }
 
         // Tab Switching & URL Hash Sync
@@ -1098,7 +1131,8 @@
           overview,
           itinerary,
           dayList,
-          switchTab
+          switchTab,
+          focusSpotOnMap
         };
       }
     }).mount('#app');
