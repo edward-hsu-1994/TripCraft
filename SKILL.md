@@ -32,6 +32,7 @@ description: This skill should be used when the user says they want to travel, a
 8. **Always web-research transit data** (transit line name, train name, travel time, walking time e.g. "步行 X 分", and fare) for each leg.
 9. **Total day plan = sum of (visit durations + transit times + waiting times + meals + buffer)**. No hand-waving.
 10. **Output format is an interactive single-file Vue 3 + Tailwind CSS + OpenStreetMap HTML** placed in `templates/<destination>-travel.html`.
+11. **Always research and include safety, visa, insurance, and hazard intelligence**: Destination travel advisory levels (外交部旅遊警示燈號), visa/entry rules, travel insurance essentials (海外突發疾病醫療/旅遊不便險), local scam/safety risks, seasonal typhoon/extreme weather contingency, and regional wildlife hazards (e.g. 熊出沒 / bear alerts in mountain regions, volcanic alert levels) must be researched and integrated into the itinerary notes and overview notices.
 
 ## Workflow
 
@@ -201,23 +202,15 @@ Present **3–5 options** matching the user's 5b preferences. Ask the user to pi
 Once the user picks, the hotel address becomes the default transit origin / destination for every day in step 11 (Build itinerary).
 
 If the destination has no suitable options at the user's stated budget, say so and ask if they want to adjust budget, location, or dates.
-### 6. Research destination
+### 6. Research destination & safety intelligence
 Cover, in 1–2 short paragraphs each:
 - Climate and what to pack for the season
 - Peak / shoulder / off-season status and crowd impact
 - Local holidays or major events inside the trip window
-- **Local specialties, souvenirs, and signature experiences** (see sub-section below)
-
-**If international** (from step 1):
-- Visa / entry requirements for the traveler's passport (and any transit countries)
-- Passport validity (typically 6 months beyond trip end)
-- Recommended or required vaccinations
-- Time zone difference vs origin and jet lag impact on first/last day
-- Local currency, payment norms (cash vs card), and exchange options
-- Language basics and translation tools
-- Travel advisory level
-
-**If domestic**: skip the international items above.
+- **Local specialties, souvenirs, and signature experiences** (see sub-section 6a)
+- **Travel advisory & safety risks** (see sub-section 6b)
+- **Visa, entry rules & travel insurance** (see sub-section 6c)
+- **Weather, natural disasters & wildlife hazards (including typhoons & bear alerts 熊出沒)** (see sub-section 6d)
 
 #### 6a. Local specialties, souvenirs, and signature experiences
 After the destination is picked, **web-search** for the region's signature products and experiences. Capture for each entry:
@@ -244,6 +237,44 @@ Sample search queries:
 - `"<destination> must try activities"`
 
 Limit to **5–10 items total** (mix of products and experiences). These feed the "Local Specialties & Experiences" section in step 12.
+
+#### 6b. 旅遊警報與安全風險 (Travel Advisory & Local Safety Risks)
+Web-search official travel advisories and regional safety intelligence:
+
+1. **外交部旅遊警示燈號 (MOFA Travel Advisory Level)**:
+   - Check the destination's current travel warning level: 灰色警示 (提醒注意) / 黃色警示 (特別注意安全並檢討應否前往) / 橙色警示 (高度小心並避免非必要旅行) / 紅色警示 (不宜前往，儘速離境)。
+   - Search: `"外交部領事事務局 <destination> 旅遊警示"`
+2. **當地治安與常見詐騙 (Local Scams & Unsafe Zones)**:
+   - Identify common tourist scams (e.g. bar rip-offs/bottakuri in nightlife districts, counterfeit transit passes, fake monks/teahouse scams, pickpocketing hotspots).
+   - Nighttime safety zones and districts to avoid late at night (e.g. Roppongi/Kabukicho alleyways, specific train station back exits).
+3. **緊急救援聯絡資訊 (Emergency Contacts)**:
+   - Local emergency numbers (Police 110 / Ambulance & Fire 119 in Japan/Korea, 911 in US, 112 in Europe).
+   - Taiwan Overseas Emergency Hotline (外交部緊急聯絡中心: `+886-800-085-095`) and local Representative Office / Embassy 24-hr emergency phone number.
+
+#### 6c. 簽證規定、入境申報與旅遊保險 (Visa, Entry & Travel Insurance)
+Web-search entry logistics and comprehensive insurance coverage:
+
+1. **簽證與護照規定 (Visa & Passport Validity)**:
+   - Passport validity requirement (minimum 6 months from travel date).
+   - Visa exemption period for Taiwan passport holders (e.g. Japan 90 days visa-free, South Korea 90 days / K-ETA check, EU ETIAS, US ESTA).
+   - Digital customs / immigration declaration requirements (e.g. Japan Visit Japan Web, Korea Q-CODE / E-Arrival, Singapore SG Arrival Card).
+2. **必備旅遊保險組合 (Essential Travel Insurance Coverage)**:
+   - **海外突發疾病醫療險 (Overseas Emergency Medical Insurance)**: Recommend sufficient medical limit covering hospitalization and emergency medical repatriation (海外急難救助).
+   - **旅遊不便險 (Travel Inconvenience Insurance)**: Coverage for flight delay/cancellation (班機延誤), lost/delayed luggage (行李延誤/遺失), and trip interruption (行程更改).
+   - **旅遊平安險 (Travel Accident Insurance)**: Accidental death and disability protection (意外身故與失能保障).
+
+#### 6d. 氣候天災、颱風與野生動物風險 (Weather, Typhoons & Wildlife Hazards)
+Web-search specific natural hazards, disaster contingency, and wildlife risks:
+
+1. **颱風與極端天候應變 (Typhoons & Extreme Weather Contingency)**:
+   - For summer/autumn trips (July to October in East Asia), check seasonal typhoon frequencies.
+   - Outline transportation contingency (e.g. JR/train planned suspension 計画運休, airline delay insurance claims, official weather apps like Japan Safety Tips / NHK World).
+2. **野生動物風險與熊出沒防範 (Wildlife Hazards & Bear Alerts 熊出沒)**:
+   - For mountainous, forested, or rural destinations (especially Hokkaido, Tohoku, Nagano, Gifu, Gunma, Kumamoto Aso mountain trails):
+     - Check recent local bear sighting reports (熊の出沒情報 / 目撃情報).
+     - Provide essential bear encounter precautions: carry bear bells (熊鈴), avoid lone hiking at early dawn or twilight, avoid carrying strongly scented food, slowly back away facing the bear without running or making loud sudden screams.
+3. **地震與火山活動警戒 (Earthquake & Volcanic Alert Levels)**:
+   - Check local volcanic restriction zones (e.g. Aso Crater alert level 1-3, Sakurajima, Mt. Fuji climbing regulations) and earthquake readiness (installing Safety Tips app, knowing hotel evacuation exits).
 
 ### 7. Confirm transport mode with the user
 **Re-confirm or refine** the transport preference captured in step 2a. This step ensures the user's choice is still correct after they've seen the destination / spots / hotel options, and gives them a chance to switch (e.g., "actually, given the hotel location, let's just take taxis"). The confirmed choice shapes step 9 and the budget:
@@ -386,9 +417,14 @@ The generated HTML file must strictly reproduce the architecture and design lang
    - Outer card: `<div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 md:p-8">`
 
 5. **Overview Tab (3 Standard Sections)**:
-   - **行程筆記 (Notes)**: `<div class="bg-slate-50 rounded-xl p-4 md:p-5 border border-slate-200/80 text-slate-700 leading-relaxed text-sm md:text-base">{{ overview.notes }}</div>`
+   - **行程筆記 (Notes)**: `<div class="bg-slate-50 rounded-xl p-4 md:p-5 border border-slate-200/80 text-slate-700 leading-relaxed text-sm md:text-base">{{ overview.notes }}</div>` (Summarizes background, flight, multi-night continuous hotel bases, and dining style).
    - **天氣資訊 (Weather)**: 3-column grid of `<div class="bg-sky-50/50 rounded-xl p-4 border border-sky-100 flex flex-col justify-between">` containing `title` badge (`text-xs font-semibold text-sky-800 bg-sky-100 px-2 py-0.5 rounded-full`), icon, `value`, and `desc`.
-   - **注意事項 (Notices)**: `<div class="bg-amber-50/40 rounded-xl p-5 border border-amber-200/60">` with `text-amber-500 font-bold •` bullet items.
+   - **注意事項 (Notices)**: `<div class="bg-amber-50/40 rounded-xl p-5 border border-amber-200/60">` with `text-amber-500 font-bold •` bullet items. **Must include**:
+     - 旅遊警報與安全：外交部旅遊警示燈號、緊急救助專線與報警電話。
+     - 簽證與入境：免簽天數、護照效期 (6個月以上) 及數位入境申報 (如 Visit Japan Web)。
+     - 旅遊保險：建議投保海外突發疾病醫療險 (含緊急救援) 與旅遊不便險 (班機延誤/行李損失)。
+     - 氣候天災與颱風應變：季節性颱風監測、大眾運輸停駛應對與官方氣象 App。
+     - 野生動物與自然危害：山區景點熊出沒防範 (防熊鈴/避開清晨黃昏)、火山活動管制等。
 
 6. **Daily Detail Tabs (`day-detail-section`, `day-detail-content`)**:
    - **OpenStreetMap Container** (`:id="'map-' + day.id"`, `w-full h-64 md:h-80 rounded-xl overflow-hidden`):
