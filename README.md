@@ -8,13 +8,17 @@
 
 TripCraft 產出的互動式單一檔案 HTML 範本（Vue 3 + Tailwind CSS + OpenStreetMap 雙向互動地圖），預設進入頁面為**「總覽頁 (Overview)」**：
 
-### 1. 總覽頁預覽（行程筆記、天氣資訊、注意事項、旅遊警報與安全情報）
-![九州行程總覽頁預覽](./docs/images/kyushu-8days-overview.png)
+### 1. 2027 初秋北海道深度 7 天 6 夜（札幌 ➔ 函館雙城連續居住）
+| 總覽頁（行程筆記、天氣資訊、注意事項、旅遊警報） | 每日行程與 OpenStreetMap 互動地圖（紅圈序號定位、虛線路徑） |
+| :---: | :---: |
+| ![北海道總覽頁](./docs/images/hokkaido-7days-overview.png) | ![北海道每日行程地圖](./docs/images/hokkaido-7days-daydetail.png) |
 
-### 2. 每日行程與 OpenStreetMap 互動地圖（紅圈序號定位、虛線路徑、雙向聚焦）
-![九州每日行程與地圖預覽](./docs/images/kyushu-8days-daydetail.png)
+### 2. 2027 九州福岡 8 天 7 夜（博多 ➔ 熊本雙城連續居住）
+| 總覽頁預覽 | 每日行程與關門海峽環線地圖 |
+| :---: | :---: |
+| ![九州總覽頁](./docs/images/kyushu-8days-overview.png) | ![九州每日行程地圖](./docs/images/kyushu-8days-daydetail.png) |
 
-### 3. 更多範本預覽
+### 3. 更多經典範本預覽
 | 關西 7 天 6 夜深度二訪範本 | 岡山山陽關西 8 天 7 夜標準範本 |
 | :---: | :---: |
 | ![關西總覽頁](./docs/images/kansai-7days-overview.png) | ![岡山總覽頁](./docs/images/okayama-8days-overview.png) |
@@ -27,7 +31,7 @@ TripCraft 不是樣板行程產生器，是**研究驅動 + 對話驅動**的行
 
 1. **國內 vs 國外** — 一開始就問；依結果推薦 5–8 個國家（國外）或地點（國內）附特色與偏好對齊
 2. **詢問偏好** — 購物 / 文化 / 自然 / 美食 / 夜生活 / 步調 / 預算 / 氣候 / 同行者 / 必免。偏好決定推薦內容
-3. **確認天數** — 週末 3–6 個點、5 天 6–10 個點、7 天 8–12 個點，依此規模推薦景點
+3. **確認天數** — 依天數規模推薦最適景點數量
 4. **確認景點** — 使用者指定或 Agent 上網查推薦，兩條分支
 5. **住宿規劃（區塊連續居住）** — 連續入住同城市同飯店數日，避免折返跑式頻繁換房；使用者給偏好，Agent 上網查 3–5 家飯店（位置 / 價格 / 評分 / 來源 URL）讓使用者挑
 6. **安全與目的地研究**：
@@ -53,12 +57,15 @@ TripCraft/
 ├── SKILL.md                         TripCraft Skill 本體（給 Coding Agent 讀取的 12 步核心工作流）
 ├── docs/
 │   └── images/                      範本高畫質實際畫面截圖
+│       ├── hokkaido-7days-overview.png
+│       ├── hokkaido-7days-daydetail.png
 │       ├── kyushu-8days-overview.png
 │       ├── kyushu-8days-daydetail.png
 │       ├── kansai-7days-overview.png
 │       ├── okayama-8days-overview.png
 │       └── okayama-8days-daydetail.png
 └── templates/
+    ├── hokkaido-7days.html          2027 初秋北海道深度 7 天 6 夜雙城連續居住互動網頁範本
     ├── kyushu-8days.html            2027 初春九州福岡 8 天 7 夜雙城連續居住互動網頁範本
     ├── kansai-7days.html            2026 初春關西深度 7 天 6 夜京都大阪雙城互動網頁範本
     └── okayama-travel.html          2026 山陽關西 8 天 7 夜標準互動網頁範本
@@ -96,9 +103,9 @@ TripCraft 以 [`SKILL.md`](./SKILL.md) 為核心，採用 Coding Agent 的最小
 對你的 Coding Agent 說：
 
 - 「我想規劃一趟旅行」（Agent 會開始循序問問題）
+- 「我想去日本北海道 7 天 6 夜，台北出發，個人獨旅，熟食為主、大眾運輸」
 - 「我想去日本九州 8 天 7 夜，台北出發，熟食為主、大眾運輸」
 - 「我想去關西 7 天 6 夜深度二訪，不要去清水寺、二條城」
-- 「規劃一趟家庭冰島旅遊，預算 15 萬台幣」
 
 Agent 會依 [`SKILL.md`](./SKILL.md) 的 12 步 workflow 依序執行並產出符合標準規範的互動式 HTML 網頁！
 
@@ -106,7 +113,7 @@ Agent 會依 [`SKILL.md`](./SKILL.md) 的 12 步 workflow 依序執行並產出�
 
 ## 輸出格式
 
-最終行程規劃輸出為**自包含 HTML 檔案**（預設格式，見 [`templates/kyushu-8days.html`](./templates/kyushu-8days.html)）：
+最終行程規劃輸出為**自包含 HTML 檔案**（見 [`templates/hokkaido-7days.html`](./templates/hokkaido-7days.html)）：
 
 - **預設首頁**：載入時預設顯示**「總覽頁 (Overview)」**，直觀呈現行程筆記、天氣資訊、注意事項與旅遊警報。
 - **純文字膠囊導航列 (Tab Bar)**：具有寬裕內邊距（`rounded-[26px] p-3 md:p-3.5`），按鈕為乾淨純文字（`總覽頁`、`第1天` ~ `第N天`，無多餘圖示）。
