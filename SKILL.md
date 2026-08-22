@@ -416,7 +416,7 @@ The generated HTML file must strictly reproduce the architecture and design lang
 4. **Tab Content Container**:
    - Outer card: `<div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 md:p-8">`
 
-5. **Overview Tab (3 Standard Sections)**:
+5. **Overview Tab (4 Standard Sections)**:
    - **行程筆記 (Notes)**: `<div class="bg-slate-50 rounded-xl p-4 md:p-5 border border-slate-200/80 text-slate-700 leading-relaxed text-sm md:text-base">{{ overview.notes }}</div>` (Summarizes background, flight, multi-night continuous hotel bases, and dining style).
    - **天氣資訊 (Weather)**: 3-column grid of `<div class="bg-sky-50/50 rounded-xl p-4 border border-sky-100 flex flex-col justify-between">` containing `title` badge (`text-xs font-semibold text-sky-800 bg-sky-100 px-2 py-0.5 rounded-full`), icon, `value`, and `desc`.
    - **注意事項 (Notices)**: `<div class="bg-amber-50/40 rounded-xl p-5 border border-amber-200/60">` with `text-amber-500 font-bold •` bullet items. **Must include**:
@@ -425,6 +425,9 @@ The generated HTML file must strictly reproduce the architecture and design lang
      - 旅遊保險：建議投保海外突發疾病醫療險 (含緊急救援) 與旅遊不便險 (班機延誤/行李損失)。
      - 氣候天災與颱風應變：季節性颱風監測、大眾運輸停駛應對與官方氣象 App。
      - 野生動物與自然危害：山區景點熊出沒防範 (防熊鈴/避開清晨黃昏)、火山活動管制等。
+   - **實用車站與地名日英對照表 (Place & Station Reference Table)**:
+     - Clear, responsive table with columns: `中文名稱` | `日文名稱 (漢字/假名)` | `英文 / 羅馬拼音 (Romaji)` | `類型`
+     - Essential for ticket vending machines, Google Maps search, asking train conductors, and reading bilingual signage during travel.
 
 6. **Daily Detail Tabs (`day-detail-section`, `day-detail-content`)**:
    - **OpenStreetMap Container** (`:id="'map-' + day.id"`, `w-full h-64 md:h-80 rounded-xl overflow-hidden`):

@@ -138,6 +138,38 @@
             </div>
           </section>
 
+          <!-- 實用車站與地名日英對照表 -->
+          <section>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-lg">🚉</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">實用車站與地名日英對照表</h2>
+            </div>
+            <div class="overflow-x-auto rounded-xl border border-slate-200/80 shadow-xs">
+              <table class="w-full text-left text-sm text-slate-700">
+                <thead class="bg-slate-100/80 text-xs font-bold text-slate-600 uppercase tracking-wider border-b border-slate-200">
+                  <tr>
+                    <th scope="col" class="px-4 py-3">中文名稱</th>
+                    <th scope="col" class="px-4 py-3">日文名稱 (漢字 / 假名)</th>
+                    <th scope="col" class="px-4 py-3">英文 / 羅馬拼音 (Romaji)</th>
+                    <th scope="col" class="px-4 py-3">類型</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 bg-white">
+                  <tr v-for="(item, idx) in overview.stations" :key="idx" class="hover:bg-slate-50/80 transition">
+                    <td class="px-4 py-2.5 font-bold text-slate-800">{{ item.zh }}</td>
+                    <td class="px-4 py-2.5 font-medium text-rose-600 font-mono">{{ item.ja }}</td>
+                    <td class="px-4 py-2.5 text-slate-500 font-mono text-xs md:text-sm">{{ item.en }}</td>
+                    <td class="px-4 py-2.5">
+                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                        {{ item.type }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
         </div>
 
         <!-- 2. Daily Timeline Content (第1天 ~ 第8天) -->
@@ -288,6 +320,15 @@
             '交通票券：建議準備 ICOCA 或 Suica 交通卡，適用於 JR 電車、岡山路面電車及市區超商。',
             '天候天災與颱風應變：夏末初秋（9月）偶有太平洋颱風生成，建議下載「Safety Tips App」隨時掌握氣象警報與 JR 山陽新幹線/特急列車運行情報。',
             '野生動物與自然注意：吉備路自行車道與近郊山區（如後樂園外圍步道）請依循標示前進，日本山林郊野漫步建議配掛防熊鈴 (熊鈴)。'
+          ],
+          stations: [
+            { zh: '岡山桃太郎機場', ja: '岡山桃太郎空港 (OKJ)', en: 'Okayama Airport', type: '機場樞紐' },
+            { zh: '岡山車站', ja: '岡山駅 (おかやまえき)', en: 'Okayama Station', type: '新幹線/主要鐵道' },
+            { zh: '倉敷車站 (美觀地區)', ja: '倉敷駅 (くらしきえき)', en: 'Kurashiki Station', type: '古鎮老街' },
+            { zh: '吉備津車站 (神社)', ja: '吉備津駅 (きびつえき)', en: 'Kibitsu Station', type: '桃太郎線' },
+            { zh: '姬路車站 (姬路城)', ja: '姫路駅 (ひめじえき)', en: 'Himeji Station', type: '新幹線/國寶城' },
+            { zh: '高松車站 (四國)', ja: '高松駅 (たかまつえき)', en: 'Takamatsu Station', type: '瀨戶大橋線' },
+            { zh: '琴平車站 (金刀比羅宮)', ja: '琴平駅 (ことひらえき)', en: 'Kotohira Station', type: 'JR/琴電' }
           ]
         });
 

@@ -145,6 +145,38 @@
             </div>
           </section>
 
+          <!-- 實用車站與地名日英對照表 -->
+          <section>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-lg">🚉</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">實用車站與地名日英對照表</h2>
+            </div>
+            <div class="overflow-x-auto rounded-xl border border-slate-200/80 shadow-xs">
+              <table class="w-full text-left text-sm text-slate-700">
+                <thead class="bg-slate-100/80 text-xs font-bold text-slate-600 uppercase tracking-wider border-b border-slate-200">
+                  <tr>
+                    <th scope="col" class="px-4 py-3">中文名稱</th>
+                    <th scope="col" class="px-4 py-3">日文名稱 (漢字 / 假名)</th>
+                    <th scope="col" class="px-4 py-3">英文 / 羅馬拼音 (Romaji)</th>
+                    <th scope="col" class="px-4 py-3">類型</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 bg-white">
+                  <tr v-for="(item, idx) in overview.stations" :key="idx" class="hover:bg-slate-50/80 transition">
+                    <td class="px-4 py-2.5 font-bold text-slate-800">{{ item.zh }}</td>
+                    <td class="px-4 py-2.5 font-medium text-rose-600 font-mono">{{ item.ja }}</td>
+                    <td class="px-4 py-2.5 text-slate-500 font-mono text-xs md:text-sm">{{ item.en }}</td>
+                    <td class="px-4 py-2.5">
+                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                        {{ item.type }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
         </div>
 
         <!-- 2. Daily Timeline Content (第1天 ~ 第8天) -->
@@ -296,6 +328,23 @@
             '鐵道預約劃位：「由布院之森 (Yufuin no Mori)」與「阿蘇男孩號 (Aso Boy!)」為全車指定席人氣觀光列車，建議出發前 30 天於 JR 九州官網線上劃位。',
             '天候天災與颱風應變：3 月中旬初春晴朗少颱風，但山區天候多變；若遇極端豪雨或鐵道延誤，可下載日本官方「Safety Tips App」或查詢「JR 九州列車運行情報」。',
             '自然危害與野生動物注意：阿蘇火山周邊請留意火口警戒層級（氣喘或心血管不適者避免靠近火口瓦斯區）；山區景點漫步請遵循官方指定步道，郊山健行可隨身配掛防熊鈴 (熊鈴)。'
+          ],
+          stations: [
+            { zh: '福岡機場', ja: '福岡空港 (ふくおくうこう)', en: 'Fukuoka Airport (FUK)', type: '機場樞紐' },
+            { zh: '博多車站', ja: '博多駅 (はかたえき)', en: 'Hakata Station', type: '新幹線/JR/地鐵' },
+            { zh: '西鐵福岡(天神)站', ja: '西鉄福岡（天神）駅', en: 'Nishitetsu-Fukuoka (Tenjin)', type: '私鐵總站' },
+            { zh: '西鐵柳川站', ja: '西鉄柳川駅 (やながわ)', en: 'Nishitetsu-Yanagawa', type: '水鄉觀光' },
+            { zh: '太宰府車站', ja: '太宰府駅 (だざいふ)', en: 'Dazaifu Station', type: '神社鐵道' },
+            { zh: '小倉車站', ja: '小倉駅 (こくらえき)', en: 'Kokura Station', type: '新幹線/特急' },
+            { zh: '門司港車站', ja: '門司港駅 (もじこう)', en: 'Mojiko Station', type: '國寶歷史車站' },
+            { zh: '下關・唐戶碼頭', ja: '下関・唐戸 (からと)', en: 'Shimonoseki / Karato', type: '渡輪碼頭' },
+            { zh: '關門海底人行隧道', ja: '関門トンネル人道', en: 'Kanmon Pedestrian Tunnel', type: '跨海隧道' },
+            { zh: '熊本車站', ja: '熊本駅 (くまもとえき)', en: 'Kumamoto Station', type: '新幹線/JR' },
+            { zh: '熊本城・市役所前', ja: '熊本城・市役所前', en: 'Kumamotojo-Shiyakushomae', type: '路面電車' },
+            { zh: '水前寺公園', ja: '水前寺公園 (すいぜんじ)', en: 'Suizenji-Koen', type: '路面電車' },
+            { zh: '阿蘇車站', ja: '阿蘇駅 (あそえき)', en: 'Aso Station', type: '觀光鐵道' },
+            { zh: '草千里之濱', ja: '草千里ヶ浜 (くさせんり)', en: 'Kusasenri-ga-hama', type: '火山草原' },
+            { zh: '由布院車站', ja: '由布院駅 (ゆふいん)', en: 'Yufuin Station', type: '溫泉特急' }
           ]
         });
 

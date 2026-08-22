@@ -145,6 +145,38 @@
             </div>
           </section>
 
+          <!-- 實用車站與地名日英對照表 -->
+          <section>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-lg">🚉</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">實用車站與地名日英對照表</h2>
+            </div>
+            <div class="overflow-x-auto rounded-xl border border-slate-200/80 shadow-xs">
+              <table class="w-full text-left text-sm text-slate-700">
+                <thead class="bg-slate-100/80 text-xs font-bold text-slate-600 uppercase tracking-wider border-b border-slate-200">
+                  <tr>
+                    <th scope="col" class="px-4 py-3">中文名稱</th>
+                    <th scope="col" class="px-4 py-3">日文名稱 (漢字 / 假名)</th>
+                    <th scope="col" class="px-4 py-3">英文 / 羅馬拼音 (Romaji)</th>
+                    <th scope="col" class="px-4 py-3">類型</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 bg-white">
+                  <tr v-for="(item, idx) in overview.stations" :key="idx" class="hover:bg-slate-50/80 transition">
+                    <td class="px-4 py-2.5 font-bold text-slate-800">{{ item.zh }}</td>
+                    <td class="px-4 py-2.5 font-medium text-rose-600 font-mono">{{ item.ja }}</td>
+                    <td class="px-4 py-2.5 text-slate-500 font-mono text-xs md:text-sm">{{ item.en }}</td>
+                    <td class="px-4 py-2.5">
+                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                        {{ item.type }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
         </div>
 
         <!-- 2. Daily Timeline Content (第1天 ~ 第7天) -->
@@ -295,6 +327,19 @@
             '行李移動便利：Day 4 移宿大阪時，可直接隨身搭乘近鐵特急，或使用「飯店行李當日宅急便」直接送達大阪難波飯店。',
             '天候天災與颱風應變：初春時節晴朗少雨，若遇春雨鋒面或大眾運輸延誤，可下載日本官方「Safety Tips App」隨時掌握鐵道運行情報與災害預警。',
             '景點安全與野生動物：奈良公園散策請留意鹿群進食習性（勿逗弄或攜帶紙張零食）；京都近郊山徑（如貴船、鞍馬或比叡山）請循既定步道，偶有郊山熊出沒警戒時請攜帶防熊鈴。'
+          ],
+          stations: [
+            { zh: '關西國際機場', ja: '関西国際空港 (かんさい)', en: 'Kansai Int\'l Airport (KIX)', type: '機場樞紐' },
+            { zh: '京都車站', ja: '京都駅 (きょうとえき)', en: 'Kyoto Station', type: '新幹線/JR/地鐵' },
+            { zh: '出町柳站 (下鴨神社)', ja: '出町柳駅 (でまちやなぎ)', en: 'Demachiyanagi Station', type: '京阪/叡電' },
+            { zh: '貴船口站', ja: '貴船口駅 (きぶねぐち)', en: 'Kibuneguchi Station', type: '叡山電鐵' },
+            { zh: '鞍馬站 (鞍馬寺)', ja: '鞍馬駅 (くらまえき)', en: 'Kurama Station', type: '叡山電鐵' },
+            { zh: '近江八幡站', ja: '近江八幡駅 (おうみ)', en: 'Omi-Hachiman Station', type: 'JR 琵琶湖線' },
+            { zh: '近鐵奈良站', ja: '近鉄奈良駅 (きんてつなら)', en: 'Kintetsu-Nara Station', type: '近鐵樞紐' },
+            { zh: '大阪難波站', ja: '大阪難波駅 (なんば)', en: 'Osaka-Namba Station', type: '私鐵/地鐵總站' },
+            { zh: '神戶三宮站', ja: '神戸三宮駅 (さんのみや)', en: 'Kobe-Sannomiya Station', type: '主要鐵道' },
+            { zh: '新神戶站 (布引纜車)', ja: '新神戸駅 (しんこうべ)', en: 'Shin-Kobe Station', type: '新幹線/地鐵' },
+            { zh: '天王寺站 (阿倍野)', ja: '天王寺駅 (てんのうじ)', en: 'Tennoji Station', type: 'JR/地鐵/觀景台' }
           ]
         });
 

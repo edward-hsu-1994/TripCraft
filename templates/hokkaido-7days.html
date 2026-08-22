@@ -145,6 +145,38 @@
             </div>
           </section>
 
+          <!-- 實用車站與地名日英對照表 -->
+          <section>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-lg">🚉</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">實用車站與地名日英對照表</h2>
+            </div>
+            <div class="overflow-x-auto rounded-xl border border-slate-200/80 shadow-xs">
+              <table class="w-full text-left text-sm text-slate-700">
+                <thead class="bg-slate-100/80 text-xs font-bold text-slate-600 uppercase tracking-wider border-b border-slate-200">
+                  <tr>
+                    <th scope="col" class="px-4 py-3">中文名稱</th>
+                    <th scope="col" class="px-4 py-3">日文名稱 (漢字 / 假名)</th>
+                    <th scope="col" class="px-4 py-3">英文 / 羅馬拼音 (Romaji)</th>
+                    <th scope="col" class="px-4 py-3">類型</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 bg-white">
+                  <tr v-for="(item, idx) in overview.stations" :key="idx" class="hover:bg-slate-50/80 transition">
+                    <td class="px-4 py-2.5 font-bold text-slate-800">{{ item.zh }}</td>
+                    <td class="px-4 py-2.5 font-medium text-rose-600 font-mono">{{ item.ja }}</td>
+                    <td class="px-4 py-2.5 text-slate-500 font-mono text-xs md:text-sm">{{ item.en }}</td>
+                    <td class="px-4 py-2.5">
+                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                        {{ item.type }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
         </div>
 
         <!-- 2. Daily Timeline Content (第1天 ~ 第7天) -->
@@ -294,6 +326,25 @@
             '雙機場與交通票券：新千歲機場進、函館機場出；市區交通準備 ICOCA / Suica 實體卡或手機交通卡，跨城移動搭乘 JR 特急北斗號。',
             '氣候天災與秋季防寒：9 月底北海道日落較早（約 17:30），山區與夜景展望台體感溫度偏低；若遇秋季鋒面或鐵道延誤，可下載日本官方「Safety Tips App」隨時查詢 JR 列車運行情報。',
             '野生動物與熊出沒防範：北海道道央與郊山（如定山溪步道、美瑛丘陵）請遵循官方指定步道行走；清晨或黃昏漫步山徑建議配掛防熊鈴 (熊鈴)，遇野生狐狸或鹿請保持距離勿觸摸餵食。'
+          ],
+          stations: [
+            { zh: '新千歲機場', ja: '新千歳空港 (しんちとせくうこう)', en: 'New Chitose Airport (CTS)', type: '機場樞紐' },
+            { zh: '札幌車站', ja: '札幌駅 (さっぽろえき)', en: 'Sapporo Station', type: 'JR/地鐵' },
+            { zh: '大通站 (電視塔)', ja: '大通駅 (おおどおりえき)', en: 'Odori Station', type: '地鐵樞紐' },
+            { zh: '小樽車站', ja: '小樽駅 (おたるえき)', en: 'Otaru Station', type: '主要鐵道' },
+            { zh: '小樽運河', ja: '小樽運河 (おたるうんが)', en: 'Otaru Canal', type: '歷史名勝' },
+            { zh: '旭川車站', ja: '旭川駅 (あさひかわえき)', en: 'Asahikawa Station', type: '轉乘鐵道' },
+            { zh: '美瑛車站', ja: '美瑛駅 (びえいえき)', en: 'Biei Station', type: '觀光鐵道' },
+            { zh: '白金青池', ja: '白金青い池 (あおいいけ)', en: 'Shirogane Blue Pond', type: '自然絕景' },
+            { zh: '定山溪溫泉', ja: '定山渓温泉 (じょうざんけい)', en: 'Jozankei Onsen', type: '溫泉名勝' },
+            { zh: '登別車站', ja: '登別駅 (のぼりべつえき)', en: 'Noboribetsu Station', type: '溫泉鐵道' },
+            { zh: '登別地獄谷', ja: '登別地獄谷 (じごくだに)', en: 'Jigokudani (Hell Valley)', type: '火山地貌' },
+            { zh: '函館車站', ja: '函館駅 (はこだてえき)', en: 'Hakodate Station', type: '主要鐵道' },
+            { zh: '五稜郭公園前', ja: '五稜郭公園前 (ごりょうかく)', en: 'Goryokaku-Koen-Mae', type: '市電車站' },
+            { zh: '十字街 (元町/纜車)', ja: '十字街 (じゅうじがい)', en: 'Jujigai Station', type: '市電車站' },
+            { zh: '函館山 (山頂展望台)', ja: '函館山 (はこだてやま)', en: 'Mt. Hakodate', type: '夜景名勝' },
+            { zh: '湯之川溫泉', ja: '湯の川温泉 (ゆのかわ)', en: 'Yunokawa Onsen', type: '市電/溫泉' },
+            { zh: '函館機場', ja: '函館空港 (はこだてくうこう)', en: 'Hakodate Airport (HKD)', type: '機場樞紐' }
           ]
         });
 
