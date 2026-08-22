@@ -33,6 +33,7 @@ description: This skill should be used when the user says they want to travel, a
 9. **Total day plan = sum of (visit durations + transit times + waiting times + meals + buffer)**. No hand-waving.
 10. **Output format is an interactive single-file Vue 3 + Tailwind CSS + OpenStreetMap HTML** placed in `templates/<destination>-travel.html`.
 11. **Always research and include safety, visa, insurance, and hazard intelligence**: Destination travel advisory levels (外交部旅遊警示燈號), visa/entry rules, travel insurance essentials (海外突發疾病醫療/旅遊不便險), local scam/safety risks, seasonal typhoon/extreme weather contingency, and regional wildlife hazards (e.g. 熊出沒 / bear alerts in mountain regions, volcanic alert levels) must be researched and integrated into the itinerary notes and overview notices.
+12. **Always prioritize itinerary flow over rigid airport pairing (Flexible Open-Jaw Strategy)**: Flights do NOT need to arrive and depart from the same airport. Proactively evaluate and propose open-jaw / multi-city flight routes (不同點/雙機場進出，例如：關西國際機場 KIX 進、東京成田機場 NRT 出；新千歲機場 CTS 進、函館機場 HKD 出；福岡機場 FUK 進、鹿兒島機場 KOJ 出) whenever a linear one-way flow eliminates backtracking, saves hours of redundant transit time, and reduces transportation costs. **Itinerary smoothness and optimal travel flow always come first (一切以行程流暢度為主)**.
 
 ## Workflow
 
@@ -156,7 +157,7 @@ Ask the user: **"Any specific spots in mind, or would you like me to recommend?"
 Ask for any missing item, in priority order. **Sub-step 5b is required only when the trip has at least one overnight stay** (duration from step 3 > 1 day). Skip 5b entirely for a single-day trip.
 
 #### 5a. Remaining requirements
-- Exact date range (origin / destination of flight if international)
+- Exact date range & flight routing strategy: Single airport round-trip vs. Flexible Open-Jaw (雙機場/不同點進出，例如關西進東京出、新千歲進函館出、福岡進鹿兒島出). **Always prioritize overall itinerary flow, eliminate backtracking, and minimize transit fatigue.**
 - Number of travelers and relationships (family / couple / solo / group)
 - Total budget and currency (budget currency = origin currency by default)
 - Mobility constraints and dietary needs (interests and pace were captured in steps 2a / 4 Branch B)
