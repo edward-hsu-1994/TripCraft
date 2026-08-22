@@ -317,7 +317,7 @@ const trip = reactive({
   description: '詳細旅遊規劃背景、航班接駁與時間安排說明。'
 });
 
-const activeTab = ref('day1'); // or 'overview'
+const activeTab = ref('overview'); // Default to overview tab
 
 const tabs = reactive([
   { id: 'overview', name: '總覽頁' },
