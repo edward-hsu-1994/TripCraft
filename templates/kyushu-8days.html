@@ -330,22 +330,271 @@
             '自然危害與野生動物注意：阿蘇火山周邊請留意火口警戒層級（氣喘或心血管不適者避免靠近火口瓦斯區）；山區景點漫步請遵循官方指定步道，郊山健行可隨身配掛防熊鈴 (熊鈴)。'
           ],
           stations: [
-            { zh: '福岡機場', ja: '福岡空港 (ふくおくうこう)', en: 'Fukuoka Airport (FUK)', type: '機場樞紐' },
-            { zh: '博多車站', ja: '博多駅 (はかたえき)', en: 'Hakata Station', type: '新幹線/JR/地鐵' },
-            { zh: '西鐵福岡(天神)站', ja: '西鉄福岡（天神）駅', en: 'Nishitetsu-Fukuoka (Tenjin)', type: '私鐵總站' },
-            { zh: '西鐵柳川站', ja: '西鉄柳川駅 (やながわ)', en: 'Nishitetsu-Yanagawa', type: '水鄉觀光' },
-            { zh: '太宰府車站', ja: '太宰府駅 (だざいふ)', en: 'Dazaifu Station', type: '神社鐵道' },
-            { zh: '小倉車站', ja: '小倉駅 (こくらえき)', en: 'Kokura Station', type: '新幹線/特急' },
-            { zh: '門司港車站', ja: '門司港駅 (もじこう)', en: 'Mojiko Station', type: '國寶歷史車站' },
-            { zh: '下關・唐戶碼頭', ja: '下関・唐戸 (からと)', en: 'Shimonoseki / Karato', type: '渡輪碼頭' },
-            { zh: '關門海底人行隧道', ja: '関門トンネル人道', en: 'Kanmon Pedestrian Tunnel', type: '跨海隧道' },
-            { zh: '熊本車站', ja: '熊本駅 (くまもとえき)', en: 'Kumamoto Station', type: '新幹線/JR' },
-            { zh: '熊本城・市役所前', ja: '熊本城・市役所前', en: 'Kumamotojo-Shiyakushomae', type: '路面電車' },
-            { zh: '水前寺公園', ja: '水前寺公園 (すいぜんじ)', en: 'Suizenji-Koen', type: '路面電車' },
-            { zh: '阿蘇車站', ja: '阿蘇駅 (あそえき)', en: 'Aso Station', type: '觀光鐵道' },
-            { zh: '草千里之濱', ja: '草千里ヶ浜 (くさせんり)', en: 'Kusasenri-ga-hama', type: '火山草原' },
-            { zh: '由布院車站', ja: '由布院駅 (ゆふいん)', en: 'Yufuin Station', type: '溫泉特急' }
-          ]
+            {
+                        "zh": "福岡國際機場 (FUK)",
+                        "ja": "福岡空港 (ふくおくうこう)",
+                        "en": "Fukuoka Airport (FUK)",
+                        "type": "機場樞紐"
+            },
+            {
+                        "zh": "博多車站",
+                        "ja": "博多駅 (はかたえき)",
+                        "en": "Hakata Station",
+                        "type": "新幹線/JR/地鐵"
+            },
+            {
+                        "zh": "博多站前大和ROYNET飯店",
+                        "ja": "ダイワロイネットホテル博多駅前",
+                        "en": "Daiwa Roynet Hotel Hakata-Ekimae",
+                        "type": "飯店住宿"
+            },
+            {
+                        "zh": "住吉神社",
+                        "ja": "住吉神社 (すみよしじんじゃ)",
+                        "en": "Sumiyoshi Shrine",
+                        "type": "古老神社"
+            },
+            {
+                        "zh": "櫛田神社",
+                        "ja": "櫛田神社 (くしだじんじゃ)",
+                        "en": "Kushida Shrine",
+                        "type": "博多總鎮守"
+            },
+            {
+                        "zh": "博多運河城",
+                        "ja": "キャナルシティ博多",
+                        "en": "Canal City Hakata",
+                        "type": "複合商場"
+            },
+            {
+                        "zh": "西鐵福岡(天神)站",
+                        "ja": "西鉄福岡（天神）駅",
+                        "en": "Nishitetsu-Fukuoka (Tenjin) Station",
+                        "type": "私鐵總站"
+            },
+            {
+                        "zh": "西鐵柳川站",
+                        "ja": "西鉄柳川駅 (やながわえき)",
+                        "en": "Nishitetsu-Yanagawa Station",
+                        "type": "觀光鐵道"
+            },
+            {
+                        "zh": "柳川水鄉遊船 (松月乘船場)",
+                        "ja": "柳川川下り（松月乗船場）",
+                        "en": "Yanagawa River Cruise (Shogetsu Pier)",
+                        "type": "水鄉泛舟"
+            },
+            {
+                        "zh": "元祖本吉屋 柳川現蒸鰻魚飯",
+                        "ja": "元祖本吉屋（せいろ蒸し）",
+                        "en": "Ganso Motoyoshiya (Steamed Eel)",
+                        "type": "鰻魚名店"
+            },
+            {
+                        "zh": "太宰府天滿宮",
+                        "ja": "太宰府天満宮 (だざいふてんまんぐう)",
+                        "en": "Dazaifu Tenmangu",
+                        "type": "神社總本社"
+            },
+            {
+                        "zh": "太宰府表參道 & 梅枝餅",
+                        "ja": "太宰府表参道・梅ヶ枝餅",
+                        "en": "Dazaifu Omotesando & Umegaemochi",
+                        "type": "參道老街"
+            },
+            {
+                        "zh": "小倉車站",
+                        "ja": "小倉駅 (こくらえき)",
+                        "en": "Kokura Station",
+                        "type": "新幹線/特急"
+            },
+            {
+                        "zh": "小倉城",
+                        "ja": "小倉城 (こくらじょう)",
+                        "en": "Kokura Castle",
+                        "type": "名城要塞"
+            },
+            {
+                        "zh": "小倉祇園 八坂神社",
+                        "ja": "八坂神社（小倉祇園）",
+                        "en": "Yasaka Shrine (Kokura Gion)",
+                        "type": "神社古剎"
+            },
+            {
+                        "zh": "門司港車站",
+                        "ja": "門司港駅 (もじこうえき)",
+                        "en": "Mojiko Station",
+                        "type": "國寶木造車站"
+            },
+            {
+                        "zh": "九州鐵道紀念館",
+                        "ja": "九州鉄道記念館",
+                        "en": "Kyushu Railway History Museum",
+                        "type": "鐵道博覽"
+            },
+            {
+                        "zh": "BEAR FRUITS 燒咖哩",
+                        "ja": "ベアフルーツ（焼きカレー）",
+                        "en": "BEAR FRUITS (Yaki Curry)",
+                        "type": "名物熱食"
+            },
+            {
+                        "zh": "北九州市舊門司稅關",
+                        "ja": "旧門司税関",
+                        "en": "Old Moji Customs",
+                        "type": "洋風海關"
+            },
+            {
+                        "zh": "門司港懷舊展望室",
+                        "ja": "門司港レトロ展望室",
+                        "en": "Mojiko Retro Observation Room",
+                        "type": "高樓展望"
+            },
+            {
+                        "zh": "関門汽船 門司港乘船場",
+                        "ja": "関門汽船 門司港乗り場",
+                        "en": "Kanmon Ferry Mojiko Pier",
+                        "type": "海峽渡輪"
+            },
+            {
+                        "zh": "龜山八幡宮 (下關)",
+                        "ja": "亀山八幡宮 (かめやまはちまんぐう)",
+                        "en": "Kameyama Hachimangu",
+                        "type": "下關總鎮守"
+            },
+            {
+                        "zh": "史跡春帆樓 日清講和紀念館",
+                        "ja": "日清講和記念館（春帆楼）",
+                        "en": "Shunpanro Treaty Memorial Hall",
+                        "type": "歷史史蹟"
+            },
+            {
+                        "zh": "赤間神宮",
+                        "ja": "赤間神宮 (あかまじんぐう)",
+                        "en": "Akama Shrine",
+                        "type": "水天門神宮"
+            },
+            {
+                        "zh": "関門トンネル人道 (下關/門司側)",
+                        "ja": "関門トンネル人道（下関・門司）",
+                        "en": "Kanmon Pedestrian Tunnel",
+                        "type": "跨海海底步道"
+            },
+            {
+                        "zh": "和布刈神社 鳥居",
+                        "ja": "和布刈神社（めかりじんじゃ）",
+                        "en": "Mekari Shrine (Torii)",
+                        "type": "海潮守護"
+            },
+            {
+                        "zh": "大濠公園",
+                        "ja": "大濠公園 (おおほりこうえん)",
+                        "en": "Ohori Park",
+                        "type": "水景名園"
+            },
+            {
+                        "zh": "福岡城跡 (舞鶴公園)",
+                        "ja": "福岡城跡（舞鶴公園）",
+                        "en": "Fukuoka Castle Ruins (Maizuru Park)",
+                        "type": "史蹟天守台"
+            },
+            {
+                        "zh": "福岡塔 & 百道海濱公園",
+                        "ja": "福岡タワー・シーサイドももち",
+                        "en": "Fukuoka Tower & Momochi Seaside",
+                        "type": "海濱地標"
+            },
+            {
+                        "zh": "LaLaport 福岡 (實體 Nu 鋼彈)",
+                        "ja": "ららぽーと福岡（実物大νガンダム）",
+                        "en": "LaLaport Fukuoka (Nu Gundam)",
+                        "type": "購物商場"
+            },
+            {
+                        "zh": "天神屋台街 / 天神商圈",
+                        "ja": "天神屋台街・天神地下街",
+                        "en": "Tenjin Yatai & Shopping District",
+                        "type": "熟食街/商圈"
+            },
+            {
+                        "zh": "熊本車站",
+                        "ja": "熊本駅 (くまもとえき)",
+                        "en": "Kumamoto Station",
+                        "type": "新幹線/JR"
+            },
+            {
+                        "zh": "熊本站前 Richmond 飯店",
+                        "ja": "リッチモンドホテル 熊本駅前",
+                        "en": "Richmond Hotel Kumamoto-Ekimae",
+                        "type": "飯店住宿"
+            },
+            {
+                        "zh": "熊本城 (大天守閣)",
+                        "ja": "熊本城（天守閣）",
+                        "en": "Kumamoto Castle",
+                        "type": "日本三大名城"
+            },
+            {
+                        "zh": "櫻之馬場 城彩苑",
+                        "ja": "桜の馬場 城彩苑 (じょうさいえん)",
+                        "en": "Sakuranobaba Josaien",
+                        "type": "城下町老街"
+            },
+            {
+                        "zh": "熊本熊部長辦公室",
+                        "ja": "くまモンスクエア (Kumamon Square)",
+                        "en": "Kumamon Square",
+                        "type": "部長辦公室"
+            },
+            {
+                        "zh": "上下通商店街",
+                        "ja": "上通・下通商店街",
+                        "en": "Kamitori & Shimotori Arcades",
+                        "type": "拱廊商圈"
+            },
+            {
+                        "zh": "阿蘇草千里之濱",
+                        "ja": "草千里ヶ浜 (くさせんりがはま)",
+                        "en": "Kusasenri-ga-hama",
+                        "type": "火山草原"
+            },
+            {
+                        "zh": "阿蘇神社 & 水基巡道",
+                        "ja": "阿蘇神社・水基巡りの道",
+                        "en": "Aso Shrine & Mizuki Path",
+                        "type": "古老神域"
+            },
+            {
+                        "zh": "水前寺成趣園",
+                        "ja": "水前寺成趣園 (すいぜんじじょうじゅえん)",
+                        "en": "Suizenji Jojuen",
+                        "type": "桃山迴遊庭園"
+            },
+            {
+                        "zh": "由布院車站",
+                        "ja": "由布院駅 (ゆふいんえき)",
+                        "en": "Yufuin Station",
+                        "type": "溫泉特急"
+            },
+            {
+                        "zh": "湯之坪街道",
+                        "ja": "湯の坪街道 (ゆのつぼかいどう)",
+                        "en": "Yunotsubo Kaido",
+                        "type": "溫泉老街"
+            },
+            {
+                        "zh": "金鱗湖",
+                        "ja": "金鱗湖 (きんりんこ)",
+                        "en": "Kinrin Lake",
+                        "type": "晨昏溫泉湖"
+            },
+            {
+                        "zh": "由布院溫泉",
+                        "ja": "由布院温泉 (ゆふいんおんせん)",
+                        "en": "Yufuin Onsen",
+                        "type": "溫泉勝地"
+            }
+]
         });
 
         // Itinerary data organized by days

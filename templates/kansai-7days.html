@@ -329,18 +329,241 @@
             '景點安全與野生動物：奈良公園散策請留意鹿群進食習性（勿逗弄或攜帶紙張零食）；京都近郊山徑（如貴船、鞍馬或比叡山）請循既定步道，偶有郊山熊出沒警戒時請攜帶防熊鈴。'
           ],
           stations: [
-            { zh: '關西國際機場', ja: '関西国際空港 (かんさい)', en: 'Kansai Int\'l Airport (KIX)', type: '機場樞紐' },
-            { zh: '京都車站', ja: '京都駅 (きょうとえき)', en: 'Kyoto Station', type: '新幹線/JR/地鐵' },
-            { zh: '出町柳站 (下鴨神社)', ja: '出町柳駅 (でまちやなぎ)', en: 'Demachiyanagi Station', type: '京阪/叡電' },
-            { zh: '貴船口站', ja: '貴船口駅 (きぶねぐち)', en: 'Kibuneguchi Station', type: '叡山電鐵' },
-            { zh: '鞍馬站 (鞍馬寺)', ja: '鞍馬駅 (くらまえき)', en: 'Kurama Station', type: '叡山電鐵' },
-            { zh: '近江八幡站', ja: '近江八幡駅 (おうみ)', en: 'Omi-Hachiman Station', type: 'JR 琵琶湖線' },
-            { zh: '近鐵奈良站', ja: '近鉄奈良駅 (きんてつなら)', en: 'Kintetsu-Nara Station', type: '近鐵樞紐' },
-            { zh: '大阪難波站', ja: '大阪難波駅 (なんば)', en: 'Osaka-Namba Station', type: '私鐵/地鐵總站' },
-            { zh: '神戶三宮站', ja: '神戸三宮駅 (さんのみや)', en: 'Kobe-Sannomiya Station', type: '主要鐵道' },
-            { zh: '新神戶站 (布引纜車)', ja: '新神戸駅 (しんこうべ)', en: 'Shin-Kobe Station', type: '新幹線/地鐵' },
-            { zh: '天王寺站 (阿倍野)', ja: '天王寺駅 (てんのうじ)', en: 'Tennoji Station', type: 'JR/地鐵/觀景台' }
-          ]
+            {
+                        "zh": "關西國際機場 (KIX)",
+                        "ja": "関西国際空港 (かんさいこくさいくうこう)",
+                        "en": "Kansai International Airport (KIX)",
+                        "type": "機場樞紐"
+            },
+            {
+                        "zh": "京都車站",
+                        "ja": "京都駅 (きょうとえき)",
+                        "en": "Kyoto Station",
+                        "type": "新幹線/JR/地鐵"
+            },
+            {
+                        "zh": "京都站前大和ROYNET飯店",
+                        "ja": "ダイワロイネットホテル京都駅前",
+                        "en": "Daiwa Roynet Hotel Kyoto-Ekimae",
+                        "type": "飯店住宿"
+            },
+            {
+                        "zh": "四條河原町 & 新京極",
+                        "ja": "四条河原町・新京極商店街",
+                        "en": "Shijo-Kawaramachi & Shinkyogoku",
+                        "type": "繁華商圈"
+            },
+            {
+                        "zh": "京都拉麵小路",
+                        "ja": "京都拉麺小路 (らーめんこうじ)",
+                        "en": "Kyoto Ramen Koji",
+                        "type": "美食名街"
+            },
+            {
+                        "zh": "下鴨神社 & 糺之森",
+                        "ja": "下鴨神社（賀茂御祖神社）・糺の森",
+                        "en": "Shimogamo Shrine & Tadasu no Mori",
+                        "type": "世界遺產"
+            },
+            {
+                        "zh": "加茂みたらし茶屋",
+                        "ja": "加茂みたらし茶屋",
+                        "en": "Kamo Mitarashi Chaya",
+                        "type": "糰子甘味"
+            },
+            {
+                        "zh": "鴨川三角洲 (跳烏龜石)",
+                        "ja": "鴨川デルタ（飛び石）",
+                        "en": "Kamogawa Delta (Stepping Stones)",
+                        "type": "水岸散策"
+            },
+            {
+                        "zh": "錦市場",
+                        "ja": "錦市場 (にしきいちば)",
+                        "en": "Nishiki Market",
+                        "type": "京都廚房"
+            },
+            {
+                        "zh": "銀閣寺 (慈照寺)",
+                        "ja": "銀閣寺（慈照寺）",
+                        "en": "Ginkaku-ji (Higashiyama Jisho-ji)",
+                        "type": "世界遺產"
+            },
+            {
+                        "zh": "哲學之道",
+                        "ja": "哲学の道 (てつがくのみち)",
+                        "en": "Philosopher's Path",
+                        "type": "溪畔步道"
+            },
+            {
+                        "zh": "平安神宮 & 神苑",
+                        "ja": "平安神宮・神苑 (へいあんじんぐう)",
+                        "en": "Heian Jingu Shrine & Garden",
+                        "type": "大鳥居名社"
+            },
+            {
+                        "zh": "南禪寺 & 水路閣",
+                        "ja": "南禅寺・水路閣 (すいろかく)",
+                        "en": "Nanzen-ji & Suirokaku Aqueduct",
+                        "type": "禪宗大本山"
+            },
+            {
+                        "zh": "祇園白川",
+                        "ja": "祇園白川 (ぎおんしらかわ)",
+                        "en": "Gion Shirakawa",
+                        "type": "石板小徑"
+            },
+            {
+                        "zh": "近江八幡站",
+                        "ja": "近江八幡駅 (おうみはちまんえき)",
+                        "en": "Omi-Hachiman Station",
+                        "type": "JR 琵琶湖線"
+            },
+            {
+                        "zh": "八幡堀運河水鄉",
+                        "ja": "八幡堀 (はちまんぼり)",
+                        "en": "Hachiman-bori Canal",
+                        "type": "水鄉運河"
+            },
+            {
+                        "zh": "日牟禮八幡宮",
+                        "ja": "日牟禮八幡宮 (ひむれはちまんぐう)",
+                        "en": "Himure Hachimangu",
+                        "type": "總鎮守名剎"
+            },
+            {
+                        "zh": "千成亭 近江牛料理",
+                        "ja": "千成亭（近江牛料理）",
+                        "en": "Sennaritei (Omi Beef)",
+                        "type": "近江牛名店"
+            },
+            {
+                        "zh": "La Collina 近江八幡",
+                        "ja": "ラ コリーナ近江八幡",
+                        "en": "La Collina Omihachiman",
+                        "type": "甜點莊園"
+            },
+            {
+                        "zh": "近鐵奈良站",
+                        "ja": "近鉄奈良駅 (きんてつならえき)",
+                        "en": "Kintetsu-Nara Station",
+                        "type": "近鐵樞紐"
+            },
+            {
+                        "zh": "東大寺 (大佛殿)",
+                        "ja": "東大寺（大仏殿）",
+                        "en": "Todai-ji (Great Buddha Hall)",
+                        "type": "世界遺產"
+            },
+            {
+                        "zh": "奈良公園 (神鹿)",
+                        "ja": "奈良公園 (ならこうえん)",
+                        "en": "Nara Park",
+                        "type": "鹿群漫步"
+            },
+            {
+                        "zh": "春日大社",
+                        "ja": "春日大社 (かすがたいしゃ)",
+                        "en": "Kasuga Taisha",
+                        "type": "千年朱紅神殿"
+            },
+            {
+                        "zh": "奈良町老街",
+                        "ja": "ならまち（奈良町）",
+                        "en": "Naramachi",
+                        "type": "傳統老屋街"
+            },
+            {
+                        "zh": "大阪難波站",
+                        "ja": "大阪難波駅 (なんばえき)",
+                        "en": "Osaka-Namba Station",
+                        "type": "私鐵/地鐵總站"
+            },
+            {
+                        "zh": "難波相鐵FRESA INN飯店",
+                        "ja": "相鉄フレッサイン 大阪心斎橋/なんば駅前",
+                        "en": "Sotetsu Fresa Inn Namba",
+                        "type": "飯店住宿"
+            },
+            {
+                        "zh": "道頓堀",
+                        "ja": "道頓堀 (どうとんぼり)",
+                        "en": "Dotonbori",
+                        "type": "美食商圈"
+            },
+            {
+                        "zh": "新神戶站",
+                        "ja": "新神戸駅 (しんこうべえき)",
+                        "en": "Shin-Kobe Station",
+                        "type": "新幹線/地鐵"
+            },
+            {
+                        "zh": "神戶布引香草園 & 纜車",
+                        "ja": "神戸布引ハーブ園・ロープウェイ",
+                        "en": "Kobe Nunobiki Herb Gardens & Ropeway",
+                        "type": "景觀空中纜車"
+            },
+            {
+                        "zh": "北野異人館街",
+                        "ja": "北野異人館街 (きたのいじんかん)",
+                        "en": "Kitano Ijinkan-gai",
+                        "type": "洋風建築群"
+            },
+            {
+                        "zh": "生田神社",
+                        "ja": "生田神社 (いくたじんじゃ)",
+                        "en": "Ikuta Shrine",
+                        "type": "結緣名社"
+            },
+            {
+                        "zh": "神戶港美利堅公園 & 港塔",
+                        "ja": "メリケンパーク・神戸ポートタワー",
+                        "en": "Meriken Park & Kobe Port Tower",
+                        "type": "港灣地標"
+            },
+            {
+                        "zh": "大阪中之島美術館",
+                        "ja": "大阪中之島美術館",
+                        "en": "Nakanoshima Museum of Art, Osaka",
+                        "type": "當代美術館"
+            },
+            {
+                        "zh": "北濱復古洋樓 (中央公會堂)",
+                        "ja": "北浜・大阪市中央公会堂",
+                        "en": "Kitahama & Osaka City Central Public Hall",
+                        "type": "水岸洋樓"
+            },
+            {
+                        "zh": "中崎町",
+                        "ja": "中崎町 (なかざきちょう)",
+                        "en": "Nakazakicho",
+                        "type": "昭和老屋聚落"
+            },
+            {
+                        "zh": "新世界 & 通天閣",
+                        "ja": "新世界・通天閣 (つうてんかく)",
+                        "en": "Shinsekai & Tsutenkaku",
+                        "type": "昭和大阪地標"
+            },
+            {
+                        "zh": "阿倍野 HARUKAS 300 展望台",
+                        "ja": "あべのハルカス300（展望台）",
+                        "en": "Abeno Harukas 300",
+                        "type": "300米摩天樓"
+            },
+            {
+                        "zh": "天神橋筋商店街",
+                        "ja": "天神橋筋商店街 (てんじんばしすじ)",
+                        "en": "Tenjinbashisuji Shopping Street",
+                        "type": "日本最長商店街"
+            },
+            {
+                        "zh": "南海難波站",
+                        "ja": "南海なんば駅",
+                        "en": "Nankai Namba Station",
+                        "type": "機場快線總站"
+            }
+]
         });
 
         // Itinerary Data for 7 Days

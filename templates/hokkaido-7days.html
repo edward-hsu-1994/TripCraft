@@ -328,24 +328,217 @@
             '野生動物與熊出沒防範：北海道道央與郊山（如定山溪步道、美瑛丘陵）請遵循官方指定步道行走；清晨或黃昏漫步山徑建議配掛防熊鈴 (熊鈴)，遇野生狐狸或鹿請保持距離勿觸摸餵食。'
           ],
           stations: [
-            { zh: '新千歲機場', ja: '新千歳空港 (しんちとせくうこう)', en: 'New Chitose Airport (CTS)', type: '機場樞紐' },
-            { zh: '札幌車站', ja: '札幌駅 (さっぽろえき)', en: 'Sapporo Station', type: 'JR/地鐵' },
-            { zh: '大通站 (電視塔)', ja: '大通駅 (おおどおりえき)', en: 'Odori Station', type: '地鐵樞紐' },
-            { zh: '小樽車站', ja: '小樽駅 (おたるえき)', en: 'Otaru Station', type: '主要鐵道' },
-            { zh: '小樽運河', ja: '小樽運河 (おたるうんが)', en: 'Otaru Canal', type: '歷史名勝' },
-            { zh: '旭川車站', ja: '旭川駅 (あさひかわえき)', en: 'Asahikawa Station', type: '轉乘鐵道' },
-            { zh: '美瑛車站', ja: '美瑛駅 (びえいえき)', en: 'Biei Station', type: '觀光鐵道' },
-            { zh: '白金青池', ja: '白金青い池 (あおいいけ)', en: 'Shirogane Blue Pond', type: '自然絕景' },
-            { zh: '定山溪溫泉', ja: '定山渓温泉 (じょうざんけい)', en: 'Jozankei Onsen', type: '溫泉名勝' },
-            { zh: '登別車站', ja: '登別駅 (のぼりべつえき)', en: 'Noboribetsu Station', type: '溫泉鐵道' },
-            { zh: '登別地獄谷', ja: '登別地獄谷 (じごくだに)', en: 'Jigokudani (Hell Valley)', type: '火山地貌' },
-            { zh: '函館車站', ja: '函館駅 (はこだてえき)', en: 'Hakodate Station', type: '主要鐵道' },
-            { zh: '五稜郭公園前', ja: '五稜郭公園前 (ごりょうかく)', en: 'Goryokaku-Koen-Mae', type: '市電車站' },
-            { zh: '十字街 (元町/纜車)', ja: '十字街 (じゅうじがい)', en: 'Jujigai Station', type: '市電車站' },
-            { zh: '函館山 (山頂展望台)', ja: '函館山 (はこだてやま)', en: 'Mt. Hakodate', type: '夜景名勝' },
-            { zh: '湯之川溫泉', ja: '湯の川温泉 (ゆのかわ)', en: 'Yunokawa Onsen', type: '市電/溫泉' },
-            { zh: '函館機場', ja: '函館空港 (はこだてくうこう)', en: 'Hakodate Airport (HKD)', type: '機場樞紐' }
-          ]
+            {
+                        "zh": "新千歲國際機場 (CTS)",
+                        "ja": "新千歳空港 (しんちとせくうこう)",
+                        "en": "New Chitose Airport (CTS)",
+                        "type": "機場樞紐"
+            },
+            {
+                        "zh": "札幌車站",
+                        "ja": "札幌駅 (さっぽろえき)",
+                        "en": "Sapporo Station",
+                        "type": "JR/地鐵樞紐"
+            },
+            {
+                        "zh": "札幌站前大和ROYNET飯店",
+                        "ja": "ダイワロイネットホテル 札幌駅前",
+                        "en": "Daiwa Roynet Hotel Sapporo-Ekimae",
+                        "type": "飯店住宿"
+            },
+            {
+                        "zh": "北海道廳舊本廳舍 (紅磚廳舍)",
+                        "ja": "北海道庁旧本庁舎（赤れんが庁舎）",
+                        "en": "Former Hokkaido Government Office",
+                        "type": "歷史名勝"
+            },
+            {
+                        "zh": "大通公園 & 札幌電視塔",
+                        "ja": "大通公園・さっぽろテレビ塔",
+                        "en": "Odori Park & Sapporo TV Tower",
+                        "type": "市區名勝"
+            },
+            {
+                        "zh": "奧芝商店 / Suage 湯咖哩",
+                        "ja": "奥芝商店 / Suage（スープカレー）",
+                        "en": "Okushiba Shoten / Suage Soup Curry",
+                        "type": "美食名店"
+            },
+            {
+                        "zh": "小樽車站",
+                        "ja": "小樽駅 (おたるえき)",
+                        "en": "Otaru Station",
+                        "type": "主要鐵道"
+            },
+            {
+                        "zh": "小樽運河 (淺草橋)",
+                        "ja": "小樽運河（浅草橋）",
+                        "en": "Otaru Canal (Asakusa Bridge)",
+                        "type": "歷史名勝"
+            },
+            {
+                        "zh": "小樽童話十字路口 & 音樂盒堂",
+                        "ja": "メルヘン交差点・小樽オルゴール堂",
+                        "en": "Marchen Crossroads & Music Box Hall",
+                        "type": "歷史街區"
+            },
+            {
+                        "zh": "北一硝子三號館 & 堺町通",
+                        "ja": "北一硝子三号館・堺町通り",
+                        "en": "Kitaichi Glass & Sakaimachi Street",
+                        "type": "玻璃工藝/街區"
+            },
+            {
+                        "zh": "小樽若雞時代 なると 本店",
+                        "ja": "若鶏時代 なると 本店",
+                        "en": "Naruto Main Branch (Fried Chicken)",
+                        "type": "美食名店"
+            },
+            {
+                        "zh": "天狗山纜車 & 展望台",
+                        "ja": "天狗山ロープウェイ・展望台",
+                        "en": "Mt. Tengu Ropeway & Observatory",
+                        "type": "纜車/夜景"
+            },
+            {
+                        "zh": "札幌拉麵共和國 / 味噌拉麵",
+                        "ja": "札幌ら〜めん共和国（味噌ラーメン）",
+                        "en": "Sapporo Ramen Republic",
+                        "type": "美食名店"
+            },
+            {
+                        "zh": "美瑛白金青池",
+                        "ja": "白金青い池 (あおいいけ)",
+                        "en": "Shirogane Blue Pond",
+                        "type": "自然絕景"
+            },
+            {
+                        "zh": "白鬚瀑布",
+                        "ja": "白ひげの滝 (しらひげのたき)",
+                        "en": "Shirahige Waterfall",
+                        "type": "自然絕景"
+            },
+            {
+                        "zh": "美瑛四季彩之丘",
+                        "ja": "四季彩の丘 (しきさいのおか)",
+                        "en": "Shikisai-no-Oka",
+                        "type": "丘陵花田"
+            },
+            {
+                        "zh": "JR 塔展望室 T38",
+                        "ja": "JRタワー展望室T38",
+                        "en": "JR Tower Observation Deck T38",
+                        "type": "觀景展望"
+            },
+            {
+                        "zh": "成吉思汗 達摩 / 松尾 烤羊肉",
+                        "ja": "成吉思汗 だるま / 松尾ジンギスカン",
+                        "en": "Genghis Khan BBQ (Daruma / Matsuo)",
+                        "type": "美食名店"
+            },
+            {
+                        "zh": "定山溪溫泉 二見吊橋",
+                        "ja": "定山渓温泉・二見吊橋",
+                        "en": "Jozankei Onsen & Futami Bridge",
+                        "type": "溫泉名勝"
+            },
+            {
+                        "zh": "北海道神宮",
+                        "ja": "北海道神宮 (ほっかいどうじんぐう)",
+                        "en": "Hokkaido Jingu",
+                        "type": "神社寺廟"
+            },
+            {
+                        "zh": "狸小路商店街",
+                        "ja": "狸小路商店街 (たぬきこうじ)",
+                        "en": "Tanukikoji Shopping Arcade",
+                        "type": "商店街"
+            },
+            {
+                        "zh": "登別車站",
+                        "ja": "登別駅 (のぼりべつえき)",
+                        "en": "Noboribetsu Station",
+                        "type": "溫泉鐵道"
+            },
+            {
+                        "zh": "登別地獄谷 & 大湯沼",
+                        "ja": "登別地獄谷・大湯沼",
+                        "en": "Noboribetsu Jigokudani (Hell Valley)",
+                        "type": "火山地貌"
+            },
+            {
+                        "zh": "登別溫泉街",
+                        "ja": "登別温泉街 (おんせんがい)",
+                        "en": "Noboribetsu Onsen Street",
+                        "type": "溫泉老街"
+            },
+            {
+                        "zh": "函館車站",
+                        "ja": "函館駅 (はこだてえき)",
+                        "en": "Hakodate Station",
+                        "type": "主要鐵道"
+            },
+            {
+                        "zh": "函館站前 JR Inn 飯店",
+                        "ja": "JRイン函館",
+                        "en": "JR Inn Hakodate",
+                        "type": "飯店住宿"
+            },
+            {
+                        "zh": "金森紅磚倉庫群",
+                        "ja": "金森赤レンガ倉庫 (かねもり)",
+                        "en": "Kanemori Red Brick Warehouses",
+                        "type": "港灣名勝"
+            },
+            {
+                        "zh": "幸運小丑漢堡 碼頭末廣店",
+                        "ja": "ラッキーピエロ マリーナ末広店",
+                        "en": "Lucky Pierrot Marina Suehiro",
+                        "type": "美食名店"
+            },
+            {
+                        "zh": "五稜郭公園 & 五稜郭塔",
+                        "ja": "五稜郭公園・五稜郭タワー",
+                        "en": "Goryokaku Park & Tower",
+                        "type": "星形要塞"
+            },
+            {
+                        "zh": "元町西洋歷史街區 & 八幡坂",
+                        "ja": "元町・八幡坂 (はちまんざか)",
+                        "en": "Motomachi & Hachiman-zaka Slope",
+                        "type": "洋風斜坡"
+            },
+            {
+                        "zh": "函館山纜車 & 山頂百萬夜景",
+                        "ja": "函館山ロープウェイ・山頂展望台",
+                        "en": "Mt. Hakodate Ropeway & Observatory",
+                        "type": "百萬夜景"
+            },
+            {
+                        "zh": "函館大門橫丁",
+                        "ja": "大門横丁 (だいもんよこちょう)",
+                        "en": "Daimon Yokocho",
+                        "type": "居酒屋街"
+            },
+            {
+                        "zh": "函館朝市",
+                        "ja": "函館朝市 (はこだてあさいち)",
+                        "en": "Hakodate Morning Market",
+                        "type": "朝市名勝"
+            },
+            {
+                        "zh": "湯之川溫泉街",
+                        "ja": "湯の川温泉 (ゆのかわおんせん)",
+                        "en": "Yunokawa Onsen",
+                        "type": "市電/溫泉"
+            },
+            {
+                        "zh": "函館機場 (HKD)",
+                        "ja": "函館空港 (はこだてくうこう)",
+                        "en": "Hakodate Airport (HKD)",
+                        "type": "機場樞紐"
+            }
+]
         });
 
         // Itinerary data organized by days

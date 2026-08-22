@@ -427,6 +427,7 @@ The generated HTML file must strictly reproduce the architecture and design lang
      - 野生動物與自然危害：山區景點熊出沒防範 (防熊鈴/避開清晨黃昏)、火山活動管制等。
    - **實用車站與地名日英對照表 (Place & Station Reference Table)**:
      - Clear, responsive table with columns: `中文名稱` | `日文名稱 (漢字/假名)` | `英文 / 羅馬拼音 (Romaji)` | `類型`
+     - **Strict Derivation Rule**: Must be directly and strictly extracted from all unique spots, stations, airports, hotels, and attractions appearing across the `itinerary` (Day 1 ~ Day N), ensuring **1-to-1 exact correspondence** with the actual trip itinerary. Never add arbitrary fabricated places not visited in the itinerary.
      - Essential for ticket vending machines, Google Maps search, asking train conductors, and reading bilingual signage during travel.
 
 6. **Daily Detail Tabs (`day-detail-section`, `day-detail-content`)**:
