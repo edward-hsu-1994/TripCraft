@@ -55,7 +55,8 @@ TripCraft 不是樣板行程產生器，是**研究驅動 + 對話驅動**的行
 ```
 TripCraft/
 ├── README.md                        專案說明與範本畫面展示
-├── SKILL.md                         TripCraft Skill 本體（給 Coding Agent 讀取的 12 步核心工作流）
+├── SKILL.md                         TripCraft CLI Skill 本體（給 Coding Agent / CLI 讀取）
+├── SKILL-for-Web.md                 TripCraft 網頁版專用提示詞（複合完整 HTML 樣板代碼，供 ChatGPT / Gemini / Claude Web 使用）
 ├── docs/
 │   └── images/                      範本高畫質實際畫面截圖
 │       ├── hokkaido-7days-overview.png
@@ -76,26 +77,22 @@ TripCraft/
 
 ## 這是什麼
 
-TripCraft 以 [`SKILL.md`](./SKILL.md) 為核心，採用 Coding Agent 的最小公約格式（YAML frontmatter + Markdown），可安裝到任何相容的 Coding Agent。
-
-目前相容的 Agent：
-- Claude Code
-- OpenAI Codex CLI
-- Google Antigravity (AGY)
-- 其他遵循相同 SKILL 規範的 Agent（依該 Agent 的 skill 載入規範放置 `SKILL.md`）
+TripCraft 提供兩種靈活使用方式：
+1. **Coding Agent / CLI 模式**：以 [`SKILL.md`](./SKILL.md) 為核心，適用於 Claude Code、Codex CLI、Google Antigravity (AGY) 等具備本機讀寫工具的 Agent。
+2. **網頁版 AI 對話模式**：以 [`SKILL-for-Web.md`](./SKILL-for-Web.md) 為核心，已將 12 步工作流與完整 HTML 範本結構複合為獨立提示詞，可直接複製貼入 **ChatGPT (Custom GPT)、Google Gemini (Gems)、Claude.ai** 網頁版中直接使用！
 
 ---
 
-## 安裝
+## 安裝與使用
 
-依不同 Agent 將 `SKILL.md` 載入對應位置：
-
-| Agent         | 安裝路徑範例                              |
-| ------------- | ----------------------------------------- |
-| Claude Code   | `~/.claude/skills/tripcraft/SKILL.md`     |
-| Codex CLI     | `~/.codex/skills/tripcraft/SKILL.md`      |
-| Antigravity   | `<appDataDir>/skills/tripcraft/SKILL.md`  |
-| 其他          | 依該 Agent 的 skill 載入規範              |
+| 平台 / 工具                  | 建議使用檔案               | 安裝 / 設定方式                                         |
+| ---------------------------- | -------------------------- | ------------------------------------------------------- |
+| **網頁版 ChatGPT (GPTs)**    | [`SKILL-for-Web.md`](./SKILL-for-Web.md) | 複製全文貼入 GPT Instructions 或對話視窗中              |
+| **網頁版 Gemini (Gems)**     | [`SKILL-for-Web.md`](./SKILL-for-Web.md) | 複製全文貼入 Gem 系統提示詞（Instructions）中           |
+| **Claude.ai 網頁版**         | [`SKILL-for-Web.md`](./SKILL-for-Web.md) | 複製全文貼入 Project Instructions 或對話視窗中          |
+| **Claude Code (CLI)**        | [`SKILL.md`](./SKILL.md)   | 放置於 `~/.claude/skills/tripcraft/SKILL.md`            |
+| **Codex CLI**                | [`SKILL.md`](./SKILL.md)   | 放置於 `~/.codex/skills/tripcraft/SKILL.md`             |
+| **Google Antigravity (AGY)** | [`SKILL.md`](./SKILL.md)   | 放置於 `<appDataDir>/skills/tripcraft/SKILL.md`         |
 
 ---
 
