@@ -28,7 +28,7 @@ description: This skill should be used when the user says they want to travel, a
 4. **Always ask the trip duration** after the destination is picked. Duration determines how many spots to recommend.
 5. **Always check with the user about spots** at the picked destination. Either use the user's named spots, or — if they don't know — refine the step-2 preferences at the spot level and recommend a count that fits the duration.
 6. **Always ask the user about transport mode** between locations. Do not assume.
-7. **Always web-research visit duration AND coordinates** (`coords: [lat, lng]`) for each attraction and hub. Accurately pin them on OpenStreetMap.
+7. **Always web-research visit duration AND coordinates** (`coords: [lat, lng]`) for each attraction and hub. **Mandatory Web Search for Visit Duration**: Whenever web search / browsing tools are available, the agent MUST explicitly search the web for the official or traveler-consensus estimated visit duration (建議停留時間 / 所要時間 / average visit duration) for each specific attraction. Never blindly guess or fabricate dwell times. Accurately pin all spots on OpenStreetMap.
 8. **Always web-research transit data** (transit line name, train name, travel time, walking time e.g. "步行 X 分", and fare) for each leg.
 9. **Total day plan = sum of (visit durations + transit times + waiting times + meals + buffer)**. No hand-waving.
 10. **Output format is an interactive single-file Vue 3 + Tailwind CSS + OpenStreetMap HTML** placed in `templates/<destination>-travel.html`.
@@ -288,15 +288,18 @@ Web-search specific natural hazards, disaster contingency, and wildlife risks:
 ### 8. Research visit durations, opening hours, and coordinates
 For each picked attraction and transit hub (airport, stations, hotels), **search the web** for typical visit duration, business hours, and accurate coordinates (`coords: [lat, lng]`). Never fabricate data.
 
-Query patterns:
-- `"<attraction>" average visit duration` / `how long to spend at "<attraction>"`
-- `"<attraction>" opening hours` / `closed days` / `last entry time`
+**Mandatory Web Search for Visit Duration (景點停留時間強制上網查詢)**:
+Whenever web lookup tools are available, you MUST explicitly search the web for the official or traveler-consensus recommended visit duration (停留時間預估 / 所要時間 / 所需時間) for every spot on the itinerary:
+- `"<attraction>" 建議停留時間 OR 停留時間 OR 所需時間`
+- `"<attraction>" 所要時間 OR 滞在時間 OR 観光時間`
+- `"<attraction>" average visit duration OR how long to spend`
+- `"<attraction>" opening hours OR closed days OR last entry time`
 - `"<attraction>" coordinates latitude longitude` or geocode via OpenStreetMap
 
 Record per spot:
 - **Spot name** (official name in destination + original script)
 - **Coordinates** — `coords: [latitude, longitude]` (essential for Leaflet pin rendering)
-- **Typical visit duration** (e.g. `停留 1 時 30 分`, `08:30 離開`, `返回飯店休息`, `返抵國門`)
+- **Typical visit duration** (e.g. `停留 1 時 30 分`, `08:30 離開`, `返回飯店休息`, `返抵國門`) — strictly derived from web search findings
 - **Opening hours & closed days**
 - **Type classification**: `flight` ✈️, `hotel` 🛏️, `train` 🚆, `bus` 🚌, `shopping` 🛍️, `info` ℹ️, `castle` 🏯, `shrine` ⛩️, `park` 🌿, `cruise` 🚢, `tower` 🗼, `sight` 📍.
 
