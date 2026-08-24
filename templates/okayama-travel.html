@@ -222,6 +222,7 @@
                         <template v-else-if="spot.type === 'hotel'">🛏️</template>
                         <template v-else-if="spot.type === 'train'">🚆</template>
                         <template v-else-if="spot.type === 'bus'">🚌</template>
+                        <template v-else-if="spot.type === 'bike'">🚲</template>
                         <template v-else-if="spot.type === 'shopping'">🛍️</template>
                         <template v-else-if="spot.type === 'info'">ℹ️</template>
                         <template v-else-if="spot.type === 'castle'">🏯</template>
@@ -254,6 +255,7 @@
                   <div class="flex items-center gap-2">
                     <span v-if="spot.transit?.icon === 'plane'" class="text-base">✈️</span>
                     <span v-else-if="spot.transit?.icon === 'bus'" class="text-base">🚌</span>
+                    <span v-else-if="spot.transit?.icon === 'bike'" class="text-base">🚲</span>
                     <span v-else-if="spot.transit?.icon === 'walk'" class="text-base">🚶</span>
                     <span v-else-if="spot.transit?.icon === 'train'" class="text-base">🚆</span>
                     <span v-else class="text-base">➡️</span>
@@ -742,7 +744,7 @@
               type: 'shrine',
               duration: '停留 1 時 30 分',
               coords: [34.6702, 133.8509],
-              transit: { icon: 'walk', text: '步行 25 分' }
+              transit: { icon: 'bike', text: '吉備路觀光自行車騎行 10 分 (約 2.0km / 沿專用自行車道)' }
             },
             {
               name: '吉備津彥神社',

@@ -27,9 +27,9 @@ description: This skill should be used when the user says they want to travel, a
 3. **Always recommend 5–8 destinations** (countries if international, locations if domestic) with characteristic descriptions before going deeper. Let the user pick.
 4. **Always ask the trip duration** after the destination is picked. Duration determines how many spots to recommend.
 5. **Always check with the user about spots** at the picked destination. Either use the user's named spots, or — if they don't know — refine the step-2 preferences at the spot level and recommend a count that fits the duration.
-6. **Always ask the user about transport mode** between locations. Do not assume.
+6. **Always ask the user about transport mode** between locations. Proactively evaluate and integrate **Walking, Public Transit (Metro / Bus / Train), Public Bike Sharing (e.g. YouBike / Docomo Bike / HELLO CYCLING), Scenic Rental Bicycles / E-Bikes (e.g. Kibiji / Biei / Karuizawa / Shimanami Kaido), Taxi, and Rental Car**. Do not assume.
 7. **Always web-research visit duration AND coordinates** (`coords: [lat, lng]`) for each attraction and hub. **Mandatory Web Search for Visit Duration**: Whenever web search / browsing tools are available, the agent MUST explicitly search the web for the official or traveler-consensus estimated visit duration (建議停留時間 / 所要時間 / average visit duration) for each specific attraction. Never blindly guess or fabricate dwell times. Accurately pin all spots on OpenStreetMap.
-8. **Always web-research transit data** (transit line name, train name, travel time, walking time e.g. "步行 X 分", and fare) for each leg.
+8. **Always web-research transit data** (transit line name, train name, travel time, walking time e.g. "步行 X 分", cycling route time & distance e.g. "自行車騎行 20 分 (約 3.5km)", and fare) for each leg.
 9. **Total day plan = sum of (visit durations + transit times + waiting times + meals + buffer)**. No hand-waving.
 10. **Output format is an interactive single-file Vue 3 + Tailwind CSS + OpenStreetMap HTML** placed in `templates/<destination>-travel.html`.
 11. **Always research and include safety, visa, insurance, and hazard intelligence**: Destination travel advisory levels (外交部旅遊警示燈號), visa/entry rules, travel insurance essentials (海外突發疾病醫療/旅遊不便險), local scam/safety risks, seasonal typhoon/extreme weather contingency, and regional wildlife hazards (e.g. 熊出沒 / bear alerts in mountain regions, volcanic alert levels) must be researched and integrated into the itinerary notes and overview notices.
@@ -279,14 +279,18 @@ Web-search specific natural hazards, disaster contingency, and wildlife risks:
 
 ### 7. Confirm transport mode with the user
 **Re-confirm or refine** the transport preference captured in step 2a. This step ensures the user's choice is still correct after they've seen the destination / spots / hotel options, and gives them a chance to switch (e.g., "actually, given the hotel location, let's just take taxis"). The confirmed choice shapes step 9 and the budget:
-- Walking only (limited radius, slow pace)
-- Public transit (metro / bus / train) — proceed to step 9a
-- Taxi / rideshare — proceed to step 9b
-- Rental car — proceed to step 9c
-- Mixed (e.g., transit by day, taxi at night) — split legs and apply 9a / 9b per leg
+- **Walking only** (limited radius, slow pace)
+- **Public transit** (metro / bus / train) — proceed to step 9a
+- **Public bike sharing & scenic rental bicycles / E-bikes (公共自行車與觀光租賃自行車)**:
+  - **都會共享單車 (Public Bike Sharing)**: e.g. YouBike 2.0 (台灣), Docomo Bike Share / HELLO CYCLING / Luup (日本), Citi Bike (紐約), Vélib' (巴黎) — ideal for 1~3km short-hop connections and metro station extension.
+  - **景區觀光自行車租賃 (Scenic Rental Bicycles / Dedicated Cycling Trails)**: e.g. 岡山吉備路自行車道 (Kibiji Cycling Trail), 北海道美瑛拼布之路/全景之路 (Biei Cycling), 長野輕井澤高原單車 (Karuizawa), 瀨戶內島波海道跨海單車 (Shimanami Kaido), 滋賀琵琶湖 (Biwako), 南投日月潭環潭自行車道.
+  - **電輔車 (E-bike) 推薦與坡度考量**：在多丘陵起伏地貌（如美瑛、輕井澤、吉備路），強烈建議推薦租借「電動輔助自行車」，並預估真實騎行時間與體力消耗.
+- **Taxi / rideshare** — proceed to step 9b
+- **Rental car** — proceed to step 9c
+- **Mixed** (e.g., transit by day, taxi at night, or train to hub + bicycle touring) — split legs and apply per leg
 
 ### 8. Research visit durations, opening hours, and coordinates
-For each picked attraction and transit hub (airport, stations, hotels), **search the web** for typical visit duration, business hours, and accurate coordinates (`coords: [lat, lng]`). Never fabricate data.
+For each picked attraction and transit hub (airport, stations, hotels, bike rental stations), **search the web** for typical visit duration, business hours, and accurate coordinates (`coords: [lat, lng]`). Never fabricate data.
 
 **Mandatory Web Search for Visit Duration (景點停留時間強制上網查詢)**:
 Whenever web lookup tools are available, you MUST explicitly search the web for the official or traveler-consensus recommended visit duration (停留時間預估 / 所要時間 / 所需時間) for every spot on the itinerary:
@@ -301,12 +305,13 @@ Record per spot:
 - **Coordinates** — `coords: [latitude, longitude]` (essential for Leaflet pin rendering)
 - **Typical visit duration** (e.g. `停留 1 時 30 分`, `08:30 離開`, `返回飯店休息`, `返抵國門`) — strictly derived from web search findings
 - **Opening hours & closed days**
-- **Type classification**: `flight` ✈️, `hotel` 🛏️, `train` 🚆, `bus` 🚌, `shopping` 🛍️, `info` ℹ️, `castle` 🏯, `shrine` ⛩️, `park` 🌿, `cruise` 🚢, `tower` 🗼, `sight` 📍.
+- **Type classification**: `flight` ✈️, `hotel` 🛏️, `train` 🚆, `bus` 🚌, `bike` 🚲, `shopping` 🛍️, `info` ℹ️, `castle` 🏯, `shrine` ⛩️, `park` 🌿, `cruise` 🚢, `tower` 🗼, `sight` 📍.
 
 ### 9. Research transit segments
 For every leg between consecutive points, **search the web** for transit method, duration, and line names:
 
 - **Walking**: Explicitly research and state walking time (e.g. `步行 6 分`).
+- **Bicycles / Cycling (自行車騎行)**: Explicitly research and state cycling route duration, distance, and rental/return details (e.g. `租借觀光單車 騎行 15 分 (約 2.5km) 沿專用自行車道`, `HELLO CYCLING 電輔單車騎行 12 分 (約 2.2km)`). Calculate realistic travel time based on 12-15 km/h avg speed.
 - **Trains / Metro**: Explicitly state the railway operator, line name, and train service (e.g. `JR 瀨戶大橋線（特急南風 Nanpu / 特急潮風 Shiokaze）47 分`, `JR 山陽新幹線 25 分`, `JR 吉備線（桃太郎線）24 分`).
 - **Buses / Shuttles**: Specific line name (e.g. `機場接駁巴士 35 分`, `岡山路面電車 / 巴士 20 分`, `City Loop 巴士 15 分`).
 - **Flights**: Airline flight code and flight time (e.g. `台灣虎航 IT214 02:35`).

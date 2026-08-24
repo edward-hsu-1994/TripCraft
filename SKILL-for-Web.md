@@ -22,7 +22,7 @@
 5. **景點確認機制**：使用者可指定必訪景點，或由 AI 依天數與步調推薦。
 6. **住宿規劃（區塊連續居住）**：嚴格執行同城市連續住宿數晚（如 4 晚札幌 + 2 晚函館），**堅決避免折返跑（彈簧式）頻繁換宿與搬行李負擔**。
 7. **航班動線策略（彈性雙機場 Open-Jaw）**：不拘泥同機場進出，主動評估並推薦不同點進出（如關西進東京出、新千歲進函館出、福岡進鹿兒島出），**一切以行程流暢度與不走回頭路為最高指導原則**。
-8. **真實精確數據與強制上網查詢停留時間**：每個景點須包含真實經緯度座標（`coords: [lat, lng]`）、確切交通工具與路線名稱、精確步行時間（如「步行 6 分」）。**停留時間規定**：若具備聯網查詢工具（Web Search / Browsing），**必須在網路上實際查詢該地點官方或旅客公認之「預估停留時間 / 所要時間 / 建議參觀時間」**，絕不憑空臆測！
+8. **真實精確數據與強制上網查詢停留時間**：每個景點須包含真實經緯度座標（`coords: [lat, lng]`）、確切交通工具與路線名稱、精確步行時間（如「步行 6 分」）、**自行車騎行路線時間與距離（如「自行車騎行 20 分 / 約 3.5km」）**。**停留時間規定**：若具備聯網查詢工具（Web Search / Browsing），**必須在網路上實際查詢該地點官方或旅客公認之「預估停留時間 / 所要時間 / 建議參觀時間」**，絕不憑空臆測！
 9. **時間數學嚴謹**：全天行程 = 停留時間 + 交通移動 + 等候時間 + 用餐 + 時間緩衝。
 10. **安全與風險情報**：行程必須整合外交部旅遊警示燈號、緊急救援專線、簽證與數位入境申報（如 Visit Japan Web）、旅遊保險建議、季節颱風天候應變、野生動物危害（如日本山區熊出沒防熊鈴）及火山警戒。
 11. **總覽頁四大標準區塊**：HTML 預設載入「總覽頁 (Overview)」，包含：📝 行程筆記、🌤️ 天氣資訊、⚠️ 注意事項、🚉 **實用車站與地名日英對照表**。
@@ -63,14 +63,25 @@
 - 氣候天災與颱風應變措施（官方 Safety Tips App、鐵路運行情報）。
 - 野生動物（如近郊山區熊出沒 熊鈴防範守則）與火山/地震管制。
 
-### 第 7 步：確認交通方式
-確認大眾運輸（JR/新幹線/地鐵/巴士/渡輪）、自駕租車或包車接送。
+### 第 7 步：確認交通方式（納入公共自行車與觀光單車）
+確認交通工具偏好，主動評估並整合：
+- **大眾運輸**（JR / 新幹線 / 地鐵 / 巴士 / 渡輪）
+- **公共自行車與觀光租賃單車 (Bicycles & E-Bikes)**：
+  - **都會共享單車**：YouBike 2.0 (台灣)、Docomo Bike Share / HELLO CYCLING / Luup (日本)、Citi Bike、Vélib' 等（適合 1~3km 短程景點串接）。
+  - **景區專用觀光單車與自行車道**：如岡山吉備路自行車道、美瑛拼布之路/全景之路、輕井澤高原單車、島波海道跨海單車、琵琶湖、日月潭環潭單車等。
+  - **電輔車 (E-bike) 考量**：在多坡度丘陵景點（如美瑛、吉備路、輕井澤），建議優先選擇電輔車，並計算真實路徑與騎行體力。
+- **計程車 / 自駕租車 / 包車接送**
 
 ### 第 8 步：查核各景點停留時間、開放時間與經緯度
 - **強制上網查詢停留時間**：若具備網路搜尋功能，**必須搜尋**該景點的預估參觀時間（例如搜尋 `"<景點名稱>" 建議停留時間 OR 所要時間 OR average visit duration`），依真實遊覽數據設定（大型古堡/主題樂園 2~3 小時、神社/展望台 45 分~1.5 小時、老街散策 1.5~2 小時）。
-- 為行程中的每一個點建立精準經緯度 `coords: [lat, lng]` 與類型分類圖示（`flight` ✈️, `hotel` 🛏️, `train` 🚆, `bus` 🚌, `shopping` 🛍️, `castle` 🏯, `shrine` ⛩️, `park` 🌿, `cruise` 🚢, `tower` 🗼, `food` 🍜, `sight` 📍）。
+- 為行程中的每一個點建立精準經緯度 `coords: [lat, lng]` 與類型分類圖示（`flight` ✈️, `hotel` 🛏️, `train` 🚆, `bus` 🚌, `bike` 🚲, `shopping` 🛍️, `castle` 🏯, `shrine` ⛩️, `park` 🌿, `cruise` 🚢, `tower` 🗼, `food` 🍜, `sight` 📍）。
 
-### 第 9 步：規劃點對點交通與步行時間
+### 第 9 步：規劃點對點交通、步行與自行車騎行時間
+每段移動皆標註具體交通方式：
+- **鐵道/地鐵**：如 `JR 特急北斗號 70 分`
+- **步行**：如 `步行 6 分`
+- **自行車騎行**：精確標註路徑時間與距離，如 `租借觀光單車 騎行 15 分 (約 2.5km) 沿專用自行車道` 或 `HELLO CYCLING 電輔單車騎行 12 分 (約 2.2km)`（依平地 12-15 km/h 均速計算）。
+- **接駁/巴士**：如 `市區巴士 15 分`
 每段移動皆標註具體交通線路名稱（如 `JR 特急北斗號 70 分`）與步行時間（如 `步行 6 分`）。
 
 ### 第 10 步：建構 Vue 3 響應式資料模型
@@ -292,6 +303,7 @@
                         <template v-else-if="spot.type === 'hotel'">🛏️</template>
                         <template v-else-if="spot.type === 'train'">🚆</template>
                         <template v-else-if="spot.type === 'bus'">🚌</template>
+                        <template v-else-if="spot.type === 'bike'">🚲</template>
                         <template v-else-if="spot.type === 'shopping'">🛍️</template>
                         <template v-else-if="spot.type === 'castle'">🏯</template>
                         <template v-else-if="spot.type === 'shrine'">⛩️</template>
@@ -315,11 +327,12 @@
                   </div>
                 </div>
 
-                <!-- 景點間移動連線 (含步行時間) -->
+                <!-- 景點間移動連線 (含步行與自行車騎行時間) -->
                 <div v-if="index < itinerary[day.id].length - 1" class="py-3 pl-8 md:pl-9 flex items-center gap-3 text-slate-500 text-xs md:text-sm font-medium">
                   <div class="flex items-center gap-2">
                     <span v-if="spot.transit?.icon === 'plane'">✈️</span>
                     <span v-else-if="spot.transit?.icon === 'bus'">🚌</span>
+                    <span v-else-if="spot.transit?.icon === 'bike'">🚲</span>
                     <span v-else-if="spot.transit?.icon === 'walk'">🚶</span>
                     <span v-else-if="spot.transit?.icon === 'train'">🚆</span>
                     <span v-else>➡️</span>

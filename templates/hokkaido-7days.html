@@ -229,6 +229,7 @@
                         <template v-else-if="spot.type === 'hotel'">🛏️</template>
                         <template v-else-if="spot.type === 'train'">🚆</template>
                         <template v-else-if="spot.type === 'bus'">🚌</template>
+                        <template v-else-if="spot.type === 'bike'">🚲</template>
                         <template v-else-if="spot.type === 'shopping'">🛍️</template>
                         <template v-else-if="spot.type === 'info'">ℹ️</template>
                         <template v-else-if="spot.type === 'castle'">🏯</template>
@@ -262,6 +263,7 @@
                   <div class="flex items-center gap-2">
                     <span v-if="spot.transit?.icon === 'plane'" class="text-base">✈️</span>
                     <span v-else-if="spot.transit?.icon === 'bus'" class="text-base">🚌</span>
+                    <span v-else-if="spot.transit?.icon === 'bike'" class="text-base">🚲</span>
                     <span v-else-if="spot.transit?.icon === 'walk'" class="text-base">🚶</span>
                     <span v-else-if="spot.transit?.icon === 'train'" class="text-base">🚆</span>
                     <span v-else class="text-base">➡️</span>
