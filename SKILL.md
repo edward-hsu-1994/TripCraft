@@ -27,10 +27,10 @@ description: This skill should be used when the user says they want to travel, a
 3. **Always recommend 5–8 destinations** (countries if international, locations if domestic) with characteristic descriptions before going deeper. Let the user pick.
 4. **Always ask the trip duration** after the destination is picked. Duration determines how many spots to recommend.
 5. **Always check with the user about spots** at the picked destination. Either use the user's named spots, or — if they don't know — refine the step-2 preferences at the spot level and recommend a count that fits the duration.
-6. **Always ask the user about transport mode** between locations. Proactively evaluate and integrate **Walking, Public Transit (Metro / Bus / Train), Public Bike Sharing (e.g. YouBike / Docomo Bike / HELLO CYCLING), Scenic Rental Bicycles / E-Bikes (e.g. Kibiji / Biei / Karuizawa / Shimanami Kaido), Taxi, and Rental Car**. Do not assume.
+6. **Always ask the user about transport mode** between locations. Proactively evaluate and integrate **Walking, Public Transit (Metro / Bus / Train), Public Bike Sharing (e.g. YouBike / Docomo Bike / HELLO CYCLING), Scenic Rental Bicycles / E-Bikes (e.g. Kibiji / Biei / Karuizawa / Shimanami Kaido), Taxi, and Rental Car**. **Mandatory Bicycle Station & Shop Research & Sequence Alignment**: When bicycles are selected, the agent MUST web-research the exact rental shop name (店家名稱、營業時間、租金與車型), public bike docking station locations (借車站點/還車站點), and identify whether one-way drop-off (甲租乙還) or round-trip return (同店歸還) applies. **Crucially, the itinerary sequence MUST be dynamically structured around actual rental availability** — if a region only has bike rental facilities at specific stations (e.g. JR 備前一宮站 has a bike rental shop, while JR 吉備津站 does NOT), the itinerary MUST route to the rental origin (備前一宮站) FIRST before heading to other attractions (e.g. 先至備前一宮站租車 ➔ 吉備津彥神社 ➔ 吉備津神社). Never schedule cycling starting from a spot/station that lacks rental facilities. Do not assume.
 7. **Always web-research visit duration AND coordinates** (`coords: [lat, lng]`) for each attraction and hub. **Mandatory Web Search for Visit Duration**: Whenever web search / browsing tools are available, the agent MUST explicitly search the web for the official or traveler-consensus estimated visit duration (建議停留時間 / 所要時間 / average visit duration) for each specific attraction. Never blindly guess or fabricate dwell times. Accurately pin all spots on OpenStreetMap.
-8. **Always web-research transit data** (transit line name, train name, travel time, walking time e.g. "步行 X 分", cycling route time & distance e.g. "自行車騎行 20 分 (約 3.5km)", and fare) for each leg.
-9. **Total day plan = sum of (visit durations + transit times + waiting times + meals + buffer)**. No hand-waving.
+8. **Always web-research transit data** (transit line name, train name, travel time, walking time e.g. "步行 X 分", cycling route time & distance with rental shop pickup/drop-off e.g. "於站前租借單車 ➔ 騎行 20 分 (約 3.5km) ➔ 景點", and fare) for each leg.
+9. **Always apply realistic station waiting & transfer buffer assumptions (候車與轉乘時間假設預設為 30 分鐘)**: Total day plan = sum of (visit durations + transit times + **waiting times [預設候車時間 30 分鐘]** + meals + buffer). When planning train/bus station departures or transfers, budget a 30-minute buffer for headway waiting, ticketing, platform finding, and bike return/rental logistics (`停留 0 時 30 分 (候車與轉乘)` 或 `歸還單車與候車 30 分`). No hand-waving.
 10. **Output format is an interactive single-file Vue 3 + Tailwind CSS + OpenStreetMap HTML** placed in `templates/<destination>-travel.html`.
 11. **Always research and include safety, visa, insurance, and hazard intelligence**: Destination travel advisory levels (外交部旅遊警示燈號), visa/entry rules, travel insurance essentials (海外突發疾病醫療/旅遊不便險), local scam/safety risks, seasonal typhoon/extreme weather contingency, and regional wildlife hazards (e.g. 熊出沒 / bear alerts in mountain regions, volcanic alert levels) must be researched and integrated into the itinerary notes and overview notices.
 12. **Always prioritize itinerary flow over rigid airport pairing (Flexible Open-Jaw Strategy)**: Flights do NOT need to arrive and depart from the same airport. Proactively evaluate and propose open-jaw / multi-city flight routes (不同點/雙機場進出，例如：關西國際機場 KIX 進、東京成田機場 NRT 出；新千歲機場 CTS 進、函館機場 HKD 出；福岡機場 FUK 進、鹿兒島機場 KOJ 出) whenever a linear one-way flow eliminates backtracking, saves hours of redundant transit time, and reduces transportation costs. **Itinerary smoothness and optimal travel flow always come first (一切以行程流暢度為主)**.
@@ -263,6 +263,13 @@ Web-search entry logistics and comprehensive insurance coverage:
    - **海外突發疾病醫療險 (Overseas Emergency Medical Insurance)**: Recommend sufficient medical limit covering hospitalization and emergency medical repatriation (海外急難救助).
    - **旅遊不便險 (Travel Inconvenience Insurance)**: Coverage for flight delay/cancellation (班機延誤), lost/delayed luggage (行李延誤/遺失), and trip interruption (行程更改).
    - **旅遊平安險 (Travel Accident Insurance)**: Accidental death and disability protection (意外身故與失能保障).
+3. **託運行李拍照存證防護 (Checked Baggage Photography & Claim Verification Rule)**:
+   - 行李託運前，務必提醒旅客拍照存證 4 大項目：
+     - **行李外觀全貌**（正面/側面、顏色、特色綁帶或吊牌等辨識標記）
+     - **託運條**（貼在行李箱上的條碼與班機航點資訊）
+     - **託運存根聯**（地勤交付或貼於登機證後方之 Baggage Claim Tag 存根聯）
+     - **地勤秤重螢幕之行李重量 (kg)**
+   - 此存證為遇行李延誤、遺失或箱體摔損時，向航空公司開立事故證明 (PIR) 與申請旅遊不便險理賠的最有力依據。
 
 #### 6d. 氣候天災、颱風與野生動物風險 (Weather, Typhoons & Wildlife Hazards)
 Web-search specific natural hazards, disaster contingency, and wildlife risks:
@@ -273,6 +280,7 @@ Web-search specific natural hazards, disaster contingency, and wildlife risks:
 2. **野生動物風險與熊出沒防範 (Wildlife Hazards & Bear Alerts 熊出沒)**:
    - For mountainous, forested, or rural destinations (especially Hokkaido, Tohoku, Nagano, Gifu, Gunma, Kumamoto Aso mountain trails):
      - Check recent local bear sighting reports (熊の出沒情報 / 目撃情報).
+     - **即時熊出沒地圖與警報查詢**：強烈建議在注意事項與行程規劃中附上日本全境即時熊出沒資訊地圖網站 [KumaMap 熊出沒地圖](https://kumamap.com/zh-Hant)，供旅客在前往山林郊野前查詢最新出沒點與歷史目擊紀錄。
      - Provide essential bear encounter precautions: carry bear bells (熊鈴), avoid lone hiking at early dawn or twilight, avoid carrying strongly scented food, slowly back away facing the bear without running or making loud sudden screams.
 3. **地震與火山活動警戒 (Earthquake & Volcanic Alert Levels)**:
    - Check local volcanic restriction zones (e.g. Aso Crater alert level 1-3, Sakurajima, Mt. Fuji climbing regulations) and earthquake readiness (installing Safety Tips app, knowing hotel evacuation exits).
@@ -281,37 +289,46 @@ Web-search specific natural hazards, disaster contingency, and wildlife risks:
 **Re-confirm or refine** the transport preference captured in step 2a. This step ensures the user's choice is still correct after they've seen the destination / spots / hotel options, and gives them a chance to switch (e.g., "actually, given the hotel location, let's just take taxis"). The confirmed choice shapes step 9 and the budget:
 - **Walking only** (limited radius, slow pace)
 - **Public transit** (metro / bus / train) — proceed to step 9a
-- **Public bike sharing & scenic rental bicycles / E-bikes (公共自行車與觀光租賃自行車)**:
-  - **都會共享單車 (Public Bike Sharing)**: e.g. YouBike 2.0 (台灣), Docomo Bike Share / HELLO CYCLING / Luup (日本), Citi Bike (紐約), Vélib' (巴黎) — ideal for 1~3km short-hop connections and metro station extension.
-  - **景區觀光自行車租賃 (Scenic Rental Bicycles / Dedicated Cycling Trails)**: e.g. 岡山吉備路自行車道 (Kibiji Cycling Trail), 北海道美瑛拼布之路/全景之路 (Biei Cycling), 長野輕井澤高原單車 (Karuizawa), 瀨戶內島波海道跨海單車 (Shimanami Kaido), 滋賀琵琶湖 (Biwako), 南投日月潭環潭自行車道.
-  - **電輔車 (E-bike) 推薦與坡度考量**：在多丘陵起伏地貌（如美瑛、輕井澤、吉備路），強烈建議推薦租借「電動輔助自行車」，並預估真實騎行時間與體力消耗.
+- **Public bike sharing & scenic rental bicycles / E-bikes (公共自行車與觀光租賃單車定位、站點可得性與物流)**:
+  - **精準定位租借店家與站點 (Exact Rental Shops & Docking Stations)**:
+    - 查明出發點之**具體租借店家或公共站點名稱**（例如：`JR 備前一宮站前 荒木自行車租借店 (Rent-a-cycle Araki)`、`JR 美瑛站前 瀧川自轉車店 / 松浦商店`、`JR 輕井澤站北口 白貓自行車 (Shironeko)`、`Docomo Bike Share 站點 (札幌站南口)`）。
+  - **動線順序與租借點對齊 (Itinerary Sequence Ordered by Bike Availability)**:
+    - **務必根據「實際具備租借點之地點」安排行程前後順序**。若該區域只有特定車站/景點設有租借店或公共借車柱（例如：吉備路自行車路線僅「JR 備前一宮站前」與「JR 總社站前」有租借店，而「JR 吉備津站」無租車店），**行程必須優先排定先前往具備租借店的車站（如先搭車至備前一宮站借車）**，再依序騎行至後續景點（如 備前一宮 ➔ 吉備津彥神社 ➔ 吉備津神社），切勿安排從無租借點的車站出發騎單車！
+  - **借還車機制與閉環動線設計 (Drop-off Logistics & Closed-Loop Routing)**:
+    - **甲租乙還 (One-Way Drop-off)**: 如吉備路自行車道（備前一宮站租 ➔ 總社站還）、瀨戶內島波海道（尾道租 ➔ 今治還）。必須確認訖點站具備官方還車站點，並將起訖租借點明確列為行程中的起訖節點！
+    - **同店原處歸還 (Round-Trip Return)**: 如吉備路環狀折返（備前一宮站租 ➔ 吉備津彥神社 ➔ 吉備津神社 ➔ 騎回備前一宮站還車）、美瑛拼布之路（美瑛站前同店借還）、輕井澤雲場池環線。必須在景點結束後安排騎回原店還車節點，再銜接後續大眾運輸。
+  - **營業時間、費用與電輔車 (E-bike) 推薦**：查明店家營業時間（如 08:30-17:00）、最後還車時間、車種（普通車 vs 電輔車），在多丘陵起伏地貌（如美瑛、輕井澤、吉備路）強烈推薦電動輔助自行車。
 - **Taxi / rideshare** — proceed to step 9b
 - **Rental car** — proceed to step 9c
 - **Mixed** (e.g., transit by day, taxi at night, or train to hub + bicycle touring) — split legs and apply per leg
 
 ### 8. Research visit durations, opening hours, and coordinates
-For each picked attraction and transit hub (airport, stations, hotels, bike rental stations), **search the web** for typical visit duration, business hours, and accurate coordinates (`coords: [lat, lng]`). Never fabricate data.
+For each picked attraction and transit hub (airport, stations, hotels, bike rental shops & docking stations), **search the web** for typical visit duration, business hours, and accurate coordinates (`coords: [lat, lng]`). Never fabricate data.
 
-**Mandatory Web Search for Visit Duration (景點停留時間強制上網查詢)**:
-Whenever web lookup tools are available, you MUST explicitly search the web for the official or traveler-consensus recommended visit duration (停留時間預估 / 所要時間 / 所需時間) for every spot on the itinerary:
+**Mandatory Web Search for Visit Duration & Bike Rental Locations (停留時間與單車租賃強制上網查詢)**:
+Whenever web lookup tools are available, you MUST explicitly search the web for the official or traveler-consensus recommended visit duration and bicycle rental locations:
 - `"<attraction>" 建議停留時間 OR 停留時間 OR 所需時間`
 - `"<attraction>" 所要時間 OR 滞在時間 OR 観光時間`
 - `"<attraction>" average visit duration OR how long to spend`
+- `"<station/spot>" 自行車租借 OR レンタサイクル OR bike rental shops`
+- `"<cycling route>" 甲租乙還 OR 乗り捨て OR one-way bike drop-off`
 - `"<attraction>" opening hours OR closed days OR last entry time`
 - `"<attraction>" coordinates latitude longitude` or geocode via OpenStreetMap
 
 Record per spot:
-- **Spot name** (official name in destination + original script)
+- **Spot name** (official name in destination + original script, including bike rental shop if applicable)
 - **Coordinates** — `coords: [latitude, longitude]` (essential for Leaflet pin rendering)
-- **Typical visit duration** (e.g. `停留 1 時 30 分`, `08:30 離開`, `返回飯店休息`, `返抵國門`) — strictly derived from web search findings
+- **Typical visit duration** (e.g. `停留 1 時 30 分`, `08:30 離開`, `租借單車 10 分`, `歸還單車 5 分`, `返回飯店休息`, `返抵國門`) — strictly derived from web search findings
 - **Opening hours & closed days**
 - **Type classification**: `flight` ✈️, `hotel` 🛏️, `train` 🚆, `bus` 🚌, `bike` 🚲, `shopping` 🛍️, `info` ℹ️, `castle` 🏯, `shrine` ⛩️, `park` 🌿, `cruise` 🚢, `tower` 🗼, `sight` 📍.
 
-### 9. Research transit segments
+### 9. Research transit segments & station waiting buffers (交通路段與候車緩衝)
 For every leg between consecutive points, **search the web** for transit method, duration, and line names:
 
+- **Station Waiting & Transfer Buffer (車站候車與轉乘緩衝假設 30 分鐘)**:
+  - 在各大鐵道車站、地鐵樞紐、巴士總站出發或進行轉乘時，**一律假設候車與轉乘時間為 30 分鐘（候車假設 30min）**，以充分預留現場購票/劃位、交通卡感應、尋找月台與車廂、吸收地方鐵道班距（Headway），以及單車歸還後的候車時間（例如：`停留 0 時 30 分 (候車與轉乘)`、`歸還單車與候車 30 分`）。
 - **Walking**: Explicitly research and state walking time (e.g. `步行 6 分`).
-- **Bicycles / Cycling (自行車騎行)**: Explicitly research and state cycling route duration, distance, and rental/return details (e.g. `租借觀光單車 騎行 15 分 (約 2.5km) 沿專用自行車道`, `HELLO CYCLING 電輔單車騎行 12 分 (約 2.2km)`). Calculate realistic travel time based on 12-15 km/h avg speed.
+- **Bicycles / Cycling (自行車騎行)**: Explicitly research and state cycling route duration, distance, and rental/return details (e.g. `於備前一宮站前租借單車 ➔ 騎行 10 分 (約 2.0km / 沿吉備路自行車道) ➔ 抵達吉備津彥神社`, `HELLO CYCLING 電輔單車騎行 12 分 (約 2.2km)`). Calculate realistic travel time based on 12-15 km/h avg speed.
 - **Trains / Metro**: Explicitly state the railway operator, line name, and train service (e.g. `JR 瀨戶大橋線（特急南風 Nanpu / 特急潮風 Shiokaze）47 分`, `JR 山陽新幹線 25 分`, `JR 吉備線（桃太郎線）24 分`).
 - **Buses / Shuttles**: Specific line name (e.g. `機場接駁巴士 35 分`, `岡山路面電車 / 巴士 20 分`, `City Loop 巴士 15 分`).
 - **Flights**: Airline flight code and flight time (e.g. `台灣虎航 IT214 02:35`).
@@ -432,8 +449,9 @@ The generated HTML file must strictly reproduce the architecture and design lang
      - 旅遊警報與安全：外交部旅遊警示燈號、緊急救助專線與報警電話。
      - 簽證與入境：免簽天數、護照效期 (6個月以上) 及數位入境申報 (如 Visit Japan Web)。
      - 旅遊保險：建議投保海外突發疾病醫療險 (含緊急救援) 與旅遊不便險 (班機延誤/行李損失)。
+      - 託運行李保障：行李託運前務必拍照存證「行李外觀全貌（含辨識標記）」、「託運條」、「託運存根聯」及「秤重重量」，以利行李延誤/損壞時進行航空公司理賠與保險申請。
      - 氣候天災與颱風應變：季節性颱風監測、大眾運輸停駛應對與官方氣象 App。
-     - 野生動物與自然危害：山區景點熊出沒防範 (防熊鈴/避開清晨黃昏)、火山活動管制等。
+      - 野生動物與自然危害：山區景點熊出沒防範 (防熊鈴/避開清晨黃昏，並附上 [KumaMap 熊出沒地圖](https://kumamap.com/zh-Hant) 供即時查詢)、火山活動管制等。
    - **實用車站與地名日英對照表 (Place & Station Reference Table)**:
      - Clear, responsive table with columns: `中文名稱` | `日文名稱 (漢字/假名)` | `英文 / 羅馬拼音 (Romaji)` | `類型`
      - **Strict Derivation Rule**: Must be directly and strictly extracted from all unique spots, stations, airports, hotels, and attractions appearing across the `itinerary` (Day 1 ~ Day N), ensuring **1-to-1 exact correspondence** with the actual trip itinerary. Never add arbitrary fabricated places not visited in the itinerary.
