@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>東京跨年風華八天七夜・淺草下町與冬日璀璨光影之旅</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Vue 3 Global CDN -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <!-- Leaflet (OpenStreetMap) CSS & JS CDN -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap');
+    body {
+      font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar { height: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .leaflet-pane { z-index: 10 !important; }
+    .leaflet-top, .leaflet-bottom { z-index: 15 !important; }
+  </style>
+</head>
+<body class="bg-gray-50 text-slate-800 antialiased min-h-screen">
+  <div id="app" class="max-w-4xl mx-auto px-4 py-8">
+    
+    <!-- 頂部資訊卡 -->
+    <header class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8 mb-6">
+      <h1 class="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">
+        {{ trip.title }}
+      </h1>
+      <div class="mt-3 text-slate-500 font-medium text-sm md:text-base tracking-wide">
+        {{ trip.dateRange }}
+      </div>
+      <div class="mt-5 border-l-2 border-slate-300 pl-4 py-0.5">
+        <p class="text-sm md:text-base text-slate-500 leading-relaxed">
+          {{ trip.description }}
+        </p>
+      </div>
+    </header>
+
+    <!-- 膠囊導航列 -->
+    <div class="sticky top-3 z-30 mb-6">
+      <nav class="bg-white/95 backdrop-blur-md rounded-[26px] p-3 md:p-3.5 shadow-sm border border-slate-200/80 flex items-center gap-2 md:gap-2.5 overflow-x-auto custom-scrollbar">
+        <button
+          v-for="tab in tabs"
+          :key="tab.id"
+          @click="switchTab(tab.id)"
+          :class="[
+            'day-tab',
+            'px-4 py-2.5 rounded-[16px] text-sm font-bold whitespace-nowrap transition-all select-none cursor-pointer',
+            activeTab === tab.id
+              ? 'bg-[#e11d48] text-white shadow-xs'
+              : 'text-slate-700 hover:text-slate-900 hover:bg-slate-50'
+          ]"
+        >
+          {{ tab.name }}
+        </button>
+      </nav>
+    </div>
+
+    <!-- 內容容器 -->
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 md:p-8">
+      <div>
+        
+        <!-- 1. 總覽頁 (Overview: 四大標準區塊) -->
+        <div v-if="activeTab === 'overview'" class="overview-content space-y-8">
+          
+          <!-- 區塊一：行程筆記 -->
+          <section>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-lg">📝</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">行程筆記</h2>
+            </div>
+            <div class="bg-slate-50 rounded-xl p-4 md:p-5 border border-slate-200/80 text-slate-700 leading-relaxed text-sm md:text-base whitespace-pre-line">
+              {{ overview.notes }}
+            </div>
+          </section>
+
+          <!-- 區塊二：天氣資訊 (3格天藍卡片) -->
+          <section>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-lg">🌤️</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">天氣資訊</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div 
+                v-for="(item, idx) in overview.weather" 
+                :key="idx"
+                class="bg-sky-50/50 rounded-xl p-4 border border-sky-100 flex flex-col justify-between"
+              >
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-semibold text-sky-800 bg-sky-100 px-2 py-0.5 rounded-full">{{ item.title }}</span>
+                  <span class="text-xl">{{ item.icon }}</span>
+                </div>
+                <div class="text-lg font-bold text-slate-800">{{ item.value }}</div>
+                <p class="text-xs text-slate-500 mt-1 leading-normal">{{ item.desc }}</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- 區塊三：注意事項 (琥珀色警告盒) -->
+          <section>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-lg">⚠️</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">注意事項</h2>
+            </div>
+            <div class="bg-amber-50/40 rounded-xl p-5 border border-amber-200/60">
+              <ul class="space-y-2.5 text-sm md:text-base text-slate-700">
+                <li 
+                  v-for="(notice, idx) in overview.notices" 
+                  :key="idx"
+                  class="flex items-start gap-2.5"
+                >
+                  <span class="text-amber-500 mt-0.5 font-bold">•</span>
+                  <span class="leading-relaxed">{{ notice }}</span>
+                </li>
+              </ul>
+            </div>
+          </section>
+
+          <!-- 區塊四：實用車站與地名日英對照表 (嚴格 1:1 對應行程所有地點) -->
+          <section>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-lg">🚉</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">實用車站與地名日英對照表</h2>
+            </div>
+            <div class="overflow-x-auto rounded-xl border border-slate-200/80 shadow-xs">
+              <table class="w-full text-left text-sm text-slate-700">
+                <thead class="bg-slate-100/80 text-xs font-bold text-slate-600 uppercase tracking-wider border-b border-slate-200">
+                  <tr>
+                    <th scope="col" class="px-4 py-3">中文名稱</th>
+                    <th scope="col" class="px-4 py-3">日文名稱 (漢字 / 假名)</th>
+                    <th scope="col" class="px-4 py-3">英文 / 羅馬拼音 (Romaji)</th>
+                    <th scope="col" class="px-4 py-3">類型</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 bg-white">
+                  <tr v-for="(item, idx) in overview.stations" :key="idx" class="hover:bg-slate-50/80 transition">
+                    <td class="px-4 py-2.5 font-bold text-slate-800">{{ item.zh }}</td>
+                    <td class="px-4 py-2.5 font-medium text-rose-600 font-mono">{{ item.ja }}</td>
+                    <td class="px-4 py-2.5 text-slate-500 font-mono text-xs md:text-sm">{{ item.en }}</td>
+                    <td class="px-4 py-2.5">
+                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                        {{ item.type }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- 2. 每日行程頁 (Day 1 ~ Day N) -->
+        <div v-for="day in dayList" :key="day.id">
+          <div v-if="activeTab === day.id" class="day-detail-content">
+            
+            <div v-if="itinerary[day.id] && itinerary[day.id].length > 0" class="max-w-2xl mx-auto py-2">
+              
+              <!-- OpenStreetMap 互動地圖區塊 -->
+              <div class="mb-8 bg-white rounded-2xl p-3 md:p-4 border border-slate-200/80 shadow-sm">
+                <div class="flex items-center justify-between mb-2.5 px-1">
+                  <div class="flex items-center gap-2 font-bold text-slate-800 text-sm md:text-base">
+                    <span>🗺️</span>
+                    <span>當日景點路線地圖 (OpenStreetMap)</span>
+                  </div>
+                  <button 
+                    @click="resetMapView(day.id)"
+                    class="text-xs text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 active:scale-95 px-2.5 py-1 rounded-lg font-medium transition cursor-pointer flex items-center gap-1"
+                  >
+                    <span>🔄</span>
+                    <span>檢視全部景點</span>
+                  </button>
+                </div>
+                <div :id="'map-' + day.id" class="w-full h-64 md:h-80 rounded-xl overflow-hidden z-0 border border-slate-100"></div>
+              </div>
+
+              <!-- 景點卡片時間軸 -->
+              <div v-for="(spot, index) in itinerary[day.id]" :key="index" class="relative">
+                
+                <!-- 卡片 -->
+                <div class="bg-[#f0f4f9] rounded-2xl p-4 md:p-5 flex items-center gap-4 shadow-sm border border-slate-200/50 hover:bg-[#e8eff7] transition">
+                  
+                  <!-- 紅圈數字徽章 (點擊可地圖聚焦 Zoom 17) -->
+                  <div 
+                    @click="focusSpotOnMap(day.id, index)"
+                    class="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-sm md:text-base flex items-center justify-center shadow-sm flex-shrink-0 cursor-pointer transition-all select-none"
+                    title="點擊於地圖上定位"
+                  >
+                    {{ index + 1 }}
+                  </div>
+
+                  <!-- 資訊區 -->
+                  <div class="flex-1 min-w-0 pr-1">
+                    <div class="flex items-center gap-1.5 text-rose-600 font-bold text-sm md:text-base">
+                      <span class="w-6 h-6 rounded-full border border-rose-500/80 flex items-center justify-center text-xs">
+                        <template v-if="spot.type === 'flight'">✈️</template>
+                        <template v-else-if="spot.type === 'hotel'">🛏️</template>
+                        <template v-else-if="spot.type === 'train'">🚆</template>
+                        <template v-else-if="spot.type === 'bus'">🚌</template>
+                        <template v-else-if="spot.type === 'bike'">🚲</template>
+                        <template v-else-if="spot.type === 'shopping'">🛍️</template>
+                        <template v-else-if="spot.type === 'castle'">🏯</template>
+                        <template v-else-if="spot.type === 'shrine'">⛩️</template>
+                        <template v-else-if="spot.type === 'park'">🌿</template>
+                        <template v-else-if="spot.type === 'cruise'">🚢</template>
+                        <template v-else-if="spot.type === 'tower'">🗼</template>
+                        <template v-else-if="spot.type === 'food'">🍜</template>
+                        <template v-else>📍</template>
+                      </span>
+                      <span>{{ spot.time }}</span>
+                      <span v-if="spot.tag" class="text-xs text-slate-400 font-normal">({{ spot.tag }})</span>
+                    </div>
+
+                    <h3 class="font-bold text-slate-800 text-base md:text-lg mt-0.5 tracking-tight truncate">
+                      {{ spot.name }}
+                    </h3>
+
+                    <p class="text-xs md:text-sm text-slate-400 font-medium mt-0.5">
+                      {{ spot.duration }}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- 景點間移動連線 -->
+                <div v-if="index < itinerary[day.id].length - 1" class="py-3 pl-8 md:pl-9 flex items-center gap-3 text-slate-500 text-xs md:text-sm font-medium">
+                  <div class="flex items-center gap-2">
+                    <span v-if="spot.transit?.icon === 'plane'">✈️</span>
+                    <span v-else-if="spot.transit?.icon === 'bus'">🚌</span>
+                    <span v-else-if="spot.transit?.icon === 'bike'">🚲</span>
+                    <span v-else-if="spot.transit?.icon === 'walk'">🚶</span>
+                    <span v-else-if="spot.transit?.icon === 'train'">🚆</span>
+                    <span v-else-if="spot.transit?.icon === 'cruise'">🚢</span>
+                    <span v-else>➡️</span>
+                    <span>{{ spot.transit?.text }}</span>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const { createApp, ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } = Vue;
+
+    createApp({
+      setup() {
+        const trip = reactive({
+          title: '東京跨年風華八天七夜・淺草下町與冬日璀璨光影之旅',
+          dateRange: '2026/12/26 (六) - 2027/01/02 (六)',
+          description: '以淺草為單一核心據點（Hub-and-Spoke 7 晚連續入住），深入感受江戶下町歷史底蘊與東京跨年傳統。行程精心串聯淺草寺大晦日「除夜之鐘」與元旦「初詣」祈福，融合六本木櫸坂、惠比壽花園廣場與丸之內三大冬季璀璨點燈，並登頂 SHIBUYA SKY 遠眺冬日夕陽與天際線。特別針對無海鮮飲食偏好規劃和牛壽喜燒、經典黑豚炸豬排、究極土雞地雞料理與傳統年越蕎麥麵，兼顧悠閒攝影步調與流暢動線。'
+        });
+
+        // 預設選中總覽頁 (Overview)
+        const activeTab = ref('overview');
+
+        const tabs = reactive([
+          { id: 'overview', name: '總覽頁' },
+          { id: 'day1', name: '第1天 (12/26)' },
+          { id: 'day2', name: '第2天 (12/27)' },
+          { id: 'day3', name: '第3天 (12/28)' },
+          { id: 'day4', name: '第4天 (12/29)' },
+          { id: 'day5', name: '第5天 (12/30)' },
+          { id: 'day6', name: '第6天 (12/31)' },
+          { id: 'day7', name: '第7天 (01/01)' },
+          { id: 'day8', name: '第8天 (01/02)' }
+        ]);
+
+        const overview = reactive({
+          notes: `【淺草核心居住策略 (Hub-and-Spoke)】
+• 7 晚全程連續入住「淺草里士滿酒店 本館 (Richmond Hotel Asakusa)」，預訂「標準雙床雙人房 (Standard Twin Room / 29㎡ / 2 張獨立單人床)」。
+• 房內享有 29 平方公尺超寬敞空間，可同時完全平攤兩個 28~30 吋大行李箱且兩人睡眠作息互不干擾；正對面即是 24 小時營業的唐吉訶德淺草店與 UNIQLO 淺草旗艦店，下樓即直通淺草寺西參道，生活機能與跨年夜歸無敵便利。
+• 交通樞紐極為便捷：坐擁東京地鐵銀座線（直通上野、銀座、澀谷）、都營淺草線（直達成田與羽田雙機場、日本橋、東銀座）、東武晴空塔線與隅田川水上巴士，免除每天收拾行李與拉車換飯店的疲勞。
+
+【年末年始 (12/29 ~ 1/3) 特殊應對指南】
+• 日本新年期間（大晦日 12/31 至 元旦 1/1），公家機關與部分博物館、庭園（如新宿御苑、東京國立博物館、皇居東御苑）休園；本行程已精準避開休園場所，並將重點轉移至戶外街區、全年無休之神社寺廟（明治神宮、淺草寺、神田明神）、展望台（SHIBUYA SKY、六本木之丘）與冬季彩燈。
+• 12/31 大晦日特別安排淺草寺「除夜之鐘（除夜の鐘）」體驗，聆聽 108 聲淨化煩惱的莊嚴鐘響；1/1 元旦則安排淺草寺「初詣（Hatsumode）」祈福與採買破魔矢，體驗最正統的江戶迎春儀式。
+
+【飲食與攝影客製規劃】
+• 全程餐食嚴格避開海鮮與魚介系高湯，精選東京頂級和牛壽喜燒（淺草今半）、名店黑豚炸豬排（青山舞泉）、秋田比內地雞純雞料理（丸之內）、淡麗系拉麵（AFURI）及大晦日傳統年越蕎麥麵（並木藪蕎麥）。
+• 每日安排黃金時刻（Golden Hour）與夜間點燈時段，預留充足街拍與建築攝影時間（如表參道建築幾何、六本木櫸坂藍白光海與東京鐵塔同框、丸之內香檳金林蔭大道）。`,
+          weather: [
+            { title: '平均氣溫', icon: '🌡️', value: '4°C ~ 12°C', desc: '早晚氣溫接近冰點，日間陽光露臉時體感約 10°C 左右。' },
+            { title: '晴雨概況', icon: '☀️', value: '冬季晴朗乾燥', desc: '東京冬季受太平洋側氣候影響，晴天率高達 80% 以上，降雨機率低。' },
+            { title: '穿著建議', icon: '🧥', value: '洋蔥式穿搭 + 防風保暖', desc: '發熱衣 + 毛衣 + 防風羽絨大衣；室內暖氣充足，進出溫差大；除夜之鐘跨年請備妥毛帽、手套與圍巾。' }
+          ],
+          notices: [
+            '旅遊警報與緊急救援：日本目前旅遊警示燈號為「灰色（提醒注意）」。我國駐日代表處緊急聯絡電話：+81-3-3280-7917；外交部緊急聯絡中心：+886-800-085-095；日本當地緊急報警請撥 110、救護消防請撥 119。',
+            '簽證與數位入境申報：持台灣護照享 90 天觀光免簽證待遇（護照效期須在 6 個月以上）。出發前 3 天請於官方「Visit Japan Web」完成入境審查與海關申報 QR Code 登錄，通關快速便捷。',
+            '旅遊保險組合：強烈建議出發前投保足額之「海外突發疾病醫療險（含緊急醫療運送）」與「旅遊不便險（涵蓋班機延誤、行李延誤與行李損壞）」。',
+            '託運行李保障拍照存證：於機場櫃台託運行李前，請務必拍攝自己的「託運行李外觀（正面/側面/辨識吊牌）」、「託運條」、「託運存根聯」及「地勤秤重重量」，以利行李延誤、遺失或損壞時進行航空公司與保險理賠。',
+            '天候與即時交通情報：建議手機安裝日本觀光廳官方「Safety Tips」App，並可即時查詢「JR 東日本運行情報」與「東京地鐵運行情報」以掌握年末年始鐵路動態。',
+            '大晦日保暖與除夜之鐘禮儀：12/31 深夜氣溫通常降至 2°C~4°C，戶外排隊候鐘時間較長，請務必備妥暖暖包、發熱保暖手套與保溫瓶；寺廟境內請輕聲慢行，遵從現場工作人員引導。',
+            '自然危害與野生動物注意：若延伸造訪東京近郊山區（如高尾山、奧多摩），山區健行請配掛防熊鈴 (熊鈴)，行前可參考「KumaMap 日本即時熊出沒地圖 (https://kumamap.com/zh-Hant)」查詢目擊情報。'
+          ],
+          stations: [
+            { zh: '臺灣桃園國際機場', ja: '台湾桃園国際空港 (たいわんとうえんこくさいくうこう)', en: 'Taiwan Taoyuan International Airport (TPE)', type: '機場' },
+            { zh: '成田國際機場', ja: '成田国際空港 (なりたこくさいくうこう)', en: 'Narita International Airport (NRT)', type: '機場' },
+            { zh: '淺草站', ja: '浅草駅 (あさくさえき)', en: 'Asakusa Station', type: '鐵道車站' },
+            { zh: '淺草里士滿酒店 本館', ja: 'リッチモンドホテル浅草 (本館)', en: 'Richmond Hotel Asakusa', type: '住宿飯店' },
+            { zh: '淺草寺 雷門', ja: '浅草寺 雷門 (せんそうじ かみなりもん)', en: 'Kaminarimon Gate, Senso-ji', type: '歷史地標' },
+            { zh: '淺草寺 本堂・五重塔', ja: '浅草寺 本堂・五重塔 (ほんどう・ごじゅうのとう)', en: 'Senso-ji Main Hall & Five-Story Pagoda', type: '古蹟寺廟' },
+            { zh: '淺草神社', ja: '浅草神社 (あさくさじんじゃ)', en: 'Asakusa Shrine', type: '神社' },
+            { zh: '隅田公園', ja: '隅田公園 (すみだこうえん)', en: 'Sumida Park', type: '名勝公園' },
+            { zh: '吾妻橋', ja: '吾妻橋 (あづまばし)', en: 'Azumabashi Bridge', type: '景觀橋樑' },
+            { zh: '淺草今半 國際通本店', ja: '浅草今半 国際通り本店 (あさくさいまはん)', en: 'Asakusa Imahan Kokusai-dori Main Store', type: '美食名店' },
+            { zh: '上野站', ja: '上野駅 (うえのえき)', en: 'Ueno Station', type: '鐵道車站' },
+            { zh: '上野恩賜公園・不忍池', ja: '上野恩賜公園・不忍池 (しのばずのいけ)', en: 'Ueno Park & Shinobazu Pond', type: '名勝公園' },
+            { zh: '谷中銀座商店街・夕陽階梯', ja: '谷中銀座商店街・夕やけだんだん', en: 'Yanaka Ginza & Yuyake Dandan Stairs', type: '下町老街' },
+            { zh: '秋葉原站', ja: '秋葉原駅 (あきはばらえき)', en: 'Akihabara Station', type: '鐵道車站' },
+            { zh: '肉之萬世 秋葉原本店', ja: '肉の万世 秋葉原本店 (にくのまんせい)', en: 'Niku no Mansei Akihabara Main Store', type: '美食名店' },
+            { zh: 'Yodobashi-Akiba', ja: 'ヨドバシカメラ マルチメディアAkiba', en: 'Yodobashi Multimedia Akiba', type: '商場旗艦' },
+            { zh: '明治神宮', ja: '明治神宮 (めいじじんぐう)', en: 'Meiji Jingu Shrine', type: '名勝神社' },
+            { zh: '原宿站', ja: '原宿駅 (はらじゅくえき)', en: 'Harajuku Station', type: '鐵道車站' },
+            { zh: '表參道之丘', ja: '表参道ヒルズ (おもてさんどうひるず)', en: 'Omotesando Hills', type: '建築名所' },
+            { zh: '炸豬排 舞泉 青山本店', ja: 'とんかつ まい泉 青山本店 (まいせん)', en: 'Tonkatsu Maisen Aoyama Main Store', type: '美食名店' },
+            { zh: '澀谷站', ja: '渋谷駅 (しぶやえき)', en: 'Shibuya Station', type: '鐵道車站' },
+            { zh: '澀谷十字路口', ja: '渋谷スクランブル交差点', en: 'Shibuya Scramble Crossing', type: '都會地標' },
+            { zh: 'SHIBUYA SKY', ja: '渋谷スカイ (しぶやすかい)', en: 'SHIBUYA SKY Observation Deck', type: '觀景展望' },
+            { zh: '惠比壽站', ja: '恵比寿駅 (えびすえき)', en: 'Ebisu Station', type: '鐵道車站' },
+            { zh: '惠比壽花園廣場', ja: '恵比寿ガーデンプレイス (えびすがーでんぷれいす)', en: 'Yebisu Garden Place', type: '冬季點燈' },
+            { zh: '新橋站', ja: '新橋駅 (しんばしえき)', en: 'Shimbashi Station', type: '鐵道車站' },
+            { zh: '台場海濱公園', ja: 'お台場海浜公園 (おだいばかいひんこうえん)', en: 'Odaiba Seaside Park', type: '濱海名勝' },
+            { zh: '台場 自由女神像', ja: 'お台場 自由の女神像 (じゆうのめがみぞう)', en: 'Statue of Liberty Odaiba', type: '地標景點' },
+            { zh: 'DiverCity Tokyo Plaza', ja: 'ダイバーシティ東京 プラザ', en: 'DiverCity Tokyo Plaza', type: '商場景點' },
+            { zh: '銀座中央通', ja: '銀座中央通り (ぎんざちゅうおうどおり)', en: 'Ginza Chuo-dori', type: '繁華街區' },
+            { zh: 'GINZA SIX', ja: 'ギンザ シックス', en: 'GINZA SIX', type: '商場名所' },
+            { zh: '東京車站 丸之內站舍', ja: '東京駅 丸の内駅舎 (とうきょうえき まるのうちえきしゃ)', en: 'Tokyo Station Marunouchi Building', type: '歷史建築' },
+            { zh: '丸之內仲通', ja: '丸の内仲通り (まるのうちなかどおり)', en: 'Marunouchi Naka-dori', type: '冬季點燈' },
+            { zh: 'KITTE 丸之內', ja: 'キッテ 丸の内 (きって まるのうち)', en: 'KITTE Marunouchi', type: '建築名所' },
+            { zh: '下北澤站', ja: '下北沢駅 (しもきたざわえき)', en: 'Shimokitazawa Station', type: '鐵道車站' },
+            { zh: '下北澤古著與文青街區', ja: '下北沢商店街 (しもきたざわしょうてんがい)', en: 'Shimokitazawa Vintage & Cafe District', type: '文化街區' },
+            { zh: '六本木站', ja: '六本木駅 (ろっぽんぎえき)', en: 'Roppongi Station', type: '鐵道車站' },
+            { zh: 'AFURI 六本木交差點', ja: 'AFURI 六本木交差点 (あふり)', en: 'AFURI Roppongi Crossing', type: '拉麵名店' },
+            { zh: '國立新美術館', ja: '国立新美術館 (こくりつしんびじゅつかん)', en: 'The National Art Center, Tokyo', type: '藝術建築' },
+            { zh: '六本木之丘 森大樓', ja: '六本木ヒルズ 森タワー (ろっぽんぎひるず)', en: 'Roppongi Hills Mori Tower', type: '觀景展望' },
+            { zh: '六本木櫸坂大道', ja: '六本木けやき坂通り (けやきざかどおり)', en: 'Roppongi Keyakizaka Dori', type: '冬季點燈' },
+            { zh: '神田明神', ja: '神田明神 (かんだみょうじん)', en: 'Kanda Myojin Shrine', type: '名勝神社' },
+            { zh: '皇居外苑・二重橋', ja: '皇居外苑・二重橋 (こうきょがいえん・にじゅうばし)', en: 'Kokyo Gaien National Garden & Nijubashi Bridge', type: '歷史名勝' },
+            { zh: '並木藪蕎麥', ja: '並木藪蕎麦 (なみきやぶそば)', en: 'Namiki Yabu Soba', type: '美食名店' },
+            { zh: '今戶神社', ja: '今戸神社 (いまどじんじゃ)', en: 'Imado Shrine', type: '名勝神社' },
+            { zh: '淺草水上巴士碼頭', ja: '東京都観光汽船 浅草発着所 (TOKYO CRUISE)', en: 'TOKYO CRUISE Asakusa Pier', type: '水上交通' },
+            { zh: '濱離宮恩賜庭園', ja: '浜離宮恩賜庭園 (はまりきゅうおんしていえん)', en: 'Hamarikyu Gardens', type: '名勝庭園' },
+            { zh: '芝公園・東京鐵塔', ja: '芝公園・東京タワー (しばこうえん・とうきょうたわー)', en: 'Shiba Park & Tokyo Tower', type: '地標景點' },
+            { zh: '隅田步道橋', ja: 'すみだリバーウォーク (SUMIDA RIVER WALK)', en: 'SUMIDA RIVER WALK', type: '景觀步道' },
+            { zh: '東京晴空塔城', ja: '東京スカイツリータウン (とうきょうすかいつりーたうん)', en: 'Tokyo Skytree Town', type: '都會名勝' }
+          ]
+        });
+
+        const itinerary = reactive({
+          day1: [
+            {
+              name: '臺灣桃園國際機場 (TPE)',
+              time: '08:00',
+              tag: '出發報到',
+              type: 'flight',
+              duration: '10:00 準時起飛 (飛行時間約 3 小時 10 分)',
+              coords: [25.0797, 121.2342],
+              transit: { icon: 'plane', text: '國際航班飛行 3 時 10 分 ➔ 抵達東京成田' }
+            },
+            {
+              name: '成田國際機場 (NRT)',
+              time: '14:10',
+              tag: '入境日本',
+              type: 'flight',
+              duration: '入境通關、領取行李與開通 eSIM (停留 1 小時)',
+              coords: [35.7653, 140.3856],
+              transit: { icon: 'train', text: '搭乘京成電鐵 Access 特急 (直通都營淺草線) 55 分 ➔ 淺草站' }
+            },
+            {
+              name: '淺草住宿 Check-in (淺草里士滿酒店 本館 / 雙床雙人房 29㎡)',
+              time: '16:15',
+              tag: '連續入住7晚',
+              type: 'hotel',
+              duration: '辦理入住、卸放行李與稍作休整 (停留 45 分)',
+              coords: [35.7143, 139.7943],
+              transit: { icon: 'walk', text: '漫步下町街巷 步行 6 分 ➔ 淺草寺雷門' }
+            },
+            {
+              name: '淺草寺雷門夜間點燈漫步',
+              time: '17:06',
+              tag: '下町夜景',
+              type: 'shrine',
+              duration: '夜間朱紅大燈籠點燈、仲見世通寧靜街拍 (建議停留 45 分)',
+              coords: [35.7111, 139.7963],
+              transit: { icon: 'walk', text: '步行 8 分 ➔ 隅田公園吾妻橋' }
+            },
+            {
+              name: '隅田公園＆吾妻橋 (晴空塔夜景展望)',
+              time: '17:59',
+              tag: '經典地標',
+              type: 'park',
+              duration: '捕捉隅田川水面倒影與晴空塔冬季限定夜間燈光 (建議停留 45 分)',
+              coords: [35.7107, 139.7995],
+              transit: { icon: 'walk', text: '步行 8 分 ➔ 淺草今半' }
+            },
+            {
+              name: '晚餐：淺草今半 國際通本店 (黑毛和牛壽喜燒)',
+              time: '18:52',
+              tag: '百年老舖',
+              type: 'food',
+              duration: '品嚐極上黑毛和牛壽喜燒丼/定食，無海鮮純牛肉頂級盛宴 (停留 1 小時 30 分)',
+              coords: [35.7144, 139.7917],
+              transit: { icon: 'walk', text: '步行 5 分 ➔ 返回飯店' }
+            },
+            {
+              name: '返回淺草住宿休息',
+              time: '20:27',
+              tag: '養精蓄銳',
+              type: 'hotel',
+              duration: '下町夜色靜謐，早點休息為明日攝影充電',
+              coords: [35.7143, 139.7943],
+              transit: null
+            }
+          ],
+          day2: [
+            {
+              name: '淺草住宿出發',
+              time: '08:00',
+              tag: '晨光攝影',
+              type: 'hotel',
+              duration: '早晨整裝出發，享受無人潮清幽街景',
+              coords: [35.7143, 139.7943],
+              transit: { icon: 'walk', text: '步行 5 分 ➔ 淺草寺本堂' }
+            },
+            {
+              name: '淺草寺晨間攝影與本堂參拜',
+              time: '08:05',
+              tag: '晨光古剎',
+              type: 'shrine',
+              duration: '晨曦金光灑落五重塔與雷門，避開白天喧囂之純淨光影 (建議停留 1 小時)',
+              coords: [35.7147, 139.7967],
+              transit: { icon: 'train', text: '淺草站搭乘東京地鐵銀座線 6 分 (候車假設 30 分) ➔ 上野站' }
+            },
+            {
+              name: '上野恩賜公園＆不忍池',
+              time: '09:41',
+              tag: '冬日林道',
+              type: 'park',
+              duration: '漫步銀杏落葉林道、不忍池水禽生態與弁天堂古意 (建議停留 1 小時 30 分)',
+              coords: [35.7140, 139.7741],
+              transit: { icon: 'walk', text: '沿下町街區慢步 步行 18 分 ➔ 谷中銀座' }
+            },
+            {
+              name: '谷中銀座老街散策＆夕陽階梯',
+              time: '11:29',
+              tag: '貓街下町',
+              type: 'sight',
+              duration: '夕やけだんだん階梯街拍、老派喫茶店無糖茶飲與懷舊木造街景 (建議停留 1 小時 15 分)',
+              coords: [35.7274, 139.7689],
+              transit: { icon: 'train', text: '日暮里站搭乘 JR 山手線 8 分 (候車假設 30 分) ➔ 秋葉原站' }
+            },
+            {
+              name: '午餐：秋葉原 肉之萬世 (和牛漢堡排/燒肉)',
+              time: '13:22',
+              tag: '肉食饗宴',
+              type: 'food',
+              duration: '享受純黑毛和牛漢堡排與特選燒肉定食，無海鮮無魚湯 (停留 1 小時 15 分)',
+              coords: [35.6980, 139.7712],
+              transit: { icon: 'walk', text: '步行 5 分 ➔ Yodobashi-Akiba' }
+            },
+            {
+              name: '秋葉原電器街＆Yodobashi-Akiba 相機選物',
+              time: '14:42',
+              tag: '攝影器材',
+              type: 'shopping',
+              duration: '旗艦級相機配件、定焦鏡頭試用與動漫文創選物 (建議停留 2 小時 30 分)',
+              coords: [35.6983, 139.7731],
+              transit: { icon: 'train', text: '末廣町站搭乘東京地鐵銀座線 8 分 (候車假設 30 分) ➔ 淺草站' }
+            },
+            {
+              name: '返回淺草住宿休息',
+              time: '17:50',
+              tag: '下町歸途',
+              type: 'hotel',
+              duration: '整理今日照片素材，品嚐無糖大麥茶放鬆',
+              coords: [35.7143, 139.7943],
+              transit: null
+            }
+          ],
+          day3: [
+            {
+              name: '淺草住宿出發',
+              time: '08:30',
+              tag: '都會巡禮',
+              type: 'hotel',
+              duration: '早餐後出發前往明治神宮林道',
+              coords: [35.7143, 139.7943],
+              transit: { icon: 'train', text: '淺草站搭乘地鐵銀座線至表參道轉千代田線 28 分 (候車假設 30 分) ➔ 明治神宮前' }
+            },
+            {
+              name: '明治神宮 (森林參道與巨大木鳥居)',
+              time: '09:28',
+              tag: '森之古境',
+              type: 'shrine',
+              duration: '漫步常綠林蔭古木步道、日本最大木造鳥居與清晨肅穆氛圍 (建議停留 1 小時 30 分)',
+              coords: [35.6764, 139.6993],
+              transit: { icon: 'walk', text: '步行 10 分 ➔ 原宿與表參道' }
+            },
+            {
+              name: '表參道之丘＆原宿街拍',
+              time: '11:08',
+              tag: '建築美學',
+              type: 'sight',
+              duration: '安藤忠雄建築幾何光影、櫸樹林蔭大道與精品旗艦店立面街拍 (建議停留 1 小時 15 分)',
+              coords: [35.6672, 139.7088],
+              transit: { icon: 'walk', text: '步行 6 分 ➔ 舞泉豬排青山本店' }
+            },
+            {
+              name: '午餐：炸豬排 舞泉 青山本店',
+              time: '12:29',
+              tag: '經典黑豚',
+              type: 'food',
+              duration: '錢湯改建之挑高大廳品嚐「用筷子就能切斷」的軟嫩黑豚炸豬排 (停留 1 小時 15 分)',
+              coords: [35.6669, 139.7103],
+              transit: { icon: 'train', text: '表參道站搭乘地鐵半藏門線 3 分 (候車假設 30 分) ➔ 澀谷站' }
+            },
+            {
+              name: '澀谷十字路口＆SHIBUYA SKY (夕陽與天際線展望)',
+              time: '14:17',
+              tag: '頂級絕景',
+              type: 'tower',
+              duration: '穿過世界最繁忙十字路口，登上229m露天展望台捕捉16:30冬日夕陽與富士山剪影 (建議停留 2 小時 30 分)',
+              coords: [35.6585, 139.7022],
+              transit: { icon: 'train', text: '澀谷站搭乘 JR 山手線 3 分 (候車假設 30 分) ➔ 惠比壽站' }
+            },
+            {
+              name: '惠比壽花園廣場 (Baccarat 水晶吊燈冬日點燈)',
+              time: '17:20',
+              tag: '璀璨光影',
+              type: 'sight',
+              duration: '鑑賞世界最大級 8,500 片水晶配件 Baccarat 璀璨吊燈與歐風廣場點燈 (建議停留 1 小時 30 分)',
+              coords: [35.6425, 139.7132],
+              transit: { icon: 'train', text: '惠比壽站搭乘東京地鐵日比谷線/銀座線 25 分 (候車假設 30 分) ➔ 淺草站' }
+            },
+            {
+              name: '返回淺草住宿休息',
+              time: '19:45',
+              tag: '滿載歸途',
+              type: 'hotel',
+              duration: '回味今日俯瞰東京全景與壯麗夕陽絕景',
+              coords: [35.7143, 139.7943],
+              transit: null
+            }
+          ],
+          day4: [
+            {
+              name: '淺草住宿出發',
+              time: '09:00',
+              tag: '濱海景觀',
+              type: 'hotel',
+              duration: '早晨整裝出發前往新橋樞紐',
+              coords: [35.7143, 139.7943],
+              transit: { icon: 'train', text: '淺草站搭乘東京地鐵銀座線 16 分 (候車假設 30 分) ➔ 新橋站' }
+            },
+            {
+              name: '新橋站轉搭百合海鷗號景觀電車',
+              time: '09:46',
+              tag: '海灣軌道',
+              type: 'train',
+              duration: '搭乘無人駕駛高架輕軌，體驗迴旋穿梭彩虹大橋的極佳鐵道視角 (搭乘 15 分)',
+              coords: [35.6664, 139.7583],
+              transit: { icon: 'train', text: '百合海鷗號行駛 15 分 ➔ 台場海濱公園站' }
+            },
+            {
+              name: '台場海濱公園＆自由女神像 (彩虹大橋展望)',
+              time: '10:01',
+              tag: '海風夕景',
+              type: 'park',
+              duration: '眺望東京灣浩瀚水色、彩虹大橋幾何線條與富士電視台球體建築 (建議停留 1 小時 30 分)',
+              coords: [35.6298, 139.7744],
+              transit: { icon: 'walk', text: '海濱木棧道散步 步行 8 分 ➔ DiverCity' }
+            },
+            {
+              name: 'DiverCity Tokyo Plaza (實物大獨角獸鋼彈立像)',
+              time: '11:39',
+              tag: '震撼地標',
+              type: 'shopping',
+              duration: '近距離拍攝 1:1 比例 RX-0 獨角獸鋼彈變形機構與商場午餐 (建議停留 1 小時 45 分)',
+              coords: [35.6244, 139.7755],
+              transit: { icon: 'train', text: '台場站搭乘百合海鷗號至新橋轉地鐵銀座線 20 分 (候車假設 30 分) ➔ 銀座站' }
+            },
+            {
+              name: '銀座中央通散策＆GINZA SIX 屋頂花園',
+              time: '14:14',
+              tag: '都會美學',
+              type: 'sight',
+              duration: '漫步和光鐘樓十字路口、登頂 GINZA SIX 空中花園遠眺銀座都會天際 (建議停留 1 小時 30 分)',
+              coords: [35.6713, 139.7650],
+              transit: { icon: 'walk', text: '沿丸之內林蔭大道 步行 12 分 ➔ 東京車站' }
+            },
+            {
+              name: '東京車站丸之內站舍＆丸之內仲通香檳金點燈',
+              time: '15:56',
+              tag: '百年紅磚',
+              type: 'sight',
+              duration: '辰野金吾大師紅磚站舍倒影、百萬顆香檳金 LED 點亮長達 1.2 公里林蔭光廊 (建議停留 1 小時 30 分)',
+              coords: [35.6812, 139.7671],
+              transit: { icon: 'walk', text: '步行 4 分 ➔ KITTE 丸之內' }
+            },
+            {
+              name: '晚餐：KITTE 丸之內 (秋田比內地雞究極親子丼)',
+              time: '17:30',
+              tag: '地雞名物',
+              type: 'food',
+              duration: '嚴選日本三大地雞「秋田比內地雞」炭火燒烤與特選親子丼，純雞肉鮮美甘甜 (停留 1 小時 15 分)',
+              coords: [35.6797, 139.7648],
+              transit: { icon: 'train', text: '東京站搭乘地鐵丸之內線至赤坂見附轉銀座線 18 分 (候車假設 30 分) ➔ 淺草站' }
+            },
+            {
+              name: '返回淺草住宿休息',
+              time: '19:33',
+              tag: '舒適歇息',
+              type: 'hotel',
+              duration: '沐浴放鬆，享受東京冬季浪漫燈飾之夜',
+              coords: [35.7143, 139.7943],
+              transit: null
+            }
+          ],
+          day5: [
+            {
+              name: '淺草住宿出發',
+              time: '09:00',
+              tag: '獨立文化',
+              type: 'hotel',
+              duration: '早餐後搭乘銀座線展開下北澤文青街拍',
+              coords: [35.7143, 139.7943],
+              transit: { icon: 'train', text: '淺草站搭地鐵銀座線至澀谷轉京王井之頭線 25 分 (候車假設 30 分) ➔ 下北澤站' }
+            },
+            {
+              name: '下北澤文青街區散策 (古著與黑膠街拍)',
+              time: '09:55',
+              tag: '巷弄漫步',
+              type: 'sight',
+              duration: '探索下北澤小劇場聚落、獨立黑膠唱片行、老派喫茶店與特色巷弄街拍 (建議停留 2 小時)',
+              coords: [35.6617, 139.6667],
+              transit: { icon: 'train', text: '搭乘京王井之頭線至澀谷轉地鐵大江戶線 22 分 (候車假設 30 分) ➔ 六本木站' }
+            },
+            {
+              name: '午餐：AFURI 六本木交差點 (柚子鹽淡麗拉麵)',
+              time: '12:47',
+              tag: '清爽拉麵',
+              type: 'food',
+              duration: '以阿夫利山天然湧水熬製的極致柚子鹽雞湯拉麵搭配現烤厚切叉燒 (停留 1 小時)',
+              coords: [35.6635, 139.7323],
+              transit: { icon: 'walk', text: '步行 6 分 ➔ 國立新美術館' }
+            },
+            {
+              name: '國立新美術館 (黑川紀章建築幾何光影)',
+              time: '13:53',
+              tag: '建築美學',
+              type: 'sight',
+              duration: '朝聖知名建築大師黑川紀章設計之波浪狀玻璃帷幕、巨大倒錐體光影美學 (建議停留 1 小時 30 分)',
+              coords: [35.6653, 139.7264],
+              transit: { icon: 'walk', text: '步行 8 分 ➔ 六本木之丘森大樓' }
+            },
+            {
+              name: '六本木之丘森大樓 Tokyo City View 展望台',
+              time: '15:31',
+              tag: '都會天際',
+              type: 'tower',
+              duration: '52 樓超大落地窗正對東京鐵塔，捕捉夕陽漸暮與都會車軌光廊 (建議停留 1 小時 45 分)',
+              coords: [35.6599, 139.7291],
+              transit: { icon: 'walk', text: '步行 3 分 ➔ 六本木櫸坂大道' }
+            },
+            {
+              name: '六本木櫸坂點燈 (SNOW & BLUE 與東京鐵塔同框)',
+              time: '17:19',
+              tag: '夢幻燈海',
+              type: 'sight',
+              duration: '80 萬顆冷冽冰藍與純白 LED 鋪滿 400 公尺櫸樹大道，與遠方暖紅東京鐵塔形成絕美對比 (建議停留 1 小時 15 分)',
+              coords: [35.6586, 139.7288],
+              transit: { icon: 'train', text: '六本木站搭乘都營大江戶線至藏前轉淺草線 22 分 (候車假設 30 分) ➔ 淺草站' }
+            },
+            {
+              name: '返回淺草住宿休息',
+              time: '19:26',
+              tag: '悠閒歸途',
+              type: 'hotel',
+              duration: '為明日大晦日跨年之夜養精蓄銳',
+              coords: [35.7143, 139.7943],
+              transit: null
+            }
+          ],
+          day6: [
+            {
+              name: '淺草住宿出發',
+              time: '09:00',
+              tag: '大晦日歲末',
+              type: 'hotel',
+              duration: '大晦日早晨，迎接一年中最具儀式感的日子',
+              coords: [35.7143, 139.7943],
+              transit: { icon: 'train', text: '淺草站搭乘地鐵銀座線 10 分 (候車假設 30 分) ➔ 末廣町站' }
+            },
+            {
+              name: '神田明神 (江戶總鎮守歲末祈願)',
+              time: '09:40',
+              tag: '古總鎮守',
+              type: 'shrine',
+              duration: '參拜近 1300 年歷史之江戶總鎮守，感受大晦日迎新除厄之莊嚴氛圍 (建議停留 1 小時 15 分)',
+              coords: [35.7020, 139.7679],
+              transit: { icon: 'walk', text: '步行 15 分 ➔ 皇居外苑' }
+            },
+            {
+              name: '皇居外苑＆二重橋 (冬日松林護城河散策)',
+              time: '11:10',
+              tag: '莊嚴綠境',
+              type: 'park',
+              duration: '冬日澄澈天光下的伏見櫓、二重石橋倒影與兩千株百年黑松名景 (建議停留 1 小時 30 分)',
+              coords: [35.6796, 139.7583],
+              transit: { icon: 'train', text: '大手町站搭乘地鐵千代田線/銀座線 20 分 (候車假設 30 分) ➔ 淺草站' }
+            },
+            {
+              name: '返回淺草飯店充能休整＆大晦日保暖準備',
+              time: '13:30',
+              tag: '午後充能',
+              type: 'hotel',
+              duration: '午後於飯店充分休息補眠、備妥保暖禦寒裝備與相機腳架電池 (休整 4 小時)',
+              coords: [35.7143, 139.7943],
+              transit: { icon: 'walk', text: '步行 5 分 ➔ 並木藪蕎麥' }
+            },
+            {
+              name: '晚餐：淺草 並木藪蕎麥 (大晦日年越蕎麥麵)',
+              time: '17:35',
+              tag: '傳統年越',
+              type: 'food',
+              duration: '品嚐大正年代傳承至今的鴨南蠻蕎麥麵，遵循日本傳統「吃長麵延年益壽、斬斷今年厄運」 (停留 1 小時 15 分)',
+              coords: [35.7103, 139.7960],
+              transit: { icon: 'walk', text: '步行 5 分 ➔ 返回飯店穿戴防寒重裝' }
+            },
+            {
+              name: '淺草寺境內＆除夜之鐘 (跨年聆聽108下鐘聲)',
+              time: '22:30',
+              tag: '跨年高潮',
+              type: 'shrine',
+              duration: '大晦日深夜前往弁天堂聆聽「除夜之鐘」，伴隨 108 響渾厚鐘聲洗滌一年煩惱，迎接 2027 新年到來！ (停留 2 小時 30 分)',
+              coords: [35.7147, 139.7967],
+              transit: { icon: 'walk', text: '步行 4 分 ➔ 返回飯店' }
+            },
+            {
+              name: '返回淺草住宿休息',
+              time: '01:04',
+              tag: '新年納福',
+              type: 'hotel',
+              duration: '在淺草下町新春喜悅中安穩入眠，迎向嶄新一年',
+              coords: [35.7143, 139.7943],
+              transit: null
+            }
+          ],
+          day7: [
+            {
+              name: '淺草住宿出發',
+              time: '09:30',
+              tag: '元旦新歲',
+              type: 'hotel',
+              duration: '元旦早晨享用熱茶，展開新春第一天參拜',
+              coords: [35.7143, 139.7943],
+              transit: { icon: 'walk', text: '步行 5 分 ➔ 淺草寺本堂' }
+            },
+            {
+              name: '淺草寺＆淺草神社「元旦初詣」祈福',
+              time: '09:35',
+              tag: '新春初詣',
+              type: 'shrine',
+              duration: '參與日本人最重要的「初詣」習俗，抽新年第一張御神籤、求取開運破魔矢與御守 (建議停留 1 小時 30 分)',
+              coords: [35.7147, 139.7967],
+              transit: { icon: 'walk', text: '漫步隅田川堤 步行 10 分 ➔ 今戶神社' }
+            },
+            {
+              name: '今戶神社 (招財貓發源地新春參拜)',
+              time: '11:15',
+              tag: '吉祥招福',
+              type: 'shrine',
+              duration: '參拜圓形結緣招財貓、掛上可愛圓形繪馬祈求新年良緣與財運 (建議停留 45 分)',
+              coords: [35.7198, 139.8037],
+              transit: { icon: 'walk', text: '步行 12 分 ➔ 淺草水上巴士碼頭' }
+            },
+            {
+              name: '隅田川水上巴士 (TOKYO CRUISE 淺草至濱離宮)',
+              time: '12:12',
+              tag: '水上巡禮',
+              type: 'cruise',
+              duration: '搭乘動漫大師松本零士設計之未來感遊船（Himiko / Hotaluna），穿梭14座隅田川歷史名橋 (航行 40 分)',
+              coords: [35.7118, 139.7986],
+              transit: { icon: 'cruise', text: '隅田川水上航行 40 分 ➔ 濱離宮恩賜庭園' }
+            },
+            {
+              name: '濱離宮恩賜庭園 (元旦潮入之池水景)',
+              time: '12:52',
+              tag: '將軍名園',
+              type: 'park',
+              duration: '德川將軍御殿、東京唯一引進海水之「潮入之池」與御茶屋倒影 (建議停留 1 小時 30 分)',
+              coords: [35.6597, 139.7634],
+              transit: { icon: 'walk', text: '漫步芝大門 步行 15 分 ➔ 芝公園' }
+            },
+            {
+              name: '東京鐵塔＆芝公園 (元旦夜景經典構圖)',
+              time: '14:37',
+              tag: '經典地標',
+              type: 'tower',
+              duration: '於芝公園 4 號地綠地與增上寺大殿前捕捉元旦新春經典紅白鐵塔與黃昏點燈 (建議停留 2 小時)',
+              coords: [35.6586, 139.7454],
+              transit: { icon: 'train', text: '赤羽橋站搭乘都營大江戶線至藏前轉淺草線 25 分 (候車假設 30 分) ➔ 淺草站' }
+            },
+            {
+              name: '返回淺草住宿休息',
+              time: '17:32',
+              tag: '沉澱心靈',
+              type: 'hotel',
+              duration: '品味元旦寧靜夜色，整理八日豐富攝影珍藏',
+              coords: [35.7143, 139.7943],
+              transit: null
+            }
+          ],
+          day8: [
+            {
+              name: '淺草住宿 Check-out 寄放行李',
+              time: '09:00',
+              tag: '最終日晨景',
+              type: 'hotel',
+              duration: '辦理退房手續，將大件行李暫存於飯店前台 (停留 30 分)',
+              coords: [35.7143, 139.7943],
+              transit: { icon: 'walk', text: '漫步跨河步道 步行 10 分 ➔ 隅田步道橋' }
+            },
+            {
+              name: '隅田步道橋 (SUMIDA RIVER WALK) ＆ 隅田公園',
+              time: '09:40',
+              tag: '步道景觀',
+              type: 'park',
+              duration: '沿東武鐵道鐵橋旁專用步道漫步過河，拍攝晴空塔與下町鐵道列車穿梭同框 (建議停留 45 分)',
+              coords: [35.7115, 139.8015],
+              transit: { icon: 'walk', text: '步行 8 分 ➔ 東京晴空塔城' }
+            },
+            {
+              name: '東京晴空塔城 Tokyo Solamachi (新春市集與伴手禮採買)',
+              time: '10:33',
+              tag: '新春選物',
+              type: 'shopping',
+              duration: '探索 Solamachi 特色文創選品、採買東京頂級伴手禮、無糖茶飲與品嚐名物午餐 (建議停留 2 小時 30 分)',
+              coords: [35.7100, 139.8107],
+              transit: { icon: 'walk', text: '步行 15 分 ➔ 返回淺草飯店提取行李' }
+            },
+            {
+              name: '淺草站搭乘成田 Skyaccess 特急直通機場',
+              time: '13:18',
+              tag: '免換車直達',
+              type: 'train',
+              duration: '淺草站搭乘成田 Skyaccess Access特急，免換車直達航廈 (車程 50 分，候車假設 30 分)',
+              coords: [35.7117, 139.7972],
+              transit: { icon: 'train', text: '鐵道直通 50 分 ➔ 成田國際機場' }
+            },
+            {
+              name: '成田國際機場 (NRT)',
+              time: '14:38',
+              tag: '回程報到',
+              type: 'flight',
+              duration: '17:00 班機起飛；預留充足時間完成登機手續、海關退稅、安檢通關與免稅店選物 (停留 2 小時 22 分)',
+              coords: [35.7653, 140.3856],
+              transit: { icon: 'plane', text: '國際航班飛行 3 時 45 分 ➔ 台北桃園機場' }
+            },
+            {
+              name: '臺灣桃園國際機場 (TPE)',
+              time: '20:15',
+              tag: '平安抵達',
+              type: 'flight',
+              duration: '平安返抵國門，圓滿結束充實且難忘的東京跨年八天七夜之旅！',
+              coords: [25.0797, 121.2342],
+              transit: null
+            }
+          ]
+        });
+
+        const dayList = computed(() => tabs.filter(t => t.id !== 'overview'));
+
+        const mapInstances = {};
+        const markerInstances = {};
+
+        function renderMap(dayId) {
+          if (dayId === 'overview') return;
+          nextTick(() => {
+            const containerId = 'map-' + dayId;
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const spots = itinerary[dayId] || [];
+            const validSpots = spots.filter(s => s.coords && s.coords.length === 2);
+            if (validSpots.length === 0) return;
+
+            if (mapInstances[dayId]) {
+              try { mapInstances[dayId].remove(); } catch (e) {}
+              delete mapInstances[dayId];
+            }
+
+            const map = L.map(containerId, { scrollWheelZoom: false });
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              attribution: '&copy; OpenStreetMap contributors',
+              maxZoom: 18
+            }).addTo(map);
+            mapInstances[dayId] = map;
+
+            markerInstances[dayId] = [];
+            const latLngs = [];
+            validSpots.forEach((spot, idx) => {
+              const markerIcon = L.divIcon({
+                className: 'custom-osm-marker',
+                html: `<div style="background-color: #e11d48; color: #fff; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.35);">${idx + 1}</div>`,
+                iconSize: [26, 26],
+                iconAnchor: [13, 13],
+                popupAnchor: [0, -13]
+              });
+
+              const marker = L.marker(spot.coords, { icon: markerIcon }).addTo(map);
+              marker.bindPopup(`<strong>${idx + 1}. ${spot.name}</strong><br/><span style="color:#64748b;font-size:12px;">⏰ ${spot.time} · ${spot.duration}</span>`);
+              markerInstances[dayId].push(marker);
+              latLngs.push(spot.coords);
+            });
+
+            if (latLngs.length > 1) {
+              const localSpots = latLngs.filter(c => c[0] > 30);
+              if (localSpots.length > 1) {
+                L.polyline(localSpots, { color: '#e11d48', weight: 3.5, opacity: 0.75, dashArray: '5, 8' }).addTo(map);
+              }
+            }
+
+            const localCoords = latLngs.filter(c => c[0] > 30);
+            const fitCoords = localCoords.length > 0 ? localCoords : latLngs;
+            if (fitCoords.length === 1) {
+              map.setView(fitCoords[0], 14);
+            } else if (fitCoords.length > 1) {
+              map.fitBounds(L.latLngBounds(fitCoords), { padding: [40, 40], maxZoom: 15 });
+            }
+
+            setTimeout(() => { map.invalidateSize(); }, 120);
+          });
+        }
+
+        function focusSpotOnMap(dayId, spotIndex) {
+          const targetDay = dayId || activeTab.value;
+          const map = mapInstances[targetDay];
+          const spot = itinerary[targetDay] && itinerary[targetDay][spotIndex];
+          if (!map || !spot || !spot.coords) return;
+
+          const mapContainer = document.getElementById('map-' + targetDay);
+          if (mapContainer) {
+            mapContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+          map.invalidateSize();
+          map.flyTo(spot.coords, 17, { duration: 0.8 });
+
+          const markers = markerInstances[targetDay];
+          if (markers && markers[spotIndex]) {
+            setTimeout(() => { markers[spotIndex].openPopup(); }, 400);
+          }
+        }
+
+        function resetMapView(dayId) {
+          const targetDay = dayId || activeTab.value;
+          if (!targetDay || targetDay === 'overview') return;
+          const map = mapInstances[targetDay];
+          const spots = itinerary[targetDay] || [];
+          const validSpots = spots.filter(s => s.coords && s.coords.length === 2);
+          if (!map || validSpots.length === 0) return;
+
+          map.closePopup();
+          map.invalidateSize();
+          const latLngs = validSpots.map(s => s.coords);
+          const localCoords = latLngs.filter(c => c[0] > 30);
+          const fitCoords = localCoords.length > 0 ? localCoords : latLngs;
+          if (fitCoords.length === 1) {
+            map.flyTo(fitCoords[0], 14, { duration: 0.8 });
+          } else if (fitCoords.length > 1) {
+            map.fitBounds(L.latLngBounds(fitCoords), { padding: [40, 40], maxZoom: 15, animate: true });
+          }
+        }
+
+        function switchTab(tabId) {
+          if (activeTab.value === tabId) {
+            if (tabId !== 'overview') resetMapView(tabId);
+            return;
+          }
+          activeTab.value = tabId;
+          if (window.location.hash !== '#' + tabId) window.location.hash = tabId;
+          if (tabId !== 'overview') renderMap(tabId);
+        }
+
+        function handleHashChange() {
+          const hash = window.location.hash.replace('#', '');
+          if (tabs.some(t => t.id === hash)) {
+            activeTab.value = hash;
+            if (hash !== 'overview') renderMap(hash);
+          }
+        }
+
+        watch(activeTab, (newTab) => {
+          if (newTab !== 'overview') renderMap(newTab);
+        });
+
+        onMounted(() => {
+          const hash = window.location.hash.replace('#', '');
+          if (hash && tabs.some(t => t.id === hash)) {
+            activeTab.value = hash;
+          } else {
+            window.location.hash = activeTab.value;
+          }
+          if (activeTab.value !== 'overview') renderMap(activeTab.value);
+          window.addEventListener('hashchange', handleHashChange);
+        });
+
+        onUnmounted(() => {
+          window.removeEventListener('hashchange', handleHashChange);
+        });
+
+        return {
+          trip,
+          activeTab,
+          tabs,
+          overview,
+          itinerary,
+          dayList,
+          switchTab,
+          focusSpotOnMap,
+          resetMapView
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>

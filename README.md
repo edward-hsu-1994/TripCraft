@@ -70,7 +70,8 @@ TripCraft/
     ├── hokkaido-7days.html          2027 初秋北海道深度 7 天 6 夜雙城連續居住互動網頁範本
     ├── kyushu-8days.html            2027 初春九州福岡 8 天 7 夜雙城連續居住互動網頁範本
     ├── kansai-7days.html            2026 初春關西深度 7 天 6 夜京都大阪雙城互動網頁範本
-    └── okayama-travel.html          2026 山陽關西 8 天 7 夜標準互動網頁範本
+    ├── okayama-travel.html          2026 山陽關西 8 天 7 夜標準互動網頁範本
+    └── tokyo-8days.html             2027 東京跨年 8 天 7 夜淺草連續居住與冬日祭典光影互動網頁範本
 ```
 
 ---

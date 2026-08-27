@@ -28,7 +28,7 @@ description: This skill should be used when the user says they want to travel, a
 4. **Always ask the trip duration** after the destination is picked. Duration determines how many spots to recommend.
 5. **Always check with the user about spots** at the picked destination. Either use the user's named spots, or — if they don't know — refine the step-2 preferences at the spot level and recommend a count that fits the duration.
 6. **Always ask the user about transport mode** between locations. Proactively evaluate and integrate **Walking, Public Transit (Metro / Bus / Train), Public Bike Sharing (e.g. YouBike / Docomo Bike / HELLO CYCLING), Scenic Rental Bicycles / E-Bikes (e.g. Kibiji / Biei / Karuizawa / Shimanami Kaido), Taxi, and Rental Car**. **Mandatory Bicycle Station & Shop Research & Sequence Alignment**: When bicycles are selected, the agent MUST web-research the exact rental shop name (店家名稱、營業時間、租金與車型), public bike docking station locations (借車站點/還車站點), and identify whether one-way drop-off (甲租乙還) or round-trip return (同店歸還) applies. **Crucially, the itinerary sequence MUST be dynamically structured around actual rental availability** — if a region only has bike rental facilities at specific stations (e.g. JR 備前一宮站 has a bike rental shop, while JR 吉備津站 does NOT), the itinerary MUST route to the rental origin (備前一宮站) FIRST before heading to other attractions (e.g. 先至備前一宮站租車 ➔ 吉備津彥神社 ➔ 吉備津神社). Never schedule cycling starting from a spot/station that lacks rental facilities. Do not assume.
-7. **Always web-research visit duration AND coordinates** (`coords: [lat, lng]`) for each attraction and hub. **Mandatory Web Search for Visit Duration**: Whenever web search / browsing tools are available, the agent MUST explicitly search the web for the official or traveler-consensus estimated visit duration (建議停留時間 / 所要時間 / average visit duration) for each specific attraction. Never blindly guess or fabricate dwell times. Accurately pin all spots on OpenStreetMap.
+7. **Always web-research visit duration, opening/operating hours, and coordinates** (`coords: [lat, lng]`) for every attraction, restaurant, shop, facility, and hub. For each itinerary date, verify the official source for weekly closing days, public holidays, consecutive-holiday periods, year-end/New Year closures, seasonal or temporary closures, last admission/order, reservation or timed-entry rules. Never assume normal weekday hours, blindly guess, or fabricate data; if the date-specific schedule is unpublished or uncertain, mark it as pending, provide a backup, and do not make it an irreplaceable core stop.
 8. **Always web-research transit data** (transit line name, train name, travel time, walking time e.g. "步行 X 分", cycling route time & distance with rental shop pickup/drop-off e.g. "於站前租借單車 ➔ 騎行 20 分 (約 3.5km) ➔ 景點", and fare) for each leg.
 9. **Always apply realistic station waiting & transfer buffer assumptions (候車與轉乘時間假設預設為 30 分鐘)**: Total day plan = sum of (visit durations + transit times + **waiting times [預設候車時間 30 分鐘]** + meals + buffer). When planning train/bus station departures or transfers, budget a 30-minute buffer for headway waiting, ticketing, platform finding, and bike return/rental logistics (`停留 0 時 30 分 (候車與轉乘)` 或 `歸還單車與候車 30 分`). No hand-waving.
 10. **Output format is an interactive single-file Vue 3 + Tailwind CSS + OpenStreetMap HTML** placed in `templates/<destination>-travel.html`.
@@ -302,24 +302,32 @@ Web-search specific natural hazards, disaster contingency, and wildlife risks:
 - **Rental car** — proceed to step 9c
 - **Mixed** (e.g., transit by day, taxi at night, or train to hub + bicycle touring) — split legs and apply per leg
 
-### 8. Research visit durations, opening hours, and coordinates
-For each picked attraction and transit hub (airport, stations, hotels, bike rental shops & docking stations), **search the web** for typical visit duration, business hours, and accurate coordinates (`coords: [lat, lng]`). Never fabricate data.
+### 8. Research visit durations, date-specific opening hours, holiday status, and coordinates
+For each picked attraction, restaurant, shop, paid facility, and transit hub (airport, stations, hotels, bike rental shops & docking stations), **search the web** for typical visit duration, official opening/operating hours, closed days, holiday/long-weekend operation, last admission/order, reservation rules, and accurate coordinates (`coords: [lat, lng]`). Never fabricate data.
 
-**Mandatory Web Search for Visit Duration & Bike Rental Locations (停留時間與單車租賃強制上網查詢)**:
-Whenever web lookup tools are available, you MUST explicitly search the web for the official or traveler-consensus recommended visit duration and bicycle rental locations:
+**Mandatory Web Search for Visit Duration, Operating Hours & Bike Rental Locations (停留時間、營業時間與單車租賃強制上網查詢)**:
+Whenever web lookup tools are available, you MUST explicitly search the web for the official or traveler-consensus recommended visit duration, date-specific operating status, and bicycle rental locations:
 - `"<attraction>" 建議停留時間 OR 停留時間 OR 所需時間`
 - `"<attraction>" 所要時間 OR 滞在時間 OR 観光時間`
 - `"<attraction>" average visit duration OR how long to spend`
 - `"<station/spot>" 自行車租借 OR レンタサイクル OR bike rental shops`
 - `"<cycling route>" 甲租乙還 OR 乗り捨て OR one-way bike drop-off`
-- `"<attraction>" opening hours OR closed days OR last entry time`
+- `"<attraction>" opening hours OR hours OR business hours OR closed days OR last admission`
+- `"<restaurant/shop>" business hours OR last order OR reservation OR holiday hours`
+- `"<attraction/shop>" <visit date> holiday opening OR year-end New Year closure OR temporary closure`
+- `"<attraction/shop>" 臨時休業 OR 年末年始 営業 OR 祝日 営業 OR 連休 営業`
 - `"<attraction>" coordinates latitude longitude` or geocode via OpenStreetMap
 
+**Date-Specific Operating-Hours & Holiday Check (依實際日期查核營業狀態)**:
+For every attraction, restaurant, shop, market, museum, garden, observatory, transport service, and hotel service used in the itinerary:
+- Verify the official source for the exact visit date, including weekly closing days, public holidays, consecutive holidays, year-end/New Year closures, seasonal or temporary closures, last admission/order, reservation requirements, and timed-entry limits.
+- Never substitute ordinary weekday hours for a holiday or consecutive-holiday date. If the official schedule is unpublished or uncertain, label the stop as `待確認`, provide a nearby operating backup, and do not make it an irreplaceable core stop.
+- Record the source URL and the date checked so the itinerary can be re-verified before departure.
 Record per spot:
 - **Spot name** (official name in destination + original script, including bike rental shop if applicable)
 - **Coordinates** — `coords: [latitude, longitude]` (essential for Leaflet pin rendering)
 - **Typical visit duration** (e.g. `停留 1 時 30 分`, `08:30 離開`, `租借單車 10 分`, `歸還單車 5 分`, `返回飯店休息`, `返抵國門`) — strictly derived from web search findings
-- **Opening hours & closed days**
+- **Opening/operating hours, closed days, date-specific holiday status, last admission/order, and reservation rules** (with source URL and date checked)
 - **Type classification**: `flight` ✈️, `hotel` 🛏️, `train` 🚆, `bus` 🚌, `bike` 🚲, `shopping` 🛍️, `info` ℹ️, `castle` 🏯, `shrine` ⛩️, `park` 🌿, `cruise` 🚢, `tower` 🗼, `sight` 📍.
 
 ### 9. Research transit segments & station waiting buffers (交通路段與候車緩衝)
@@ -401,7 +409,8 @@ const itinerary = reactive({
 ```
 
 ### 11. Add logistics & contingency
-- Ensure opening hours are strictly respected for each day's sequence.
+- Verify every attraction, restaurant, shop, facility, and service is open on the exact visit date; account for weekly closing days, public holidays, consecutive holidays, year-end/New Year closures, last entry/order, and timed reservations.
+- If hours or holiday operations are unconfirmed, label the stop as `待確認`, include a nearby operating backup, and leave enough slack to switch without breaking the day.
 - Reserve buffer for customs/immigration on arrival day and airport check-in on departure day.
 - Hotel is the start and final rest spot of every day.
 
