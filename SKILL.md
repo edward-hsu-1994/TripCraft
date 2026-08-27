@@ -94,9 +94,9 @@ Research and summarize:
 
 Reconfirm the transport preference after destination, stops, and lodging are known. Evaluate walking, public transit, public bike share, scenic rental bikes or e-bikes, taxi/rideshare, rental car, and mixed transport.
 
-For cycling, research and schedule around the actual rental ecosystem:
+For every rental, record:
 
-- Exact shop or dock name, location, hours, price, bike type, and final return time.
+- Exact shop/dock name, location, hours, price, bike type, and final return time.
 - Availability-driven sequence: route to a valid pickup point before cycling; never start at a station without a rental option.
 - One-way drop-off versus round-trip return, including verified return locations.
 - Realistic route distance and riding time; use **12–15 km/h** as the default flat-route cycling baseline. Recommend e-bikes for hilly routes.
@@ -107,10 +107,10 @@ For every attraction, restaurant, shop, paid facility, lodging service, transpor
 
 - Official name, useful local-script name, and `coords: [latitude, longitude]`.
 - Research-based visit duration.
-- Official hours, weekly closure, exact-date holiday or long-weekend status, year-end/New Year and seasonal/temporary closures, last admission/order, reservations, and timed entry.
-- Source URL and date checked.
+- Exact-date access: official hours; weekly, public/long-weekend, year-end/New Year, seasonal, and temporary closures; last admission/order; reservations; and timed entry.
+- Evidence: official source URL and date checked.
 
-Search the exact visit date; never substitute ordinary weekday hours for a holiday. If the source has not published the schedule, mark the item as pending and add a nearby verified backup.
+Never substitute ordinary weekday hours for a holiday. If the source has not published the schedule, mark the item as pending and add a nearby verified backup.
 
 ### 9. Research every transit leg
 
