@@ -125,6 +125,31 @@
             </div>
           </section>
 
+          <!-- 行前待辦 -->
+          <section v-if="overview.actions.length">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-lg">✅</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">行前待辦</h2>
+            </div>
+            <ul class="space-y-3">
+              <li v-for="action in overview.actions" :key="action.text" class="rounded-xl border border-slate-200/80 bg-slate-50 p-4">
+                <div class="flex flex-wrap items-start gap-2">
+                  <span
+                    :class="action.critical ? 'bg-rose-100 text-rose-700 border-rose-200' : 'bg-slate-100 text-slate-600 border-slate-200'"
+                    class="inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-xs font-bold"
+                  >
+                    {{ actionStatusLabel(action.status) }}
+                  </span>
+                  <span class="min-w-0 flex-1 text-sm leading-relaxed text-slate-700">{{ action.text }}</span>
+                </div>
+                <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                  <span v-if="action.deadline" class="text-slate-500">完成時點：{{ action.deadline }}</span>
+                  <a v-if="action.sourceUrl" :href="action.sourceUrl" target="_blank" rel="noopener noreferrer" class="font-semibold text-rose-600 hover:text-rose-700">查核來源 ↗</a>
+                </div>
+              </li>
+            </ul>
+          </section>
+
           <!-- 注意事項 -->
           <section>
             <div class="flex items-center gap-2 mb-3">
@@ -133,8 +158,8 @@
             </div>
             <div class="bg-amber-50/40 rounded-xl p-5 border border-amber-200/60">
               <ul class="space-y-2.5 text-sm md:text-base text-slate-700">
-                <li 
-                  v-for="(notice, idx) in overview.notices" 
+                <li
+                  v-for="(notice, idx) in displayedNotices"
                   :key="idx"
                   class="flex items-start gap-2.5"
                 >
@@ -145,31 +170,27 @@
             </div>
           </section>
 
-          <!-- 實用車站與地名日英對照表 -->
+          <!-- 行程地點與座標對照表 -->
           <section>
             <div class="flex items-center gap-2 mb-3">
-              <span class="text-lg">🚉</span>
-              <h2 class="text-lg md:text-xl font-bold text-slate-800">實用車站與地名日英對照表</h2>
+              <span class="text-lg">📍</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">行程地點與座標對照表</h2>
             </div>
             <div class="overflow-x-auto rounded-xl border border-slate-200/80 shadow-xs">
               <table class="w-full text-left text-sm text-slate-700">
                 <thead class="bg-slate-100/80 text-xs font-bold text-slate-600 uppercase tracking-wider border-b border-slate-200">
                   <tr>
-                    <th scope="col" class="px-4 py-3">中文名稱</th>
-                    <th scope="col" class="px-4 py-3">日文名稱 (漢字 / 假名)</th>
-                    <th scope="col" class="px-4 py-3">英文 / 羅馬拼音 (Romaji)</th>
+                    <th scope="col" class="px-4 py-3">行程地點</th>
+                    <th scope="col" class="px-4 py-3">座標</th>
                     <th scope="col" class="px-4 py-3">類型</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 bg-white">
-                  <tr v-for="(item, idx) in overview.stations" :key="idx" class="hover:bg-slate-50/80 transition">
-                    <td class="px-4 py-2.5 font-bold text-slate-800">{{ item.zh }}</td>
-                    <td class="px-4 py-2.5 font-medium text-rose-600 font-mono">{{ item.ja }}</td>
-                    <td class="px-4 py-2.5 text-slate-500 font-mono text-xs md:text-sm">{{ item.en }}</td>
+                  <tr v-for="item in referenceRows" :key="`${item.name}:${item.coords}`" class="hover:bg-slate-50/80 transition">
+                    <td class="px-4 py-2.5 font-bold text-slate-800">{{ item.name }}</td>
+                    <td class="px-4 py-2.5 text-slate-500 font-mono text-xs md:text-sm">{{ item.coords }}</td>
                     <td class="px-4 py-2.5">
-                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
-                        {{ item.type }}
-                      </span>
+                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">{{ placeTypeLabel(item.type) }}</span>
                     </td>
                   </tr>
                 </tbody>
@@ -275,11 +296,11 @@
 
             </div>
 
-            <!-- Fallback Placeholder for days with no data yet -->
-            <div v-else class="py-12 text-center text-slate-400 border-2 border-dashed border-slate-200 rounded-xl">
+            <!-- 空白日的可執行狀態 -->
+            <div v-else class="py-12 text-center text-slate-500 border-2 border-dashed border-slate-200 rounded-xl">
               <div class="text-4xl mb-2">🗓️</div>
-              <h3 class="text-base font-semibold text-slate-600">{{ day.name }} 行程內容區塊（Placeholder）</h3>
-              <p class="text-sm text-slate-400 mt-1">即將填入景點排程、交通時間、停留時間與備註</p>
+              <h3 class="text-base font-semibold text-slate-700">{{ day.name }} 暫無已確認安排</h3>
+              <p class="text-sm mt-1">保留為休息、補給，或依「行前待辦」完成確認後再排入行程。</p>
             </div>
 
           </div>
@@ -332,272 +353,29 @@
             '天候天災與颱風應變：3 月中旬初春晴朗少颱風，但山區天候多變；若遇極端豪雨或鐵道延誤，可下載日本官方「Safety Tips App」或查詢「JR 九州列車運行情報」。',
             '自然危害與野生動物注意：阿蘇火山周邊請留意火口警戒層級（氣喘或心血管不適者避免靠近火口瓦斯區）；山區景點漫步請遵循官方指定步道，郊山健行可隨身配掛防熊鈴 (熊鈴)，行前可參考「KumaMap 日本即時熊出沒地圖 (https://kumamap.com/zh-Hant)」。'
           ],
-          stations: [
+          actions: [
             {
-                        "zh": "福岡國際機場 (FUK)",
-                        "ja": "福岡空港 (ふくおくうこう)",
-                        "en": "Fukuoka Airport (FUK)",
-                        "type": "機場樞紐"
+              status: 'confirm',
+              critical: true,
+              deadline: '出發前',
+              text: '以福岡機場與 JR 九州官方資訊重新確認航班、國際線航廈接駁、機場至博多交通及指定席列車的實際時刻、營運狀態與預約規則。',
+              sourceUrl: 'https://www.fukuoka-airport.jp/en/access/'
             },
             {
-                        "zh": "博多車站",
-                        "ja": "博多駅 (はかたえき)",
-                        "en": "Hakata Station",
-                        "type": "新幹線/JR/地鐵"
+              status: 'confirm',
+              critical: true,
+              deadline: '付款後與出發前',
+              text: '向航空公司與住宿供應商核對訂位代號、票號、行李額度、入住日期、取消條件與轉機責任；若為分開開票，預留足夠自轉機緩衝。',
+              sourceUrl: 'https://www.jrkyushu.co.jp/english/train_reservation/guide/reserve.html'
             },
             {
-                        "zh": "博多站前大和ROYNET飯店",
-                        "ja": "ダイワロイネットホテル博多駅前",
-                        "en": "Daiwa Roynet Hotel Hakata-Ekimae",
-                        "type": "飯店住宿"
-            },
-            {
-                        "zh": "住吉神社",
-                        "ja": "住吉神社 (すみよしじんじゃ)",
-                        "en": "Sumiyoshi Shrine",
-                        "type": "古老神社"
-            },
-            {
-                        "zh": "櫛田神社",
-                        "ja": "櫛田神社 (くしだじんじゃ)",
-                        "en": "Kushida Shrine",
-                        "type": "博多總鎮守"
-            },
-            {
-                        "zh": "博多運河城",
-                        "ja": "キャナルシティ博多",
-                        "en": "Canal City Hakata",
-                        "type": "複合商場"
-            },
-            {
-                        "zh": "西鐵福岡(天神)站",
-                        "ja": "西鉄福岡（天神）駅",
-                        "en": "Nishitetsu-Fukuoka (Tenjin) Station",
-                        "type": "私鐵總站"
-            },
-            {
-                        "zh": "西鐵柳川站",
-                        "ja": "西鉄柳川駅 (やながわえき)",
-                        "en": "Nishitetsu-Yanagawa Station",
-                        "type": "觀光鐵道"
-            },
-            {
-                        "zh": "柳川水鄉遊船 (松月乘船場)",
-                        "ja": "柳川川下り（松月乗船場）",
-                        "en": "Yanagawa River Cruise (Shogetsu Pier)",
-                        "type": "水鄉泛舟"
-            },
-            {
-                        "zh": "元祖本吉屋 柳川現蒸鰻魚飯",
-                        "ja": "元祖本吉屋（せいろ蒸し）",
-                        "en": "Ganso Motoyoshiya (Steamed Eel)",
-                        "type": "鰻魚名店"
-            },
-            {
-                        "zh": "太宰府天滿宮",
-                        "ja": "太宰府天満宮 (だざいふてんまんぐう)",
-                        "en": "Dazaifu Tenmangu",
-                        "type": "神社總本社"
-            },
-            {
-                        "zh": "太宰府表參道 & 梅枝餅",
-                        "ja": "太宰府表参道・梅ヶ枝餅",
-                        "en": "Dazaifu Omotesando & Umegaemochi",
-                        "type": "參道老街"
-            },
-            {
-                        "zh": "小倉車站",
-                        "ja": "小倉駅 (こくらえき)",
-                        "en": "Kokura Station",
-                        "type": "新幹線/特急"
-            },
-            {
-                        "zh": "小倉城",
-                        "ja": "小倉城 (こくらじょう)",
-                        "en": "Kokura Castle",
-                        "type": "名城要塞"
-            },
-            {
-                        "zh": "小倉祇園 八坂神社",
-                        "ja": "八坂神社（小倉祇園）",
-                        "en": "Yasaka Shrine (Kokura Gion)",
-                        "type": "神社古剎"
-            },
-            {
-                        "zh": "門司港車站",
-                        "ja": "門司港駅 (もじこうえき)",
-                        "en": "Mojiko Station",
-                        "type": "國寶木造車站"
-            },
-            {
-                        "zh": "九州鐵道紀念館",
-                        "ja": "九州鉄道記念館",
-                        "en": "Kyushu Railway History Museum",
-                        "type": "鐵道博覽"
-            },
-            {
-                        "zh": "BEAR FRUITS 燒咖哩",
-                        "ja": "ベアフルーツ（焼きカレー）",
-                        "en": "BEAR FRUITS (Yaki Curry)",
-                        "type": "名物熱食"
-            },
-            {
-                        "zh": "北九州市舊門司稅關",
-                        "ja": "旧門司税関",
-                        "en": "Old Moji Customs",
-                        "type": "洋風海關"
-            },
-            {
-                        "zh": "門司港懷舊展望室",
-                        "ja": "門司港レトロ展望室",
-                        "en": "Mojiko Retro Observation Room",
-                        "type": "高樓展望"
-            },
-            {
-                        "zh": "関門汽船 門司港乘船場",
-                        "ja": "関門汽船 門司港乗り場",
-                        "en": "Kanmon Ferry Mojiko Pier",
-                        "type": "海峽渡輪"
-            },
-            {
-                        "zh": "龜山八幡宮 (下關)",
-                        "ja": "亀山八幡宮 (かめやまはちまんぐう)",
-                        "en": "Kameyama Hachimangu",
-                        "type": "下關總鎮守"
-            },
-            {
-                        "zh": "史跡春帆樓 日清講和紀念館",
-                        "ja": "日清講和記念館（春帆楼）",
-                        "en": "Shunpanro Treaty Memorial Hall",
-                        "type": "歷史史蹟"
-            },
-            {
-                        "zh": "赤間神宮",
-                        "ja": "赤間神宮 (あかまじんぐう)",
-                        "en": "Akama Shrine",
-                        "type": "水天門神宮"
-            },
-            {
-                        "zh": "関門トンネル人道 (下關/門司側)",
-                        "ja": "関門トンネル人道（下関・門司）",
-                        "en": "Kanmon Pedestrian Tunnel",
-                        "type": "跨海海底步道"
-            },
-            {
-                        "zh": "和布刈神社 鳥居",
-                        "ja": "和布刈神社（めかりじんじゃ）",
-                        "en": "Mekari Shrine (Torii)",
-                        "type": "海潮守護"
-            },
-            {
-                        "zh": "大濠公園",
-                        "ja": "大濠公園 (おおほりこうえん)",
-                        "en": "Ohori Park",
-                        "type": "水景名園"
-            },
-            {
-                        "zh": "福岡城跡 (舞鶴公園)",
-                        "ja": "福岡城跡（舞鶴公園）",
-                        "en": "Fukuoka Castle Ruins (Maizuru Park)",
-                        "type": "史蹟天守台"
-            },
-            {
-                        "zh": "福岡塔 & 百道海濱公園",
-                        "ja": "福岡タワー・シーサイドももち",
-                        "en": "Fukuoka Tower & Momochi Seaside",
-                        "type": "海濱地標"
-            },
-            {
-                        "zh": "LaLaport 福岡 (實體 Nu 鋼彈)",
-                        "ja": "ららぽーと福岡（実物大νガンダム）",
-                        "en": "LaLaport Fukuoka (Nu Gundam)",
-                        "type": "購物商場"
-            },
-            {
-                        "zh": "天神屋台街 / 天神商圈",
-                        "ja": "天神屋台街・天神地下街",
-                        "en": "Tenjin Yatai & Shopping District",
-                        "type": "熟食街/商圈"
-            },
-            {
-                        "zh": "熊本車站",
-                        "ja": "熊本駅 (くまもとえき)",
-                        "en": "Kumamoto Station",
-                        "type": "新幹線/JR"
-            },
-            {
-                        "zh": "熊本站前 Richmond 飯店",
-                        "ja": "リッチモンドホテル 熊本駅前",
-                        "en": "Richmond Hotel Kumamoto-Ekimae",
-                        "type": "飯店住宿"
-            },
-            {
-                        "zh": "熊本城 (大天守閣)",
-                        "ja": "熊本城（天守閣）",
-                        "en": "Kumamoto Castle",
-                        "type": "日本三大名城"
-            },
-            {
-                        "zh": "櫻之馬場 城彩苑",
-                        "ja": "桜の馬場 城彩苑 (じょうさいえん)",
-                        "en": "Sakuranobaba Josaien",
-                        "type": "城下町老街"
-            },
-            {
-                        "zh": "熊本熊部長辦公室",
-                        "ja": "くまモンスクエア (Kumamon Square)",
-                        "en": "Kumamon Square",
-                        "type": "部長辦公室"
-            },
-            {
-                        "zh": "上下通商店街",
-                        "ja": "上通・下通商店街",
-                        "en": "Kamitori & Shimotori Arcades",
-                        "type": "拱廊商圈"
-            },
-            {
-                        "zh": "阿蘇草千里之濱",
-                        "ja": "草千里ヶ浜 (くさせんりがはま)",
-                        "en": "Kusasenri-ga-hama",
-                        "type": "火山草原"
-            },
-            {
-                        "zh": "阿蘇神社 & 水基巡道",
-                        "ja": "阿蘇神社・水基巡りの道",
-                        "en": "Aso Shrine & Mizuki Path",
-                        "type": "古老神域"
-            },
-            {
-                        "zh": "水前寺成趣園",
-                        "ja": "水前寺成趣園 (すいぜんじじょうじゅえん)",
-                        "en": "Suizenji Jojuen",
-                        "type": "桃山迴遊庭園"
-            },
-            {
-                        "zh": "由布院車站",
-                        "ja": "由布院駅 (ゆふいんえき)",
-                        "en": "Yufuin Station",
-                        "type": "溫泉特急"
-            },
-            {
-                        "zh": "湯之坪街道",
-                        "ja": "湯の坪街道 (ゆのつぼかいどう)",
-                        "en": "Yunotsubo Kaido",
-                        "type": "溫泉老街"
-            },
-            {
-                        "zh": "金鱗湖",
-                        "ja": "金鱗湖 (きんりんこ)",
-                        "en": "Kinrin Lake",
-                        "type": "晨昏溫泉湖"
-            },
-            {
-                        "zh": "由布院溫泉",
-                        "ja": "由布院温泉 (ゆふいんおんせん)",
-                        "en": "Yufuin Onsen",
-                        "type": "溫泉勝地"
+              status: 'backup',
+              critical: false,
+              deadline: '出發前',
+              text: '離線保存住宿地址、交通憑證、護照與保險資料，並備妥延誤時的替代列車或住宿聯絡方式。',
+              sourceUrl: 'https://www.smartraveller.gov.au/id/node/158'
             }
-]
+          ]
         });
 
         // Itinerary data organized by days
@@ -1314,6 +1092,58 @@
           ]
         });
 
+        function placeReferenceRows(itinerary) {
+          const seen = new Set();
+          return Object.values(itinerary).flatMap(day => day).reduce((rows, spot) => {
+            if (!Array.isArray(spot.coords) || spot.coords.length !== 2) return rows;
+            const [latitude, longitude] = spot.coords;
+            if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return rows;
+            const referenceId = spot.referenceId || [spot.name, latitude, longitude].join('|');
+            if (seen.has(referenceId)) return rows;
+            seen.add(referenceId);
+            rows.push({
+              name: spot.name,
+              coords: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+              type: spot.type
+            });
+            return rows;
+          }, []);
+        }
+
+        const referenceRows = computed(() => placeReferenceRows(itinerary));
+
+        function actionStatusLabel(status) {
+          const statuses = { book: '待預訂', confirm: '待確認', optional: '可選', backup: '備援' };
+          return statuses[status] || status;
+        }
+
+        function placeTypeLabel(type) {
+          const types = {
+            flight: '航班／機場',
+            hotel: '住宿',
+            train: '鐵路／車站',
+            bus: '巴士',
+            bike: '自行車',
+            shopping: '購物',
+            info: '資訊',
+            castle: '城郭',
+            shrine: '神社／寺院',
+            park: '公園',
+            cruise: '遊船',
+            tower: '展望台',
+            sight: '景點',
+            food: '餐飲'
+          };
+          return types[type] || '其他行程地點';
+        }
+
+        const displayedNotices = computed(() => [
+          ...overview.notices,
+          ...overview.actions
+            .filter(action => action.critical)
+            .map(action => `【${actionStatusLabel(action.status)}】${action.text}`)
+        ]);
+
         const dayList = computed(() => {
           return tabs.filter(t => t.id !== 'overview');
         });
@@ -1321,6 +1151,19 @@
         // OpenStreetMap Map Renderer
         const mapInstances = {};
         const markerInstances = {};
+        function mapScopeSpots(validSpots) {
+          const localSpots = validSpots.filter((spot, index, spots) => {
+            if (spot.type !== 'flight') return true;
+            const arrivesByPlane = index > 0 && spots[index - 1].transit?.icon === 'plane';
+            const departsByPlane = index < spots.length - 1 && spot.transit?.icon === 'plane';
+            const isRemoteFlightStop =
+              (index === 0 || arrivesByPlane) &&
+              (index === spots.length - 1 || departsByPlane);
+            return !isRemoteFlightStop;
+          });
+          return localSpots.length ? localSpots : validSpots;
+        }
+
 
         function renderMap(dayId) {
           if (dayId === 'overview') return;
@@ -1351,7 +1194,6 @@
             mapInstances[dayId] = map;
 
             markerInstances[dayId] = [];
-            const latLngs = [];
             validSpots.forEach((spot, idx) => {
               const markerIcon = L.divIcon({
                 className: 'custom-osm-marker',
@@ -1383,29 +1225,23 @@
                 </div>
               `);
               markerInstances[dayId].push(marker);
-              latLngs.push(spot.coords);
             });
 
-            // Draw route polyline between local spots
-            if (latLngs.length > 1) {
-              const localSpots = latLngs.filter(c => c[0] > 30);
-              if (localSpots.length > 1) {
-                L.polyline(localSpots, {
-                  color: '#e11d48',
-                  weight: 3.5,
-                  opacity: 0.75,
-                  dashArray: '5, 8'
-                }).addTo(map);
-              }
+            // Draw and frame the local itinerary, not remote flight endpoints.
+            const routeCoords = mapScopeSpots(validSpots).map(spot => spot.coords);
+            if (routeCoords.length > 1) {
+              L.polyline(routeCoords, {
+                color: '#e11d48',
+                weight: 3.5,
+                opacity: 0.75,
+                dashArray: '5, 8'
+              }).addTo(map);
             }
 
-            // Fit bounds with padding
-            const localCoords = latLngs.filter(c => c[0] > 30);
-            const fitCoords = (localCoords.length > 0) ? localCoords : latLngs;
-            if (fitCoords.length === 1) {
-              map.setView(fitCoords[0], 14);
-            } else if (fitCoords.length > 1) {
-              const bounds = L.latLngBounds(fitCoords);
+            if (routeCoords.length === 1) {
+              map.setView(routeCoords[0], 14);
+            } else if (routeCoords.length > 1) {
+              const bounds = L.latLngBounds(routeCoords);
               map.fitBounds(bounds, {
                 padding: [40, 40],
                 maxZoom: 15
@@ -1461,9 +1297,7 @@
           map.closePopup();
           map.invalidateSize();
 
-          const latLngs = validSpots.map(s => s.coords);
-          const localCoords = latLngs.filter(c => c[0] > 30);
-          const fitCoords = (localCoords.length > 0) ? localCoords : latLngs;
+          const fitCoords = mapScopeSpots(validSpots).map(spot => spot.coords);
 
           if (fitCoords.length === 1) {
             map.flyTo(fitCoords[0], 14, { duration: 0.8 });
@@ -1535,6 +1369,10 @@
           tabs,
           overview,
           itinerary,
+          referenceRows,
+          displayedNotices,
+          actionStatusLabel,
+          placeTypeLabel,
           dayList,
           switchTab,
           focusSpotOnMap,

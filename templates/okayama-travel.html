@@ -118,6 +118,31 @@
             </div>
           </section>
 
+          <!-- 行前待辦 -->
+          <section v-if="overview.actions.length">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-lg">✅</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">行前待辦</h2>
+            </div>
+            <ul class="space-y-3">
+              <li v-for="action in overview.actions" :key="action.text" class="rounded-xl border border-slate-200/80 bg-slate-50 p-4">
+                <div class="flex flex-wrap items-start gap-2">
+                  <span
+                    :class="action.critical ? 'bg-rose-100 text-rose-700 border-rose-200' : 'bg-slate-100 text-slate-600 border-slate-200'"
+                    class="inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-xs font-bold"
+                  >
+                    {{ actionStatusLabel(action.status) }}
+                  </span>
+                  <span class="min-w-0 flex-1 text-sm leading-relaxed text-slate-700">{{ action.text }}</span>
+                </div>
+                <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                  <span v-if="action.deadline" class="text-slate-500">完成時點：{{ action.deadline }}</span>
+                  <a v-if="action.sourceUrl" :href="action.sourceUrl" target="_blank" rel="noopener noreferrer" class="font-semibold text-rose-600 hover:text-rose-700">查核來源 ↗</a>
+                </div>
+              </li>
+            </ul>
+          </section>
+
           <!-- 注意事項 -->
           <section>
             <div class="flex items-center gap-2 mb-3">
@@ -126,8 +151,8 @@
             </div>
             <div class="bg-amber-50/40 rounded-xl p-5 border border-amber-200/60">
               <ul class="space-y-2.5 text-sm md:text-base text-slate-700">
-                <li 
-                  v-for="(notice, idx) in overview.notices" 
+                <li
+                  v-for="(notice, idx) in displayedNotices"
                   :key="idx"
                   class="flex items-start gap-2.5"
                 >
@@ -138,31 +163,27 @@
             </div>
           </section>
 
-          <!-- 實用車站與地名日英對照表 -->
+          <!-- 行程地點與座標對照表 -->
           <section>
             <div class="flex items-center gap-2 mb-3">
-              <span class="text-lg">🚉</span>
-              <h2 class="text-lg md:text-xl font-bold text-slate-800">實用車站與地名日英對照表</h2>
+              <span class="text-lg">📍</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">行程地點與座標對照表</h2>
             </div>
             <div class="overflow-x-auto rounded-xl border border-slate-200/80 shadow-xs">
               <table class="w-full text-left text-sm text-slate-700">
                 <thead class="bg-slate-100/80 text-xs font-bold text-slate-600 uppercase tracking-wider border-b border-slate-200">
                   <tr>
-                    <th scope="col" class="px-4 py-3">中文名稱</th>
-                    <th scope="col" class="px-4 py-3">日文名稱 (漢字 / 假名)</th>
-                    <th scope="col" class="px-4 py-3">英文 / 羅馬拼音 (Romaji)</th>
+                    <th scope="col" class="px-4 py-3">行程地點</th>
+                    <th scope="col" class="px-4 py-3">座標</th>
                     <th scope="col" class="px-4 py-3">類型</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 bg-white">
-                  <tr v-for="(item, idx) in overview.stations" :key="idx" class="hover:bg-slate-50/80 transition">
-                    <td class="px-4 py-2.5 font-bold text-slate-800">{{ item.zh }}</td>
-                    <td class="px-4 py-2.5 font-medium text-rose-600 font-mono">{{ item.ja }}</td>
-                    <td class="px-4 py-2.5 text-slate-500 font-mono text-xs md:text-sm">{{ item.en }}</td>
+                  <tr v-for="item in referenceRows" :key="`${item.name}:${item.coords}`" class="hover:bg-slate-50/80 transition">
+                    <td class="px-4 py-2.5 font-bold text-slate-800">{{ item.name }}</td>
+                    <td class="px-4 py-2.5 text-slate-500 font-mono text-xs md:text-sm">{{ item.coords }}</td>
                     <td class="px-4 py-2.5">
-                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
-                        {{ item.type }}
-                      </span>
+                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">{{ placeTypeLabel(item.type) }}</span>
                     </td>
                   </tr>
                 </tbody>
@@ -267,11 +288,11 @@
 
             </div>
 
-            <!-- Fallback Placeholder for days with no data yet -->
-            <div v-else class="py-12 text-center text-slate-400 border-2 border-dashed border-slate-200 rounded-xl">
+            <!-- 空白日的可執行狀態 -->
+            <div v-else class="py-12 text-center text-slate-500 border-2 border-dashed border-slate-200 rounded-xl">
               <div class="text-4xl mb-2">🗓️</div>
-              <h3 class="text-base font-semibold text-slate-600">{{ day.name }} 行程內容區塊（Placeholder）</h3>
-              <p class="text-sm text-slate-400 mt-1">即將填入景點排程、交通時間、停留時間與備註</p>
+              <h3 class="text-base font-semibold text-slate-700">{{ day.name }} 暫無已確認安排</h3>
+              <p class="text-sm mt-1">保留為休息、補給，或依「行前待辦」完成確認後再排入行程。</p>
             </div>
 
           </div>
@@ -325,200 +346,29 @@
             '吉備路自行車租借：吉備路自行車租賃服務設於「JR 備前一宮站前（荒木自行車店）」與「JR 總社站前」，「JR 吉備津站」並無租借站點。因此行程安排由岡山站出發時，先搭電車至備前一宮站租車，再沿吉備路自行車專用道依序造訪吉備津彥神社與吉備津神社，最後於備前一宮站原處歸還（或騎至總社站甲租乙還）。',
             '野生動物與自然注意：吉備路自行車道與近郊山區（如後樂園外圍步道）請依循標示前進，日本山林郊野漫步建議配掛防熊鈴 (熊鈴)，行前可至「KumaMap 日本即時熊出沒地圖 (https://kumamap.com/zh-Hant)」查詢目擊情報。'
           ],
-          stations: [
+          actions: [
             {
-                        "zh": "岡山桃太郎機場 (OKJ)",
-                        "ja": "岡山桃太郎空港 (おかやまくうこう)",
-                        "en": "Okayama Momotaro Airport (OKJ)",
-                        "type": "機場樞紐"
+              status: 'confirm',
+              critical: true,
+              deadline: '出發前',
+              text: '以岡山桃太郎機場與 JR 西日本官方資訊重新確認航班、機場巴士、山陽線與新幹線的實際時刻、營運狀態與預約規則。',
+              sourceUrl: 'https://www.okayama-airport.org/en/access/bus--'
             },
             {
-                        "zh": "岡山車站",
-                        "ja": "岡山駅 (おかやまえき)",
-                        "en": "Okayama Station",
-                        "type": "新幹線/主要鐵道"
+              status: 'confirm',
+              critical: true,
+              deadline: '付款後與出發前',
+              text: '向航空公司與住宿供應商核對訂位代號、票號、行李額度、入住日期、取消條件與轉機責任；若為分開開票，預留足夠自轉機緩衝。',
+              sourceUrl: 'https://www.westjr.co.jp/travel-information/en/'
             },
             {
-                        "zh": "岡山站前大和ROYNET飯店",
-                        "ja": "ダイワロイネットホテル岡山駅前",
-                        "en": "Daiwa Roynet Hotel Okayama-Ekimae",
-                        "type": "飯店住宿"
-            },
-            {
-                        "zh": "桃太郎觀光旅遊中心",
-                        "ja": "桃太郎観光センター",
-                        "en": "Momotaro Tourist Information Center",
-                        "type": "旅遊資訊"
-            },
-            {
-                        "zh": "岡山一番街",
-                        "ja": "岡山一番街 (おかやまいちばんがい)",
-                        "en": "Okayama Ichibangai",
-                        "type": "地下商場"
-            },
-            {
-                        "zh": "永旺夢樂城 岡山",
-                        "ja": "イオンモール岡山",
-                        "en": "AEON Mall Okayama",
-                        "type": "購物中心"
-            },
-            {
-                        "zh": "丸龜站",
-                        "ja": "丸亀駅 (まるがめえき)",
-                        "en": "Marugame Station",
-                        "type": "JR 予讚線"
-            },
-            {
-                        "zh": "丸龜城",
-                        "ja": "丸亀城 (まるがめじょう)",
-                        "en": "Marugame Castle",
-                        "type": "現存十二天守"
-            },
-            {
-                        "zh": "岡山神社",
-                        "ja": "岡山神社 (おかやまじんじゃ)",
-                        "en": "Okayama Shrine",
-                        "type": "鎮守名社"
-            },
-            {
-                        "zh": "岡山後樂園",
-                        "ja": "岡山後楽園 (こうらくえん)",
-                        "en": "Okayama Korakuen",
-                        "type": "日本三大名園"
-            },
-            {
-                        "zh": "烏城公園 (岡山城)",
-                        "ja": "烏城公園（岡山城）",
-                        "en": "Ujo Park (Okayama Castle)",
-                        "type": "黑色名城"
-            },
-            {
-                        "zh": "備前一宮站 (荒木自行車租借店)",
-                        "ja": "備前一宮駅・荒木レンタサイクル",
-                        "en": "Bizen-Ichinomiya Station (Araki Cycle)",
-                        "type": "JR 桃太郎線 / 單車起點"
-            },
-            {
-                        "zh": "吉備津彥神社",
-                        "ja": "吉備津彦神社 (きびつひこじんじゃ)",
-                        "en": "Kibitsuhiko Shrine",
-                        "type": "備前國一之宮"
-            },
-            {
-                        "zh": "吉備津神社",
-                        "ja": "吉備津神社 (きびつじんじゃ)",
-                        "en": "Kibitsu Shrine",
-                        "type": "國寶大社"
-            },
-            {
-                        "zh": "姬路站",
-                        "ja": "姫路駅 (ひめじえき)",
-                        "en": "Himeji Station",
-                        "type": "新幹線/JR"
-            },
-            {
-                        "zh": "姬路城 (白鷺城)",
-                        "ja": "姫路城（白鷺城）",
-                        "en": "Himeji Castle (White Heron Castle)",
-                        "type": "世界文化遺產"
-            },
-            {
-                        "zh": "好古園",
-                        "ja": "姫路城西御屋敷跡庭園 好古園",
-                        "en": "Koko-en Garden",
-                        "type": "池泉迴遊庭園"
-            },
-            {
-                        "zh": "新神戶站",
-                        "ja": "新神戸駅 (しんこうべえき)",
-                        "en": "Shin-Kobe Station",
-                        "type": "新幹線/地鐵"
-            },
-            {
-                        "zh": "神戶北野異人館街",
-                        "ja": "北野異人館街 (きたのいじんかん)",
-                        "en": "Kitano Ijinkan-gai",
-                        "type": "洋風歷史街區"
-            },
-            {
-                        "zh": "北野天滿神社",
-                        "ja": "北野天満神社 (きたのてんまん)",
-                        "en": "Kitano Tenman Shrine",
-                        "type": "俯瞰神戶市景"
-            },
-            {
-                        "zh": "生田神社",
-                        "ja": "生田神社 (いくたじんじゃ)",
-                        "en": "Ikuta Shrine",
-                        "type": "結緣名社"
-            },
-            {
-                        "zh": "神戶港灣遊船 (御座船安宅丸)",
-                        "ja": "神戸ベイクルーズ（御座船 安宅丸）",
-                        "en": "Kobe Bay Cruise (Atakemaru)",
-                        "type": "港灣巡航"
-            },
-            {
-                        "zh": "神戶港塔",
-                        "ja": "神戸ポートタワー",
-                        "en": "Kobe Port Tower",
-                        "type": "港灣地標"
-            },
-            {
-                        "zh": "新大阪車站",
-                        "ja": "新大阪駅 (しんおおさかえき)",
-                        "en": "Shin-Osaka Station",
-                        "type": "新幹線樞紐"
-            },
-            {
-                        "zh": "福山站",
-                        "ja": "福山駅 (ふくやまえき)",
-                        "en": "Fukuyama Station",
-                        "type": "新幹線/JR"
-            },
-            {
-                        "zh": "福山城",
-                        "ja": "福山城 (ふくやまじょう)",
-                        "en": "Fukuyama Castle",
-                        "type": "史蹟名城"
-            },
-            {
-                        "zh": "倉敷站",
-                        "ja": "倉敷駅 (くらしきえき)",
-                        "en": "Kurashiki Station",
-                        "type": "JR 山陽本線"
-            },
-            {
-                        "zh": "阿智神社",
-                        "ja": "阿智神社 (あちじんじゃ)",
-                        "en": "Achi Shrine",
-                        "type": "鶴形山鎮守名社"
-            },
-            {
-                        "zh": "倉敷美觀地區",
-                        "ja": "倉敷美観地区 (びかんちく)",
-                        "en": "Kurashiki Bikan Historical Quarter",
-                        "type": "傳統白壁建築群"
-            },
-            {
-                        "zh": "高松站",
-                        "ja": "高松駅 (たかまつえき)",
-                        "en": "Takamatsu Station",
-                        "type": "JR 瀨戶大橋線"
-            },
-            {
-                        "zh": "高松城跡 (玉藻公園)",
-                        "ja": "高松城跡（玉藻公園）",
-                        "en": "Takamatsu Castle (Tamamo Park)",
-                        "type": "三大水城"
-            },
-            {
-                        "zh": "栗林公園",
-                        "ja": "栗林公園 (りつりんこうえん)",
-                        "en": "Ritsurin Garden",
-                        "type": "特別名勝庭園"
+              status: 'backup',
+              critical: false,
+              deadline: '出發前',
+              text: '離線保存住宿地址、交通憑證、護照與保險資料，並備妥延誤時的替代列車或住宿聯絡方式。',
+              sourceUrl: 'https://www.smartraveller.gov.au/id/node/158'
             }
-]
+          ]
         });
 
         // Itinerary data organized by days
@@ -1190,6 +1040,58 @@
           ]
         });
 
+        function placeReferenceRows(itinerary) {
+          const seen = new Set();
+          return Object.values(itinerary).flatMap(day => day).reduce((rows, spot) => {
+            if (!Array.isArray(spot.coords) || spot.coords.length !== 2) return rows;
+            const [latitude, longitude] = spot.coords;
+            if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return rows;
+            const referenceId = spot.referenceId || [spot.name, latitude, longitude].join('|');
+            if (seen.has(referenceId)) return rows;
+            seen.add(referenceId);
+            rows.push({
+              name: spot.name,
+              coords: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+              type: spot.type
+            });
+            return rows;
+          }, []);
+        }
+
+        const referenceRows = computed(() => placeReferenceRows(itinerary));
+
+        function actionStatusLabel(status) {
+          const statuses = { book: '待預訂', confirm: '待確認', optional: '可選', backup: '備援' };
+          return statuses[status] || status;
+        }
+
+        function placeTypeLabel(type) {
+          const types = {
+            flight: '航班／機場',
+            hotel: '住宿',
+            train: '鐵路／車站',
+            bus: '巴士',
+            bike: '自行車',
+            shopping: '購物',
+            info: '資訊',
+            castle: '城郭',
+            shrine: '神社／寺院',
+            park: '公園',
+            cruise: '遊船',
+            tower: '展望台',
+            sight: '景點',
+            food: '餐飲'
+          };
+          return types[type] || '其他行程地點';
+        }
+
+        const displayedNotices = computed(() => [
+          ...overview.notices,
+          ...overview.actions
+            .filter(action => action.critical)
+            .map(action => `【${actionStatusLabel(action.status)}】${action.text}`)
+        ]);
+
         const dayList = computed(() => {
           return tabs.filter(t => t.id !== 'overview');
         });
@@ -1197,6 +1099,19 @@
         // OpenStreetMap Map Renderer
         const mapInstances = {};
         const markerInstances = {};
+        function mapScopeSpots(validSpots) {
+          const localSpots = validSpots.filter((spot, index, spots) => {
+            if (spot.type !== 'flight') return true;
+            const arrivesByPlane = index > 0 && spots[index - 1].transit?.icon === 'plane';
+            const departsByPlane = index < spots.length - 1 && spot.transit?.icon === 'plane';
+            const isRemoteFlightStop =
+              (index === 0 || arrivesByPlane) &&
+              (index === spots.length - 1 || departsByPlane);
+            return !isRemoteFlightStop;
+          });
+          return localSpots.length ? localSpots : validSpots;
+        }
+
 
         function renderMap(dayId) {
           if (dayId === 'overview') return;
@@ -1227,7 +1142,6 @@
             mapInstances[dayId] = map;
 
             markerInstances[dayId] = [];
-            const latLngs = [];
             validSpots.forEach((spot, idx) => {
               const markerIcon = L.divIcon({
                 className: 'custom-osm-marker',
@@ -1259,29 +1173,23 @@
                 </div>
               `);
               markerInstances[dayId].push(marker);
-              latLngs.push(spot.coords);
             });
 
-            // Draw route polyline between local spots
-            if (latLngs.length > 1) {
-              const localSpots = latLngs.filter(c => c[0] > 30);
-              if (localSpots.length > 1) {
-                L.polyline(localSpots, {
-                  color: '#e11d48',
-                  weight: 3.5,
-                  opacity: 0.75,
-                  dashArray: '5, 8'
-                }).addTo(map);
-              }
+            // Draw and frame the local itinerary, not remote flight endpoints.
+            const routeCoords = mapScopeSpots(validSpots).map(spot => spot.coords);
+            if (routeCoords.length > 1) {
+              L.polyline(routeCoords, {
+                color: '#e11d48',
+                weight: 3.5,
+                opacity: 0.75,
+                dashArray: '5, 8'
+              }).addTo(map);
             }
 
-            // Fit bounds with padding
-            const localCoords = latLngs.filter(c => c[0] > 30);
-            const fitCoords = (localCoords.length > 0) ? localCoords : latLngs;
-            if (fitCoords.length === 1) {
-              map.setView(fitCoords[0], 14);
-            } else if (fitCoords.length > 1) {
-              map.fitBounds(fitCoords, {
+            if (routeCoords.length === 1) {
+              map.setView(routeCoords[0], 14);
+            } else if (routeCoords.length > 1) {
+              map.fitBounds(L.latLngBounds(routeCoords), {
                 padding: [40, 40],
                 maxZoom: 15
               });
@@ -1336,9 +1244,7 @@
           map.closePopup();
           map.invalidateSize();
 
-          const latLngs = validSpots.map(s => s.coords);
-          const localCoords = latLngs.filter(c => c[0] > 30);
-          const fitCoords = (localCoords.length > 0) ? localCoords : latLngs;
+          const fitCoords = mapScopeSpots(validSpots).map(spot => spot.coords);
 
           if (fitCoords.length === 1) {
             map.flyTo(fitCoords[0], 14, { duration: 0.8 });
@@ -1410,6 +1316,10 @@
           tabs,
           overview,
           itinerary,
+          referenceRows,
+          displayedNotices,
+          actionStatusLabel,
+          placeTypeLabel,
           dayList,
           switchTab,
           focusSpotOnMap,

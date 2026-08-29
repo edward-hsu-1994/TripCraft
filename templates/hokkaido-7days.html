@@ -125,6 +125,31 @@
             </div>
           </section>
 
+          <!-- 行前待辦 -->
+          <section v-if="overview.actions.length">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-lg">✅</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">行前待辦</h2>
+            </div>
+            <ul class="space-y-3">
+              <li v-for="action in overview.actions" :key="action.text" class="rounded-xl border border-slate-200/80 bg-slate-50 p-4">
+                <div class="flex flex-wrap items-start gap-2">
+                  <span
+                    :class="action.critical ? 'bg-rose-100 text-rose-700 border-rose-200' : 'bg-slate-100 text-slate-600 border-slate-200'"
+                    class="inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-xs font-bold"
+                  >
+                    {{ actionStatusLabel(action.status) }}
+                  </span>
+                  <span class="min-w-0 flex-1 text-sm leading-relaxed text-slate-700">{{ action.text }}</span>
+                </div>
+                <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                  <span v-if="action.deadline" class="text-slate-500">完成時點：{{ action.deadline }}</span>
+                  <a v-if="action.sourceUrl" :href="action.sourceUrl" target="_blank" rel="noopener noreferrer" class="font-semibold text-rose-600 hover:text-rose-700">查核來源 ↗</a>
+                </div>
+              </li>
+            </ul>
+          </section>
+
           <!-- 注意事項 -->
           <section>
             <div class="flex items-center gap-2 mb-3">
@@ -133,8 +158,8 @@
             </div>
             <div class="bg-amber-50/40 rounded-xl p-5 border border-amber-200/60">
               <ul class="space-y-2.5 text-sm md:text-base text-slate-700">
-                <li 
-                  v-for="(notice, idx) in overview.notices" 
+                <li
+                  v-for="(notice, idx) in displayedNotices"
                   :key="idx"
                   class="flex items-start gap-2.5"
                 >
@@ -145,31 +170,27 @@
             </div>
           </section>
 
-          <!-- 實用車站與地名日英對照表 -->
+          <!-- 行程地點與座標對照表 -->
           <section>
             <div class="flex items-center gap-2 mb-3">
-              <span class="text-lg">🚉</span>
-              <h2 class="text-lg md:text-xl font-bold text-slate-800">實用車站與地名日英對照表</h2>
+              <span class="text-lg">📍</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">行程地點與座標對照表</h2>
             </div>
             <div class="overflow-x-auto rounded-xl border border-slate-200/80 shadow-xs">
               <table class="w-full text-left text-sm text-slate-700">
                 <thead class="bg-slate-100/80 text-xs font-bold text-slate-600 uppercase tracking-wider border-b border-slate-200">
                   <tr>
-                    <th scope="col" class="px-4 py-3">中文名稱</th>
-                    <th scope="col" class="px-4 py-3">日文名稱 (漢字 / 假名)</th>
-                    <th scope="col" class="px-4 py-3">英文 / 羅馬拼音 (Romaji)</th>
+                    <th scope="col" class="px-4 py-3">行程地點</th>
+                    <th scope="col" class="px-4 py-3">座標</th>
                     <th scope="col" class="px-4 py-3">類型</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 bg-white">
-                  <tr v-for="(item, idx) in overview.stations" :key="idx" class="hover:bg-slate-50/80 transition">
-                    <td class="px-4 py-2.5 font-bold text-slate-800">{{ item.zh }}</td>
-                    <td class="px-4 py-2.5 font-medium text-rose-600 font-mono">{{ item.ja }}</td>
-                    <td class="px-4 py-2.5 text-slate-500 font-mono text-xs md:text-sm">{{ item.en }}</td>
+                  <tr v-for="item in referenceRows" :key="`${item.name}:${item.coords}`" class="hover:bg-slate-50/80 transition">
+                    <td class="px-4 py-2.5 font-bold text-slate-800">{{ item.name }}</td>
+                    <td class="px-4 py-2.5 text-slate-500 font-mono text-xs md:text-sm">{{ item.coords }}</td>
                     <td class="px-4 py-2.5">
-                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
-                        {{ item.type }}
-                      </span>
+                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">{{ placeTypeLabel(item.type) }}</span>
                     </td>
                   </tr>
                 </tbody>
@@ -275,11 +296,11 @@
 
             </div>
 
-            <!-- Fallback Placeholder for days with no data yet -->
-            <div v-else class="py-12 text-center text-slate-400 border-2 border-dashed border-slate-200 rounded-xl">
+            <!-- 空白日的可執行狀態 -->
+            <div v-else class="py-12 text-center text-slate-500 border-2 border-dashed border-slate-200 rounded-xl">
               <div class="text-4xl mb-2">🗓️</div>
-              <h3 class="text-base font-semibold text-slate-600">{{ day.name }} 行程內容區塊（Placeholder）</h3>
-              <p class="text-sm text-slate-400 mt-1">即將填入景點排程、交通時間、停留時間與備註</p>
+              <h3 class="text-base font-semibold text-slate-700">{{ day.name }} 暫無已確認安排</h3>
+              <p class="text-sm mt-1">保留為休息、補給，或依「行前待辦」完成確認後再排入行程。</p>
             </div>
 
           </div>
@@ -330,218 +351,29 @@
             '氣候天災與秋季防寒：9 月底北海道日落較早（約 17:30），山區與夜景展望台體感溫度偏低；若遇秋季鋒面或鐵道延誤，可下載日本官方「Safety Tips App」隨時查詢 JR 列車運行情報。',
             '野生動物與熊出沒防範：北海道道央與郊山（如定山溪步道、美瑛丘陵）請遵循官方指定步道行走；清晨或黃昏漫步山徑建議配掛防熊鈴 (熊鈴)，行前可至「KumaMap 日本即時熊出沒地圖 (https://kumamap.com/zh-Hant)」查詢最新目擊情報；遇野生狐狸或鹿請保持距離勿觸摸餵食。'
           ],
-          stations: [
+          actions: [
             {
-                        "zh": "新千歲國際機場 (CTS)",
-                        "ja": "新千歳空港 (しんちとせくうこう)",
-                        "en": "New Chitose Airport (CTS)",
-                        "type": "機場樞紐"
+              status: 'confirm',
+              critical: true,
+              deadline: '出發前',
+              text: '以新千歲機場、函館機場與 JR 北海道官方資訊重新確認航班、機場接駁及特急列車的實際時刻、營運狀態與預約規則。',
+              sourceUrl: 'https://www.jrhokkaido.co.jp/global/english/travel/airport.html'
             },
             {
-                        "zh": "札幌車站",
-                        "ja": "札幌駅 (さっぽろえき)",
-                        "en": "Sapporo Station",
-                        "type": "JR/地鐵樞紐"
+              status: 'confirm',
+              critical: true,
+              deadline: '付款後與出發前',
+              text: '向航空公司與住宿供應商核對訂位代號、票號、行李額度、入住日期、取消條件與轉機責任；若為分開開票，預留足夠自轉機緩衝。',
+              sourceUrl: 'https://www.iata.org/en/publications/manuals/station-standard-minimum-connecting-time-mct/'
             },
             {
-                        "zh": "札幌站前大和ROYNET飯店",
-                        "ja": "ダイワロイネットホテル 札幌駅前",
-                        "en": "Daiwa Roynet Hotel Sapporo-Ekimae",
-                        "type": "飯店住宿"
-            },
-            {
-                        "zh": "北海道廳舊本廳舍 (紅磚廳舍)",
-                        "ja": "北海道庁旧本庁舎（赤れんが庁舎）",
-                        "en": "Former Hokkaido Government Office",
-                        "type": "歷史名勝"
-            },
-            {
-                        "zh": "大通公園 & 札幌電視塔",
-                        "ja": "大通公園・さっぽろテレビ塔",
-                        "en": "Odori Park & Sapporo TV Tower",
-                        "type": "市區名勝"
-            },
-            {
-                        "zh": "奧芝商店 / Suage 湯咖哩",
-                        "ja": "奥芝商店 / Suage（スープカレー）",
-                        "en": "Okushiba Shoten / Suage Soup Curry",
-                        "type": "美食名店"
-            },
-            {
-                        "zh": "小樽車站",
-                        "ja": "小樽駅 (おたるえき)",
-                        "en": "Otaru Station",
-                        "type": "主要鐵道"
-            },
-            {
-                        "zh": "小樽運河 (淺草橋)",
-                        "ja": "小樽運河（浅草橋）",
-                        "en": "Otaru Canal (Asakusa Bridge)",
-                        "type": "歷史名勝"
-            },
-            {
-                        "zh": "小樽童話十字路口 & 音樂盒堂",
-                        "ja": "メルヘン交差点・小樽オルゴール堂",
-                        "en": "Marchen Crossroads & Music Box Hall",
-                        "type": "歷史街區"
-            },
-            {
-                        "zh": "北一硝子三號館 & 堺町通",
-                        "ja": "北一硝子三号館・堺町通り",
-                        "en": "Kitaichi Glass & Sakaimachi Street",
-                        "type": "玻璃工藝/街區"
-            },
-            {
-                        "zh": "小樽若雞時代 なると 本店",
-                        "ja": "若鶏時代 なると 本店",
-                        "en": "Naruto Main Branch (Fried Chicken)",
-                        "type": "美食名店"
-            },
-            {
-                        "zh": "天狗山纜車 & 展望台",
-                        "ja": "天狗山ロープウェイ・展望台",
-                        "en": "Mt. Tengu Ropeway & Observatory",
-                        "type": "纜車/夜景"
-            },
-            {
-                        "zh": "札幌拉麵共和國 / 味噌拉麵",
-                        "ja": "札幌ら〜めん共和国（味噌ラーメン）",
-                        "en": "Sapporo Ramen Republic",
-                        "type": "美食名店"
-            },
-            {
-                        "zh": "美瑛白金青池",
-                        "ja": "白金青い池 (あおいいけ)",
-                        "en": "Shirogane Blue Pond",
-                        "type": "自然絕景"
-            },
-            {
-                        "zh": "白鬚瀑布",
-                        "ja": "白ひげの滝 (しらひげのたき)",
-                        "en": "Shirahige Waterfall",
-                        "type": "自然絕景"
-            },
-            {
-                        "zh": "美瑛四季彩之丘",
-                        "ja": "四季彩の丘 (しきさいのおか)",
-                        "en": "Shikisai-no-Oka",
-                        "type": "丘陵花田"
-            },
-            {
-                        "zh": "JR 塔展望室 T38",
-                        "ja": "JRタワー展望室T38",
-                        "en": "JR Tower Observation Deck T38",
-                        "type": "觀景展望"
-            },
-            {
-                        "zh": "成吉思汗 達摩 / 松尾 烤羊肉",
-                        "ja": "成吉思汗 だるま / 松尾ジンギスカン",
-                        "en": "Genghis Khan BBQ (Daruma / Matsuo)",
-                        "type": "美食名店"
-            },
-            {
-                        "zh": "定山溪溫泉 二見吊橋",
-                        "ja": "定山渓温泉・二見吊橋",
-                        "en": "Jozankei Onsen & Futami Bridge",
-                        "type": "溫泉名勝"
-            },
-            {
-                        "zh": "北海道神宮",
-                        "ja": "北海道神宮 (ほっかいどうじんぐう)",
-                        "en": "Hokkaido Jingu",
-                        "type": "神社寺廟"
-            },
-            {
-                        "zh": "狸小路商店街",
-                        "ja": "狸小路商店街 (たぬきこうじ)",
-                        "en": "Tanukikoji Shopping Arcade",
-                        "type": "商店街"
-            },
-            {
-                        "zh": "登別車站",
-                        "ja": "登別駅 (のぼりべつえき)",
-                        "en": "Noboribetsu Station",
-                        "type": "溫泉鐵道"
-            },
-            {
-                        "zh": "登別地獄谷 & 大湯沼",
-                        "ja": "登別地獄谷・大湯沼",
-                        "en": "Noboribetsu Jigokudani (Hell Valley)",
-                        "type": "火山地貌"
-            },
-            {
-                        "zh": "登別溫泉街",
-                        "ja": "登別温泉街 (おんせんがい)",
-                        "en": "Noboribetsu Onsen Street",
-                        "type": "溫泉老街"
-            },
-            {
-                        "zh": "函館車站",
-                        "ja": "函館駅 (はこだてえき)",
-                        "en": "Hakodate Station",
-                        "type": "主要鐵道"
-            },
-            {
-                        "zh": "函館站前 JR Inn 飯店",
-                        "ja": "JRイン函館",
-                        "en": "JR Inn Hakodate",
-                        "type": "飯店住宿"
-            },
-            {
-                        "zh": "金森紅磚倉庫群",
-                        "ja": "金森赤レンガ倉庫 (かねもり)",
-                        "en": "Kanemori Red Brick Warehouses",
-                        "type": "港灣名勝"
-            },
-            {
-                        "zh": "幸運小丑漢堡 碼頭末廣店",
-                        "ja": "ラッキーピエロ マリーナ末広店",
-                        "en": "Lucky Pierrot Marina Suehiro",
-                        "type": "美食名店"
-            },
-            {
-                        "zh": "五稜郭公園 & 五稜郭塔",
-                        "ja": "五稜郭公園・五稜郭タワー",
-                        "en": "Goryokaku Park & Tower",
-                        "type": "星形要塞"
-            },
-            {
-                        "zh": "元町西洋歷史街區 & 八幡坂",
-                        "ja": "元町・八幡坂 (はちまんざか)",
-                        "en": "Motomachi & Hachiman-zaka Slope",
-                        "type": "洋風斜坡"
-            },
-            {
-                        "zh": "函館山纜車 & 山頂百萬夜景",
-                        "ja": "函館山ロープウェイ・山頂展望台",
-                        "en": "Mt. Hakodate Ropeway & Observatory",
-                        "type": "百萬夜景"
-            },
-            {
-                        "zh": "函館大門橫丁",
-                        "ja": "大門横丁 (だいもんよこちょう)",
-                        "en": "Daimon Yokocho",
-                        "type": "居酒屋街"
-            },
-            {
-                        "zh": "函館朝市",
-                        "ja": "函館朝市 (はこだてあさいち)",
-                        "en": "Hakodate Morning Market",
-                        "type": "朝市名勝"
-            },
-            {
-                        "zh": "湯之川溫泉街",
-                        "ja": "湯の川温泉 (ゆのかわおんせん)",
-                        "en": "Yunokawa Onsen",
-                        "type": "市電/溫泉"
-            },
-            {
-                        "zh": "函館機場 (HKD)",
-                        "ja": "函館空港 (はこだてくうこう)",
-                        "en": "Hakodate Airport (HKD)",
-                        "type": "機場樞紐"
+              status: 'backup',
+              critical: false,
+              deadline: '出發前',
+              text: '離線保存住宿地址、交通憑證、護照與保險資料，並備妥延誤時的替代列車或住宿聯絡方式。',
+              sourceUrl: 'https://www.smartraveller.gov.au/id/node/158'
             }
-]
+          ]
         });
 
         // Itinerary data organized by days
@@ -1050,6 +882,58 @@
           ]
         });
 
+        function placeReferenceRows(itinerary) {
+          const seen = new Set();
+          return Object.values(itinerary).flatMap(day => day).reduce((rows, spot) => {
+            if (!Array.isArray(spot.coords) || spot.coords.length !== 2) return rows;
+            const [latitude, longitude] = spot.coords;
+            if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return rows;
+            const referenceId = spot.referenceId || [spot.name, latitude, longitude].join('|');
+            if (seen.has(referenceId)) return rows;
+            seen.add(referenceId);
+            rows.push({
+              name: spot.name,
+              coords: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+              type: spot.type
+            });
+            return rows;
+          }, []);
+        }
+
+        const referenceRows = computed(() => placeReferenceRows(itinerary));
+
+        function actionStatusLabel(status) {
+          const statuses = { book: '待預訂', confirm: '待確認', optional: '可選', backup: '備援' };
+          return statuses[status] || status;
+        }
+
+        function placeTypeLabel(type) {
+          const types = {
+            flight: '航班／機場',
+            hotel: '住宿',
+            train: '鐵路／車站',
+            bus: '巴士',
+            bike: '自行車',
+            shopping: '購物',
+            info: '資訊',
+            castle: '城郭',
+            shrine: '神社／寺院',
+            park: '公園',
+            cruise: '遊船',
+            tower: '展望台',
+            sight: '景點',
+            food: '餐飲'
+          };
+          return types[type] || '其他行程地點';
+        }
+
+        const displayedNotices = computed(() => [
+          ...overview.notices,
+          ...overview.actions
+            .filter(action => action.critical)
+            .map(action => `【${actionStatusLabel(action.status)}】${action.text}`)
+        ]);
+
         const dayList = computed(() => {
           return tabs.filter(t => t.id !== 'overview');
         });
@@ -1057,6 +941,19 @@
         // OpenStreetMap Map Renderer
         const mapInstances = {};
         const markerInstances = {};
+        function mapScopeSpots(validSpots) {
+          const localSpots = validSpots.filter((spot, index, spots) => {
+            if (spot.type !== 'flight') return true;
+            const arrivesByPlane = index > 0 && spots[index - 1].transit?.icon === 'plane';
+            const departsByPlane = index < spots.length - 1 && spot.transit?.icon === 'plane';
+            const isRemoteFlightStop =
+              (index === 0 || arrivesByPlane) &&
+              (index === spots.length - 1 || departsByPlane);
+            return !isRemoteFlightStop;
+          });
+          return localSpots.length ? localSpots : validSpots;
+        }
+
 
         function renderMap(dayId) {
           if (dayId === 'overview') return;
@@ -1087,7 +984,6 @@
             mapInstances[dayId] = map;
 
             markerInstances[dayId] = [];
-            const latLngs = [];
             validSpots.forEach((spot, idx) => {
               const markerIcon = L.divIcon({
                 className: 'custom-osm-marker',
@@ -1119,29 +1015,23 @@
                 </div>
               `);
               markerInstances[dayId].push(marker);
-              latLngs.push(spot.coords);
             });
 
-            // Draw route polyline between local spots
-            if (latLngs.length > 1) {
-              const localSpots = latLngs.filter(c => c[0] > 40);
-              if (localSpots.length > 1) {
-                L.polyline(localSpots, {
-                  color: '#e11d48',
-                  weight: 3.5,
-                  opacity: 0.75,
-                  dashArray: '5, 8'
-                }).addTo(map);
-              }
+            // Draw and frame the local itinerary, not remote flight endpoints.
+            const routeCoords = mapScopeSpots(validSpots).map(spot => spot.coords);
+            if (routeCoords.length > 1) {
+              L.polyline(routeCoords, {
+                color: '#e11d48',
+                weight: 3.5,
+                opacity: 0.75,
+                dashArray: '5, 8'
+              }).addTo(map);
             }
 
-            // Fit bounds with padding
-            const localCoords = latLngs.filter(c => c[0] > 40);
-            const fitCoords = (localCoords.length > 0) ? localCoords : latLngs;
-            if (fitCoords.length === 1) {
-              map.setView(fitCoords[0], 14);
-            } else if (fitCoords.length > 1) {
-              const bounds = L.latLngBounds(fitCoords);
+            if (routeCoords.length === 1) {
+              map.setView(routeCoords[0], 14);
+            } else if (routeCoords.length > 1) {
+              const bounds = L.latLngBounds(routeCoords);
               map.fitBounds(bounds, {
                 padding: [40, 40],
                 maxZoom: 15
@@ -1197,9 +1087,7 @@
           map.closePopup();
           map.invalidateSize();
 
-          const latLngs = validSpots.map(s => s.coords);
-          const localCoords = latLngs.filter(c => c[0] > 40);
-          const fitCoords = (localCoords.length > 0) ? localCoords : latLngs;
+          const fitCoords = mapScopeSpots(validSpots).map(spot => spot.coords);
 
           if (fitCoords.length === 1) {
             map.flyTo(fitCoords[0], 14, { duration: 0.8 });
@@ -1271,6 +1159,10 @@
           tabs,
           overview,
           itinerary,
+          referenceRows,
+          displayedNotices,
+          actionStatusLabel,
+          placeTypeLabel,
           dayList,
           switchTab,
           focusSpotOnMap,

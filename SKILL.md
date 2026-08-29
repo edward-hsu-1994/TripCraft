@@ -11,6 +11,10 @@ Use this skill for a complete travel-planning request: choosing a destination, s
 
 Do **not** use it for a single flight, hotel, visa, weather, booking, or payment request unless that request is part of a complete itinerary.
 
+## Platform boundary
+
+Use this file only in a filesystem-capable coding agent. Do not combine it with the browser-only Web prompt: this Skill writes the final HTML to `templates/<destination>-travel.html`, while the Web prompt emits a single `html` code block.
+
 ## Language policy
 
 1. Determine the output language from the first **substantive travel-planning message**. Ignore greetings, acknowledgements, and links without a request.
@@ -29,6 +33,8 @@ Do **not** use it for a single flight, hotel, visa, weather, booking, or payment
 - For overnight trips, prefer continuous stays in each base area over needless hotel changes.
 - Build each day from researched visit time + transit + meals + a **30-minute** station waiting/transfer buffer + contingency time.
 - Do not schedule a venue, restaurant, shop, service, or transport option until its exact-date operating status is verified. If status is unpublished or uncertain, label it as pending, provide an operating backup, and do not make it indispensable.
+- Ask only the next useful question. Apply conditional requirements only after they become relevant; do not turn them into a generic pre-trip questionnaire.
+- Never make a booking, payment, or form submission for the user. Before delivery, identify every material uncompleted action with its status, deadline, cancellation/refund terms when applicable, source URL, and a backup if it is indispensable.
 
 ## 12-step workflow
 
@@ -78,6 +84,14 @@ For an overnight trip, also collect lodging type, location, nightly budget, room
 
 Research **3–5** lodging options that fit the requirements. Record name/brand, address or nearest station and walking time, ratings with source/sample size, date-specific approximate nightly price, transit access, and source URLs. The user chooses; do not silently default. If no option fits, explain whether dates, location, or budget must change. The selected lodging becomes each day's default start and end point.
 
+#### Conditional travel readiness
+
+Apply only the items triggered by the route or the user's stated needs. Ask one pertinent question at a time, and never request financial or medical details that are not needed for planning.
+
+- **Payment and connectivity** — when the journey relies on them, research practical payment options, currency/cash backup, foreign-card, ATM, or transit-payment constraints; data/eSIM/roaming compatibility; adapter/charging needs; and offline copies of maps, addresses, bookings, and QR codes.
+- **Medicines and medical devices** — only for a disclosed need or applicable destination rule, research official import/declaration requirements, original packaging, supporting documentation, and carry-on needs. Do not give medical advice.
+- **Booking state** — track each material user action as `book`, `confirm`, `optional`, or `backup`. Record its deadline, cancellation/refund terms when applicable, and source URL; never imply it is completed before the user says so.
+
 ### 6. Research destination, safety, and local context
 
 Research and summarize:
@@ -93,13 +107,16 @@ Research and summarize:
 ### 7. Confirm transport mode
 
 Reconfirm the transport preference after destination, stops, and lodging are known. Evaluate walking, public transit, public bike share, scenic rental bikes or e-bikes, taxi/rideshare, rental car, and mixed transport.
+If a user-preferred mode fails researched eligibility, safety, availability, or schedule constraints, name the conflict and offer feasible alternatives. Do not silently substitute it or schedule an infeasible/unverified option; the user chooses among the feasible options.
 
-For every rental, record:
+For every bike rental, record:
 
 - Exact shop/dock name, location, hours, price, bike type, and final return time.
 - Availability-driven sequence: route to a valid pickup point before cycling; never start at a station without a rental option.
 - One-way drop-off versus round-trip return, including verified return locations.
 - Realistic route distance and riding time; use **12–15 km/h** as the default flat-route cycling baseline. Recommend e-bikes for hilly routes.
+
+For a rental car, verify the driver's license/IDP eligibility, age and payment requirements, insurance/coverage/excess/deposit, fuel, parking/tolls, required equipment, road/weather restrictions, and exact pickup/return terms. Use current official or provider sources; never assume cross-border or country eligibility.
 
 ### 8. Research each stop
 
@@ -123,6 +140,8 @@ For every consecutive pair of stops, research the actual route, duration, fare w
 - Flights: state airline, flight number, and flight duration when known.
 - At rail, metro, and bus departures or transfers, add **30 minutes** for ticketing, platform finding, headways, and bike-return logistics.
 
+For any air connection, classify it as a single protected itinerary or a self-transfer/separate ticket. Verify the minimum connection time, terminals or airport changes, baggage through-check, immigration/customs/security/re-check needs, and airline check-in/bag-drop cutoffs. Never treat a self-transfer as protected; if a policy is uncertain, mark it pending and provide a non-breaking alternative.
+
 ### 10. Build the itinerary data model
 
 Use the structure and naming convention of `templates/okayama-travel.html`. At minimum, provide `trip`, `tabs`, `overview`, and `itinerary.day1` through `itinerary.dayN`.
@@ -133,11 +152,13 @@ Each itinerary item needs a localized name, time, optional tag, type, researched
 { icon: 'train', text: 'Operator, line, and researched travel time' }
 ```
 
-The overview must include notes, three weather cards, notices, and a place/station reference table derived **one-to-one** from actual itinerary entities.
+The overview must include notes, three weather cards, a source-linked action list, notices, and a responsive place-reference table derived **one-to-one** from actual itinerary entities. Render local-script or translated names only when they are researched one-to-one; otherwise show the itinerary label, coordinates, and a localized type label.
+
+**Map scope rule:** Show a marker for every valid coordinate. Build the route polyline and default/reset bounds from local stops, not a latitude/longitude threshold. Exclude a flight stop only when it begins the day and departs by plane, ends the day after arriving by plane, or sits between two plane legs; keep a destination airport that connects to local ground transport.
 
 ### 11. Validate logistics and contingency
 
-Confirm that every day starts and ends at the selected lodging or an airport; arrival and departure days include immigration, baggage, and check-in time; all hours and reservations fit the exact dates; and every pending item has a non-breaking backup.
+Confirm that every day starts and ends at the selected lodging or an airport; arrival and departure days include immigration, baggage, and check-in time; all hours and reservations fit the exact dates; and every pending item has a non-breaking backup. Before delivery, present a concise action list for every `book`, `confirm`, `optional`, or `backup` item. Any uncompleted action that could break the itinerary must remain in `overview.notices`.
 
 ### 12. Deliver the interactive HTML itinerary
 
@@ -145,11 +166,11 @@ Write the complete, self-contained file to `templates/<destination>-travel.html`
 
 ## HTML contract
 
-Use `templates/okayama-travel.html` as the CLI reference implementation. Preserve its Vue 3, Tailwind CSS, Leaflet/OpenStreetMap, responsive visual hierarchy, and behavior:
+Use `templates/okayama-travel.html` only as the CLI layout and behavior reference. Do not copy its `zh-Hant` data, hard-coded labels, or locale. Preserve its Vue 3, Tailwind CSS, Leaflet/OpenStreetMap, responsive visual hierarchy, and behavior:
 
 - Header card; sticky, text-only pill tabs; URL hash sync for overview and every day.
-- Overview with notes, three weather cards, safety notices, and a responsive place/station reference table strictly derived one-to-one from the itinerary.
-- Daily route map above the itinerary cards, numbered rose markers, dashed route polyline, and map cleanup before re-instantiation.
+- Overview with notes, three weather cards, a source-linked action list, safety notices, and a responsive place-reference table strictly derived one-to-one from the itinerary.
+- Daily route map above the itinerary cards, numbered rose markers, dashed route polyline, map cleanup before re-instantiation, and the map scope rule from Step 10.
 - Bidirectional map behavior: a numbered card badge focuses the map at zoom 17 and opens its popup; the active tab or reset control restores the full-day view.
 - Responsive daily cards with time, type icon, tag, name, duration, and explicit transit connectors. Include a fallback for a day with no items.
 - A locale-aware document language, localized labels, and fonts that render Chinese, Japanese, and English.

@@ -100,7 +100,32 @@
             </div>
           </section>
 
-          <!-- 區塊三：注意事項 (琥珀色警告盒) -->
+          <!-- 行前待辦 -->
+          <section v-if="overview.actions.length">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-lg">✅</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">行前待辦</h2>
+            </div>
+            <ul class="space-y-3">
+              <li v-for="action in overview.actions" :key="action.text" class="rounded-xl border border-slate-200/80 bg-slate-50 p-4">
+                <div class="flex flex-wrap items-start gap-2">
+                  <span
+                    :class="action.critical ? 'bg-rose-100 text-rose-700 border-rose-200' : 'bg-slate-100 text-slate-600 border-slate-200'"
+                    class="inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-xs font-bold"
+                  >
+                    {{ actionStatusLabel(action.status) }}
+                  </span>
+                  <span class="min-w-0 flex-1 text-sm leading-relaxed text-slate-700">{{ action.text }}</span>
+                </div>
+                <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                  <span v-if="action.deadline" class="text-slate-500">完成時點：{{ action.deadline }}</span>
+                  <a v-if="action.sourceUrl" :href="action.sourceUrl" target="_blank" rel="noopener noreferrer" class="font-semibold text-rose-600 hover:text-rose-700">查核來源 ↗</a>
+                </div>
+              </li>
+            </ul>
+          </section>
+
+          <!-- 注意事項 -->
           <section>
             <div class="flex items-center gap-2 mb-3">
               <span class="text-lg">⚠️</span>
@@ -108,8 +133,8 @@
             </div>
             <div class="bg-amber-50/40 rounded-xl p-5 border border-amber-200/60">
               <ul class="space-y-2.5 text-sm md:text-base text-slate-700">
-                <li 
-                  v-for="(notice, idx) in overview.notices" 
+                <li
+                  v-for="(notice, idx) in displayedNotices"
                   :key="idx"
                   class="flex items-start gap-2.5"
                 >
@@ -120,31 +145,27 @@
             </div>
           </section>
 
-          <!-- 區塊四：實用車站與地名日英對照表 (嚴格 1:1 對應行程所有地點) -->
+          <!-- 行程地點與座標對照表 -->
           <section>
             <div class="flex items-center gap-2 mb-3">
-              <span class="text-lg">🚉</span>
-              <h2 class="text-lg md:text-xl font-bold text-slate-800">實用車站與地名日英對照表</h2>
+              <span class="text-lg">📍</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">行程地點與座標對照表</h2>
             </div>
             <div class="overflow-x-auto rounded-xl border border-slate-200/80 shadow-xs">
               <table class="w-full text-left text-sm text-slate-700">
                 <thead class="bg-slate-100/80 text-xs font-bold text-slate-600 uppercase tracking-wider border-b border-slate-200">
                   <tr>
-                    <th scope="col" class="px-4 py-3">中文名稱</th>
-                    <th scope="col" class="px-4 py-3">日文名稱 (漢字 / 假名)</th>
-                    <th scope="col" class="px-4 py-3">英文 / 羅馬拼音 (Romaji)</th>
+                    <th scope="col" class="px-4 py-3">行程地點</th>
+                    <th scope="col" class="px-4 py-3">座標</th>
                     <th scope="col" class="px-4 py-3">類型</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 bg-white">
-                  <tr v-for="(item, idx) in overview.stations" :key="idx" class="hover:bg-slate-50/80 transition">
-                    <td class="px-4 py-2.5 font-bold text-slate-800">{{ item.zh }}</td>
-                    <td class="px-4 py-2.5 font-medium text-rose-600 font-mono">{{ item.ja }}</td>
-                    <td class="px-4 py-2.5 text-slate-500 font-mono text-xs md:text-sm">{{ item.en }}</td>
+                  <tr v-for="item in referenceRows" :key="`${item.name}:${item.coords}`" class="hover:bg-slate-50/80 transition">
+                    <td class="px-4 py-2.5 font-bold text-slate-800">{{ item.name }}</td>
+                    <td class="px-4 py-2.5 text-slate-500 font-mono text-xs md:text-sm">{{ item.coords }}</td>
                     <td class="px-4 py-2.5">
-                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
-                        {{ item.type }}
-                      </span>
+                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">{{ placeTypeLabel(item.type) }}</span>
                     </td>
                   </tr>
                 </tbody>
@@ -208,6 +229,7 @@
                         <template v-else-if="spot.type === 'park'">🌿</template>
                         <template v-else-if="spot.type === 'cruise'">🚢</template>
                         <template v-else-if="spot.type === 'tower'">🗼</template>
+                        <template v-else-if="spot.type === 'sight'">🎡</template>
                         <template v-else-if="spot.type === 'food'">🍜</template>
                         <template v-else>📍</template>
                       </span>
@@ -241,6 +263,11 @@
 
               </div>
 
+            </div>
+            <div v-else class="py-12 text-center text-slate-500 border-2 border-dashed border-slate-200 rounded-xl">
+              <div class="text-4xl mb-2">🗓️</div>
+              <h3 class="text-base font-semibold text-slate-700">{{ day.name }} 暫無已確認安排</h3>
+              <p class="text-sm mt-1">保留為休息、補給，或依「行前待辦」完成確認後再排入行程。</p>
             </div>
           </div>
         </div>
@@ -303,57 +330,28 @@
             '大晦日保暖與除夜之鐘禮儀：12/31 深夜氣溫通常降至 2°C~4°C，戶外排隊候鐘時間較長，請務必備妥暖暖包、發熱保暖手套與保溫瓶；寺廟境內請輕聲慢行，遵從現場工作人員引導。',
             '自然危害與野生動物注意：若延伸造訪東京近郊山區（如高尾山、奧多摩），山區健行請配掛防熊鈴 (熊鈴)，行前可參考「KumaMap 日本即時熊出沒地圖 (https://kumamap.com/zh-Hant)」查詢目擊情報。'
           ],
-          stations: [
-            { zh: '臺灣桃園國際機場', ja: '台湾桃園国際空港 (たいわんとうえんこくさいくうこう)', en: 'Taiwan Taoyuan International Airport (TPE)', type: '機場' },
-            { zh: '成田國際機場', ja: '成田国際空港 (なりたこくさいくうこう)', en: 'Narita International Airport (NRT)', type: '機場' },
-            { zh: '淺草站', ja: '浅草駅 (あさくさえき)', en: 'Asakusa Station', type: '鐵道車站' },
-            { zh: '淺草里士滿酒店 本館', ja: 'リッチモンドホテル浅草 (本館)', en: 'Richmond Hotel Asakusa', type: '住宿飯店' },
-            { zh: '淺草寺 雷門', ja: '浅草寺 雷門 (せんそうじ かみなりもん)', en: 'Kaminarimon Gate, Senso-ji', type: '歷史地標' },
-            { zh: '淺草寺 本堂・五重塔', ja: '浅草寺 本堂・五重塔 (ほんどう・ごじゅうのとう)', en: 'Senso-ji Main Hall & Five-Story Pagoda', type: '古蹟寺廟' },
-            { zh: '淺草神社', ja: '浅草神社 (あさくさじんじゃ)', en: 'Asakusa Shrine', type: '神社' },
-            { zh: '隅田公園', ja: '隅田公園 (すみだこうえん)', en: 'Sumida Park', type: '名勝公園' },
-            { zh: '吾妻橋', ja: '吾妻橋 (あづまばし)', en: 'Azumabashi Bridge', type: '景觀橋樑' },
-            { zh: '淺草今半 國際通本店', ja: '浅草今半 国際通り本店 (あさくさいまはん)', en: 'Asakusa Imahan Kokusai-dori Main Store', type: '美食名店' },
-            { zh: '上野站', ja: '上野駅 (うえのえき)', en: 'Ueno Station', type: '鐵道車站' },
-            { zh: '上野恩賜公園・不忍池', ja: '上野恩賜公園・不忍池 (しのばずのいけ)', en: 'Ueno Park & Shinobazu Pond', type: '名勝公園' },
-            { zh: '谷中銀座商店街・夕陽階梯', ja: '谷中銀座商店街・夕やけだんだん', en: 'Yanaka Ginza & Yuyake Dandan Stairs', type: '下町老街' },
-            { zh: '秋葉原站', ja: '秋葉原駅 (あきはばらえき)', en: 'Akihabara Station', type: '鐵道車站' },
-            { zh: '肉之萬世 秋葉原本店', ja: '肉の万世 秋葉原本店 (にくのまんせい)', en: 'Niku no Mansei Akihabara Main Store', type: '美食名店' },
-            { zh: 'Yodobashi-Akiba', ja: 'ヨドバシカメラ マルチメディアAkiba', en: 'Yodobashi Multimedia Akiba', type: '商場旗艦' },
-            { zh: '明治神宮', ja: '明治神宮 (めいじじんぐう)', en: 'Meiji Jingu Shrine', type: '名勝神社' },
-            { zh: '原宿站', ja: '原宿駅 (はらじゅくえき)', en: 'Harajuku Station', type: '鐵道車站' },
-            { zh: '表參道之丘', ja: '表参道ヒルズ (おもてさんどうひるず)', en: 'Omotesando Hills', type: '建築名所' },
-            { zh: '炸豬排 舞泉 青山本店', ja: 'とんかつ まい泉 青山本店 (まいせん)', en: 'Tonkatsu Maisen Aoyama Main Store', type: '美食名店' },
-            { zh: '澀谷站', ja: '渋谷駅 (しぶやえき)', en: 'Shibuya Station', type: '鐵道車站' },
-            { zh: '澀谷十字路口', ja: '渋谷スクランブル交差点', en: 'Shibuya Scramble Crossing', type: '都會地標' },
-            { zh: 'SHIBUYA SKY', ja: '渋谷スカイ (しぶやすかい)', en: 'SHIBUYA SKY Observation Deck', type: '觀景展望' },
-            { zh: '惠比壽站', ja: '恵比寿駅 (えびすえき)', en: 'Ebisu Station', type: '鐵道車站' },
-            { zh: '惠比壽花園廣場', ja: '恵比寿ガーデンプレイス (えびすがーでんぷれいす)', en: 'Yebisu Garden Place', type: '冬季點燈' },
-            { zh: '新橋站', ja: '新橋駅 (しんばしえき)', en: 'Shimbashi Station', type: '鐵道車站' },
-            { zh: '台場海濱公園', ja: 'お台場海浜公園 (おだいばかいひんこうえん)', en: 'Odaiba Seaside Park', type: '濱海名勝' },
-            { zh: '台場 自由女神像', ja: 'お台場 自由の女神像 (じゆうのめがみぞう)', en: 'Statue of Liberty Odaiba', type: '地標景點' },
-            { zh: 'DiverCity Tokyo Plaza', ja: 'ダイバーシティ東京 プラザ', en: 'DiverCity Tokyo Plaza', type: '商場景點' },
-            { zh: '銀座中央通', ja: '銀座中央通り (ぎんざちゅうおうどおり)', en: 'Ginza Chuo-dori', type: '繁華街區' },
-            { zh: 'GINZA SIX', ja: 'ギンザ シックス', en: 'GINZA SIX', type: '商場名所' },
-            { zh: '東京車站 丸之內站舍', ja: '東京駅 丸の内駅舎 (とうきょうえき まるのうちえきしゃ)', en: 'Tokyo Station Marunouchi Building', type: '歷史建築' },
-            { zh: '丸之內仲通', ja: '丸の内仲通り (まるのうちなかどおり)', en: 'Marunouchi Naka-dori', type: '冬季點燈' },
-            { zh: 'KITTE 丸之內', ja: 'キッテ 丸の内 (きって まるのうち)', en: 'KITTE Marunouchi', type: '建築名所' },
-            { zh: '下北澤站', ja: '下北沢駅 (しもきたざわえき)', en: 'Shimokitazawa Station', type: '鐵道車站' },
-            { zh: '下北澤古著與文青街區', ja: '下北沢商店街 (しもきたざわしょうてんがい)', en: 'Shimokitazawa Vintage & Cafe District', type: '文化街區' },
-            { zh: '六本木站', ja: '六本木駅 (ろっぽんぎえき)', en: 'Roppongi Station', type: '鐵道車站' },
-            { zh: 'AFURI 六本木交差點', ja: 'AFURI 六本木交差点 (あふり)', en: 'AFURI Roppongi Crossing', type: '拉麵名店' },
-            { zh: '國立新美術館', ja: '国立新美術館 (こくりつしんびじゅつかん)', en: 'The National Art Center, Tokyo', type: '藝術建築' },
-            { zh: '六本木之丘 森大樓', ja: '六本木ヒルズ 森タワー (ろっぽんぎひるず)', en: 'Roppongi Hills Mori Tower', type: '觀景展望' },
-            { zh: '六本木櫸坂大道', ja: '六本木けやき坂通り (けやきざかどおり)', en: 'Roppongi Keyakizaka Dori', type: '冬季點燈' },
-            { zh: '神田明神', ja: '神田明神 (かんだみょうじん)', en: 'Kanda Myojin Shrine', type: '名勝神社' },
-            { zh: '皇居外苑・二重橋', ja: '皇居外苑・二重橋 (こうきょがいえん・にじゅうばし)', en: 'Kokyo Gaien National Garden & Nijubashi Bridge', type: '歷史名勝' },
-            { zh: '並木藪蕎麥', ja: '並木藪蕎麦 (なみきやぶそば)', en: 'Namiki Yabu Soba', type: '美食名店' },
-            { zh: '今戶神社', ja: '今戸神社 (いまどじんじゃ)', en: 'Imado Shrine', type: '名勝神社' },
-            { zh: '淺草水上巴士碼頭', ja: '東京都観光汽船 浅草発着所 (TOKYO CRUISE)', en: 'TOKYO CRUISE Asakusa Pier', type: '水上交通' },
-            { zh: '濱離宮恩賜庭園', ja: '浜離宮恩賜庭園 (はまりきゅうおんしていえん)', en: 'Hamarikyu Gardens', type: '名勝庭園' },
-            { zh: '芝公園・東京鐵塔', ja: '芝公園・東京タワー (しばこうえん・とうきょうたわー)', en: 'Shiba Park & Tokyo Tower', type: '地標景點' },
-            { zh: '隅田步道橋', ja: 'すみだリバーウォーク (SUMIDA RIVER WALK)', en: 'SUMIDA RIVER WALK', type: '景觀步道' },
-            { zh: '東京晴空塔城', ja: '東京スカイツリータウン (とうきょうすかいつりーたうん)', en: 'Tokyo Skytree Town', type: '都會名勝' }
+          actions: [
+            {
+              status: 'confirm',
+              critical: true,
+              deadline: '出發前',
+              text: '以成田機場與 JR 東日本官方資訊重新確認航班、航廈、成田至市區交通及年末年始服務的實際時刻、營運狀態與預約規則。',
+              sourceUrl: 'https://www.narita-airport.jp/en/access/train/'
+            },
+            {
+              status: 'confirm',
+              critical: true,
+              deadline: '付款後與出發前',
+              text: '完成 Visit Japan Web 所需資料，並向航空公司與住宿供應商核對訂位代號、票號、行李額度、入住日期、取消條件與轉機責任。',
+              sourceUrl: 'https://services.digital.go.jp/en/visit-japan-web/'
+            },
+            {
+              status: 'backup',
+              critical: false,
+              deadline: '出發前',
+              text: '離線保存住宿地址、交通憑證、護照與保險資料，並備妥延誤時的替代列車或住宿聯絡方式。',
+              sourceUrl: 'https://www.smartraveller.gov.au/id/node/158'
+            }
           ]
         });
 
@@ -880,10 +878,75 @@
           ]
         });
 
+        function placeReferenceRows(itinerary) {
+          const seen = new Set();
+          return Object.values(itinerary).flatMap(day => day).reduce((rows, spot) => {
+            if (!Array.isArray(spot.coords) || spot.coords.length !== 2) return rows;
+            const [latitude, longitude] = spot.coords;
+            if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return rows;
+            const referenceId = spot.referenceId || [spot.name, latitude, longitude].join('|');
+            if (seen.has(referenceId)) return rows;
+            seen.add(referenceId);
+            rows.push({
+              name: spot.name,
+              coords: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+              type: spot.type
+            });
+            return rows;
+          }, []);
+        }
+
+        const referenceRows = computed(() => placeReferenceRows(itinerary));
+
+        function actionStatusLabel(status) {
+          const statuses = { book: '待預訂', confirm: '待確認', optional: '可選', backup: '備援' };
+          return statuses[status] || status;
+        }
+
+        function placeTypeLabel(type) {
+          const types = {
+            flight: '航班／機場',
+            hotel: '住宿',
+            train: '鐵路／車站',
+            bus: '巴士',
+            bike: '自行車',
+            shopping: '購物',
+            info: '資訊',
+            castle: '城郭',
+            shrine: '神社／寺院',
+            park: '公園',
+            cruise: '遊船',
+            tower: '展望台',
+            sight: '景點',
+            food: '餐飲'
+          };
+          return types[type] || '其他行程地點';
+        }
+
+        const displayedNotices = computed(() => [
+          ...overview.notices,
+          ...overview.actions
+            .filter(action => action.critical)
+            .map(action => `【${actionStatusLabel(action.status)}】${action.text}`)
+        ]);
+
         const dayList = computed(() => tabs.filter(t => t.id !== 'overview'));
 
         const mapInstances = {};
         const markerInstances = {};
+        function mapScopeSpots(validSpots) {
+          const localSpots = validSpots.filter((spot, index, spots) => {
+            if (spot.type !== 'flight') return true;
+            const arrivesByPlane = index > 0 && spots[index - 1].transit?.icon === 'plane';
+            const departsByPlane = index < spots.length - 1 && spot.transit?.icon === 'plane';
+            const isRemoteFlightStop =
+              (index === 0 || arrivesByPlane) &&
+              (index === spots.length - 1 || departsByPlane);
+            return !isRemoteFlightStop;
+          });
+          return localSpots.length ? localSpots : validSpots;
+        }
+
 
         function renderMap(dayId) {
           if (dayId === 'overview') return;
@@ -909,7 +972,6 @@
             mapInstances[dayId] = map;
 
             markerInstances[dayId] = [];
-            const latLngs = [];
             validSpots.forEach((spot, idx) => {
               const markerIcon = L.divIcon({
                 className: 'custom-osm-marker',
@@ -922,22 +984,18 @@
               const marker = L.marker(spot.coords, { icon: markerIcon }).addTo(map);
               marker.bindPopup(`<strong>${idx + 1}. ${spot.name}</strong><br/><span style="color:#64748b;font-size:12px;">⏰ ${spot.time} · ${spot.duration}</span>`);
               markerInstances[dayId].push(marker);
-              latLngs.push(spot.coords);
             });
 
-            if (latLngs.length > 1) {
-              const localSpots = latLngs.filter(c => c[0] > 30);
-              if (localSpots.length > 1) {
-                L.polyline(localSpots, { color: '#e11d48', weight: 3.5, opacity: 0.75, dashArray: '5, 8' }).addTo(map);
-              }
+            // Draw and frame the local itinerary, not remote flight endpoints.
+            const routeCoords = mapScopeSpots(validSpots).map(spot => spot.coords);
+            if (routeCoords.length > 1) {
+              L.polyline(routeCoords, { color: '#e11d48', weight: 3.5, opacity: 0.75, dashArray: '5, 8' }).addTo(map);
             }
 
-            const localCoords = latLngs.filter(c => c[0] > 30);
-            const fitCoords = localCoords.length > 0 ? localCoords : latLngs;
-            if (fitCoords.length === 1) {
-              map.setView(fitCoords[0], 14);
-            } else if (fitCoords.length > 1) {
-              map.fitBounds(L.latLngBounds(fitCoords), { padding: [40, 40], maxZoom: 15 });
+            if (routeCoords.length === 1) {
+              map.setView(routeCoords[0], 14);
+            } else if (routeCoords.length > 1) {
+              map.fitBounds(L.latLngBounds(routeCoords), { padding: [40, 40], maxZoom: 15 });
             }
 
             setTimeout(() => { map.invalidateSize(); }, 120);
@@ -973,9 +1031,7 @@
 
           map.closePopup();
           map.invalidateSize();
-          const latLngs = validSpots.map(s => s.coords);
-          const localCoords = latLngs.filter(c => c[0] > 30);
-          const fitCoords = localCoords.length > 0 ? localCoords : latLngs;
+          const fitCoords = mapScopeSpots(validSpots).map(spot => spot.coords);
           if (fitCoords.length === 1) {
             map.flyTo(fitCoords[0], 14, { duration: 0.8 });
           } else if (fitCoords.length > 1) {
@@ -1026,6 +1082,10 @@
           tabs,
           overview,
           itinerary,
+          referenceRows,
+          displayedNotices,
+          actionStatusLabel,
+          placeTypeLabel,
           dayList,
           switchTab,
           focusSpotOnMap,

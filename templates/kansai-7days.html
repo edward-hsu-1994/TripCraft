@@ -125,6 +125,31 @@
             </div>
           </section>
 
+          <!-- 行前待辦 -->
+          <section v-if="overview.actions.length">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-lg">✅</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">行前待辦</h2>
+            </div>
+            <ul class="space-y-3">
+              <li v-for="action in overview.actions" :key="action.text" class="rounded-xl border border-slate-200/80 bg-slate-50 p-4">
+                <div class="flex flex-wrap items-start gap-2">
+                  <span
+                    :class="action.critical ? 'bg-rose-100 text-rose-700 border-rose-200' : 'bg-slate-100 text-slate-600 border-slate-200'"
+                    class="inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-xs font-bold"
+                  >
+                    {{ actionStatusLabel(action.status) }}
+                  </span>
+                  <span class="min-w-0 flex-1 text-sm leading-relaxed text-slate-700">{{ action.text }}</span>
+                </div>
+                <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                  <span v-if="action.deadline" class="text-slate-500">完成時點：{{ action.deadline }}</span>
+                  <a v-if="action.sourceUrl" :href="action.sourceUrl" target="_blank" rel="noopener noreferrer" class="font-semibold text-rose-600 hover:text-rose-700">查核來源 ↗</a>
+                </div>
+              </li>
+            </ul>
+          </section>
+
           <!-- 注意事項 -->
           <section>
             <div class="flex items-center gap-2 mb-3">
@@ -133,8 +158,8 @@
             </div>
             <div class="bg-amber-50/40 rounded-xl p-5 border border-amber-200/60">
               <ul class="space-y-2.5 text-sm md:text-base text-slate-700">
-                <li 
-                  v-for="(notice, idx) in overview.notices" 
+                <li
+                  v-for="(notice, idx) in displayedNotices"
                   :key="idx"
                   class="flex items-start gap-2.5"
                 >
@@ -145,31 +170,27 @@
             </div>
           </section>
 
-          <!-- 實用車站與地名日英對照表 -->
+          <!-- 行程地點與座標對照表 -->
           <section>
             <div class="flex items-center gap-2 mb-3">
-              <span class="text-lg">🚉</span>
-              <h2 class="text-lg md:text-xl font-bold text-slate-800">實用車站與地名日英對照表</h2>
+              <span class="text-lg">📍</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-800">行程地點與座標對照表</h2>
             </div>
             <div class="overflow-x-auto rounded-xl border border-slate-200/80 shadow-xs">
               <table class="w-full text-left text-sm text-slate-700">
                 <thead class="bg-slate-100/80 text-xs font-bold text-slate-600 uppercase tracking-wider border-b border-slate-200">
                   <tr>
-                    <th scope="col" class="px-4 py-3">中文名稱</th>
-                    <th scope="col" class="px-4 py-3">日文名稱 (漢字 / 假名)</th>
-                    <th scope="col" class="px-4 py-3">英文 / 羅馬拼音 (Romaji)</th>
+                    <th scope="col" class="px-4 py-3">行程地點</th>
+                    <th scope="col" class="px-4 py-3">座標</th>
                     <th scope="col" class="px-4 py-3">類型</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 bg-white">
-                  <tr v-for="(item, idx) in overview.stations" :key="idx" class="hover:bg-slate-50/80 transition">
-                    <td class="px-4 py-2.5 font-bold text-slate-800">{{ item.zh }}</td>
-                    <td class="px-4 py-2.5 font-medium text-rose-600 font-mono">{{ item.ja }}</td>
-                    <td class="px-4 py-2.5 text-slate-500 font-mono text-xs md:text-sm">{{ item.en }}</td>
+                  <tr v-for="item in referenceRows" :key="`${item.name}:${item.coords}`" class="hover:bg-slate-50/80 transition">
+                    <td class="px-4 py-2.5 font-bold text-slate-800">{{ item.name }}</td>
+                    <td class="px-4 py-2.5 text-slate-500 font-mono text-xs md:text-sm">{{ item.coords }}</td>
                     <td class="px-4 py-2.5">
-                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
-                        {{ item.type }}
-                      </span>
+                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">{{ placeTypeLabel(item.type) }}</span>
                     </td>
                   </tr>
                 </tbody>
@@ -275,11 +296,11 @@
 
             </div>
 
-            <!-- Fallback Placeholder for days with no data yet -->
-            <div v-else class="py-12 text-center text-slate-400 border-2 border-dashed border-slate-200 rounded-xl">
+            <!-- 空白日的可執行狀態 -->
+            <div v-else class="py-12 text-center text-slate-500 border-2 border-dashed border-slate-200 rounded-xl">
               <div class="text-4xl mb-2">🗓️</div>
-              <h3 class="text-base font-semibold text-slate-600">{{ day.name }} 行程內容區塊（Placeholder）</h3>
-              <p class="text-sm text-slate-400 mt-1">即將填入景點排程、交通時間、停留時間與備註</p>
+              <h3 class="text-base font-semibold text-slate-700">{{ day.name }} 暫無已確認安排</h3>
+              <p class="text-sm mt-1">保留為休息、補給，或依「行前待辦」完成確認後再排入行程。</p>
             </div>
 
           </div>
@@ -331,242 +352,29 @@
             '天候天災與颱風應變：初春時節晴朗少雨，若遇春雨鋒面或大眾運輸延誤，可下載日本官方「Safety Tips App」隨時掌握鐵道運行情報與災害預警。',
             '景點安全與野生動物：奈良公園散策請留意鹿群進食習性（勿逗弄或攜帶紙張零食）；京都近郊山徑（如貴船、鞍馬或比叡山）請循既定步道，偶有郊山熊出沒警戒時請攜帶防熊鈴，行前可至「KumaMap 日本即時熊出沒地圖 (https://kumamap.com/zh-Hant)」查詢最新目擊點。'
           ],
-          stations: [
+          actions: [
             {
-                        "zh": "關西國際機場 (KIX)",
-                        "ja": "関西国際空港 (かんさいこくさいくうこう)",
-                        "en": "Kansai International Airport (KIX)",
-                        "type": "機場樞紐"
+              status: 'confirm',
+              critical: true,
+              deadline: '出發前',
+              text: '以關西機場與 JR 西日本官方資訊重新確認航班、機場至京都交通、回程機場交通及各段列車的實際時刻、營運狀態與預約規則。',
+              sourceUrl: 'https://www.kansai-airport.or.jp/en/access/from-airport'
             },
             {
-                        "zh": "京都車站",
-                        "ja": "京都駅 (きょうとえき)",
-                        "en": "Kyoto Station",
-                        "type": "新幹線/JR/地鐵"
+              status: 'confirm',
+              critical: true,
+              deadline: '付款後與出發前',
+              text: '向航空公司與住宿供應商核對訂位代號、票號、行李額度、入住日期、取消條件與轉機責任；若為分開開票，預留足夠自轉機緩衝。',
+              sourceUrl: 'https://www.westjr.co.jp/global/en/travel/shopping/access/train.html'
             },
             {
-                        "zh": "京都站前大和ROYNET飯店",
-                        "ja": "ダイワロイネットホテル京都駅前",
-                        "en": "Daiwa Roynet Hotel Kyoto-Ekimae",
-                        "type": "飯店住宿"
-            },
-            {
-                        "zh": "四條河原町 & 新京極",
-                        "ja": "四条河原町・新京極商店街",
-                        "en": "Shijo-Kawaramachi & Shinkyogoku",
-                        "type": "繁華商圈"
-            },
-            {
-                        "zh": "京都拉麵小路",
-                        "ja": "京都拉麺小路 (らーめんこうじ)",
-                        "en": "Kyoto Ramen Koji",
-                        "type": "美食名街"
-            },
-            {
-                        "zh": "下鴨神社 & 糺之森",
-                        "ja": "下鴨神社（賀茂御祖神社）・糺の森",
-                        "en": "Shimogamo Shrine & Tadasu no Mori",
-                        "type": "世界遺產"
-            },
-            {
-                        "zh": "加茂みたらし茶屋",
-                        "ja": "加茂みたらし茶屋",
-                        "en": "Kamo Mitarashi Chaya",
-                        "type": "糰子甘味"
-            },
-            {
-                        "zh": "鴨川三角洲 (跳烏龜石)",
-                        "ja": "鴨川デルタ（飛び石）",
-                        "en": "Kamogawa Delta (Stepping Stones)",
-                        "type": "水岸散策"
-            },
-            {
-                        "zh": "錦市場",
-                        "ja": "錦市場 (にしきいちば)",
-                        "en": "Nishiki Market",
-                        "type": "京都廚房"
-            },
-            {
-                        "zh": "銀閣寺 (慈照寺)",
-                        "ja": "銀閣寺（慈照寺）",
-                        "en": "Ginkaku-ji (Higashiyama Jisho-ji)",
-                        "type": "世界遺產"
-            },
-            {
-                        "zh": "哲學之道",
-                        "ja": "哲学の道 (てつがくのみち)",
-                        "en": "Philosopher's Path",
-                        "type": "溪畔步道"
-            },
-            {
-                        "zh": "平安神宮 & 神苑",
-                        "ja": "平安神宮・神苑 (へいあんじんぐう)",
-                        "en": "Heian Jingu Shrine & Garden",
-                        "type": "大鳥居名社"
-            },
-            {
-                        "zh": "南禪寺 & 水路閣",
-                        "ja": "南禅寺・水路閣 (すいろかく)",
-                        "en": "Nanzen-ji & Suirokaku Aqueduct",
-                        "type": "禪宗大本山"
-            },
-            {
-                        "zh": "祇園白川",
-                        "ja": "祇園白川 (ぎおんしらかわ)",
-                        "en": "Gion Shirakawa",
-                        "type": "石板小徑"
-            },
-            {
-                        "zh": "近江八幡站",
-                        "ja": "近江八幡駅 (おうみはちまんえき)",
-                        "en": "Omi-Hachiman Station",
-                        "type": "JR 琵琶湖線"
-            },
-            {
-                        "zh": "八幡堀運河水鄉",
-                        "ja": "八幡堀 (はちまんぼり)",
-                        "en": "Hachiman-bori Canal",
-                        "type": "水鄉運河"
-            },
-            {
-                        "zh": "日牟禮八幡宮",
-                        "ja": "日牟禮八幡宮 (ひむれはちまんぐう)",
-                        "en": "Himure Hachimangu",
-                        "type": "總鎮守名剎"
-            },
-            {
-                        "zh": "千成亭 近江牛料理",
-                        "ja": "千成亭（近江牛料理）",
-                        "en": "Sennaritei (Omi Beef)",
-                        "type": "近江牛名店"
-            },
-            {
-                        "zh": "La Collina 近江八幡",
-                        "ja": "ラ コリーナ近江八幡",
-                        "en": "La Collina Omihachiman",
-                        "type": "甜點莊園"
-            },
-            {
-                        "zh": "近鐵奈良站",
-                        "ja": "近鉄奈良駅 (きんてつならえき)",
-                        "en": "Kintetsu-Nara Station",
-                        "type": "近鐵樞紐"
-            },
-            {
-                        "zh": "東大寺 (大佛殿)",
-                        "ja": "東大寺（大仏殿）",
-                        "en": "Todai-ji (Great Buddha Hall)",
-                        "type": "世界遺產"
-            },
-            {
-                        "zh": "奈良公園 (神鹿)",
-                        "ja": "奈良公園 (ならこうえん)",
-                        "en": "Nara Park",
-                        "type": "鹿群漫步"
-            },
-            {
-                        "zh": "春日大社",
-                        "ja": "春日大社 (かすがたいしゃ)",
-                        "en": "Kasuga Taisha",
-                        "type": "千年朱紅神殿"
-            },
-            {
-                        "zh": "奈良町老街",
-                        "ja": "ならまち（奈良町）",
-                        "en": "Naramachi",
-                        "type": "傳統老屋街"
-            },
-            {
-                        "zh": "大阪難波站",
-                        "ja": "大阪難波駅 (なんばえき)",
-                        "en": "Osaka-Namba Station",
-                        "type": "私鐵/地鐵總站"
-            },
-            {
-                        "zh": "難波相鐵FRESA INN飯店",
-                        "ja": "相鉄フレッサイン 大阪心斎橋/なんば駅前",
-                        "en": "Sotetsu Fresa Inn Namba",
-                        "type": "飯店住宿"
-            },
-            {
-                        "zh": "道頓堀",
-                        "ja": "道頓堀 (どうとんぼり)",
-                        "en": "Dotonbori",
-                        "type": "美食商圈"
-            },
-            {
-                        "zh": "新神戶站",
-                        "ja": "新神戸駅 (しんこうべえき)",
-                        "en": "Shin-Kobe Station",
-                        "type": "新幹線/地鐵"
-            },
-            {
-                        "zh": "神戶布引香草園 & 纜車",
-                        "ja": "神戸布引ハーブ園・ロープウェイ",
-                        "en": "Kobe Nunobiki Herb Gardens & Ropeway",
-                        "type": "景觀空中纜車"
-            },
-            {
-                        "zh": "北野異人館街",
-                        "ja": "北野異人館街 (きたのいじんかん)",
-                        "en": "Kitano Ijinkan-gai",
-                        "type": "洋風建築群"
-            },
-            {
-                        "zh": "生田神社",
-                        "ja": "生田神社 (いくたじんじゃ)",
-                        "en": "Ikuta Shrine",
-                        "type": "結緣名社"
-            },
-            {
-                        "zh": "神戶港美利堅公園 & 港塔",
-                        "ja": "メリケンパーク・神戸ポートタワー",
-                        "en": "Meriken Park & Kobe Port Tower",
-                        "type": "港灣地標"
-            },
-            {
-                        "zh": "大阪中之島美術館",
-                        "ja": "大阪中之島美術館",
-                        "en": "Nakanoshima Museum of Art, Osaka",
-                        "type": "當代美術館"
-            },
-            {
-                        "zh": "北濱復古洋樓 (中央公會堂)",
-                        "ja": "北浜・大阪市中央公会堂",
-                        "en": "Kitahama & Osaka City Central Public Hall",
-                        "type": "水岸洋樓"
-            },
-            {
-                        "zh": "中崎町",
-                        "ja": "中崎町 (なかざきちょう)",
-                        "en": "Nakazakicho",
-                        "type": "昭和老屋聚落"
-            },
-            {
-                        "zh": "新世界 & 通天閣",
-                        "ja": "新世界・通天閣 (つうてんかく)",
-                        "en": "Shinsekai & Tsutenkaku",
-                        "type": "昭和大阪地標"
-            },
-            {
-                        "zh": "阿倍野 HARUKAS 300 展望台",
-                        "ja": "あべのハルカス300（展望台）",
-                        "en": "Abeno Harukas 300",
-                        "type": "300米摩天樓"
-            },
-            {
-                        "zh": "天神橋筋商店街",
-                        "ja": "天神橋筋商店街 (てんじんばしすじ)",
-                        "en": "Tenjinbashisuji Shopping Street",
-                        "type": "日本最長商店街"
-            },
-            {
-                        "zh": "南海難波站",
-                        "ja": "南海なんば駅",
-                        "en": "Nankai Namba Station",
-                        "type": "機場快線總站"
+              status: 'backup',
+              critical: false,
+              deadline: '出發前',
+              text: '離線保存住宿地址、交通憑證、護照與保險資料，並備妥延誤時的替代列車或住宿聯絡方式。',
+              sourceUrl: 'https://www.smartraveller.gov.au/id/node/158'
             }
-]
+          ]
         });
 
         // Itinerary Data for 7 Days
@@ -1147,6 +955,58 @@
           ]
         });
 
+        function placeReferenceRows(itinerary) {
+          const seen = new Set();
+          return Object.values(itinerary).flatMap(day => day).reduce((rows, spot) => {
+            if (!Array.isArray(spot.coords) || spot.coords.length !== 2) return rows;
+            const [latitude, longitude] = spot.coords;
+            if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return rows;
+            const referenceId = spot.referenceId || [spot.name, latitude, longitude].join('|');
+            if (seen.has(referenceId)) return rows;
+            seen.add(referenceId);
+            rows.push({
+              name: spot.name,
+              coords: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+              type: spot.type
+            });
+            return rows;
+          }, []);
+        }
+
+        const referenceRows = computed(() => placeReferenceRows(itinerary));
+
+        function actionStatusLabel(status) {
+          const statuses = { book: '待預訂', confirm: '待確認', optional: '可選', backup: '備援' };
+          return statuses[status] || status;
+        }
+
+        function placeTypeLabel(type) {
+          const types = {
+            flight: '航班／機場',
+            hotel: '住宿',
+            train: '鐵路／車站',
+            bus: '巴士',
+            bike: '自行車',
+            shopping: '購物',
+            info: '資訊',
+            castle: '城郭',
+            shrine: '神社／寺院',
+            park: '公園',
+            cruise: '遊船',
+            tower: '展望台',
+            sight: '景點',
+            food: '餐飲'
+          };
+          return types[type] || '其他行程地點';
+        }
+
+        const displayedNotices = computed(() => [
+          ...overview.notices,
+          ...overview.actions
+            .filter(action => action.critical)
+            .map(action => `【${actionStatusLabel(action.status)}】${action.text}`)
+        ]);
+
         const dayList = computed(() => {
           return tabs.filter(t => t.id !== 'overview');
         });
@@ -1154,6 +1014,19 @@
         // OpenStreetMap Map Renderer
         const mapInstances = {};
         const markerInstances = {};
+        function mapScopeSpots(validSpots) {
+          const localSpots = validSpots.filter((spot, index, spots) => {
+            if (spot.type !== 'flight') return true;
+            const arrivesByPlane = index > 0 && spots[index - 1].transit?.icon === 'plane';
+            const departsByPlane = index < spots.length - 1 && spot.transit?.icon === 'plane';
+            const isRemoteFlightStop =
+              (index === 0 || arrivesByPlane) &&
+              (index === spots.length - 1 || departsByPlane);
+            return !isRemoteFlightStop;
+          });
+          return localSpots.length ? localSpots : validSpots;
+        }
+
 
         function renderMap(dayId) {
           if (dayId === 'overview') return;
@@ -1184,7 +1057,6 @@
             mapInstances[dayId] = map;
 
             markerInstances[dayId] = [];
-            const latLngs = [];
             validSpots.forEach((spot, idx) => {
               const markerIcon = L.divIcon({
                 className: 'custom-osm-marker',
@@ -1216,29 +1088,23 @@
                 </div>
               `);
               markerInstances[dayId].push(marker);
-              latLngs.push(spot.coords);
             });
 
-            // Draw route polyline between local spots
-            if (latLngs.length > 1) {
-              const localSpots = latLngs.filter(c => c[0] > 30);
-              if (localSpots.length > 1) {
-                L.polyline(localSpots, {
-                  color: '#e11d48',
-                  weight: 3.5,
-                  opacity: 0.75,
-                  dashArray: '5, 8'
-                }).addTo(map);
-              }
+            // Draw and frame the local itinerary, not remote flight endpoints.
+            const routeCoords = mapScopeSpots(validSpots).map(spot => spot.coords);
+            if (routeCoords.length > 1) {
+              L.polyline(routeCoords, {
+                color: '#e11d48',
+                weight: 3.5,
+                opacity: 0.75,
+                dashArray: '5, 8'
+              }).addTo(map);
             }
 
-            // Fit bounds with padding
-            const localCoords = latLngs.filter(c => c[0] > 30);
-            const fitCoords = (localCoords.length > 0) ? localCoords : latLngs;
-            if (fitCoords.length === 1) {
-              map.setView(fitCoords[0], 14);
-            } else if (fitCoords.length > 1) {
-              const bounds = L.latLngBounds(fitCoords);
+            if (routeCoords.length === 1) {
+              map.setView(routeCoords[0], 14);
+            } else if (routeCoords.length > 1) {
+              const bounds = L.latLngBounds(routeCoords);
               map.fitBounds(bounds, {
                 padding: [40, 40],
                 maxZoom: 15
@@ -1294,9 +1160,7 @@
           map.closePopup();
           map.invalidateSize();
 
-          const latLngs = validSpots.map(s => s.coords);
-          const localCoords = latLngs.filter(c => c[0] > 30);
-          const fitCoords = (localCoords.length > 0) ? localCoords : latLngs;
+          const fitCoords = mapScopeSpots(validSpots).map(spot => spot.coords);
 
           if (fitCoords.length === 1) {
             map.flyTo(fitCoords[0], 14, { duration: 0.8 });
@@ -1368,6 +1232,10 @@
           tabs,
           overview,
           itinerary,
+          referenceRows,
+          displayedNotices,
+          actionStatusLabel,
+          placeTypeLabel,
           dayList,
           switchTab,
           focusSpotOnMap,
