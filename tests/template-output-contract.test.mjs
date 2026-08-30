@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import vm from 'node:vm';
 import test from 'node:test';
 
-const targets = [
+const defaultTargets = [
   'templates/hokkaido-7days.html',
   'templates/kyushu-8days.html',
   'templates/kansai-7days.html',
@@ -12,6 +12,16 @@ const targets = [
   'templates/tokyo-8days.html',
   'SKILL-for-Web.md'
 ];
+
+const targets = (() => {
+  const override = (process.env.TEST_TARGETS || '')
+    .split(',')
+    .map((target) => target.trim())
+    .filter(Boolean);
+  return override.length ? override : defaultTargets;
+})();
+const hasTargetOverride = Boolean((process.env.TEST_TARGETS || '').trim());
+
 
 function loadFunction(target, signature) {
   const source = readFileSync(resolve(target), 'utf8');
@@ -71,15 +81,31 @@ for (const target of targets) {
 }
 
 for (const target of targets.filter(target => target.startsWith('templates/'))) {
-  test(`${target} localizes type values in its Chinese place-reference table`, () => {
+  test(`${target} localizes place-reference type values`, () => {
     const placeTypeLabel = loadFunction(target, 'function placeTypeLabel(type)');
     const source = readFileSync(resolve(target), 'utf8');
 
-    assert.equal(placeTypeLabel('flight'), '航班／機場');
-    assert.equal(placeTypeLabel('hotel'), '住宿');
-    assert.equal(placeTypeLabel('sight'), '景點');
-    assert.equal(placeTypeLabel('unrecognized'), '其他行程地點');
     assert.match(source, /\{\{ placeTypeLabel\(item\.type\) \}\}/);
+
+    // Default runs pin the committed zh-Hant templates exactly; TEST_TARGETS
+    // runs validate generated files in any output language.
+    if (!hasTargetOverride) {
+      assert.equal(placeTypeLabel('flight'), '航班／機場');
+      assert.equal(placeTypeLabel('hotel'), '住宿');
+      assert.equal(placeTypeLabel('sight'), '景點');
+      assert.equal(placeTypeLabel('unrecognized'), '其他行程地點');
+      return;
+    }
+
+    const labels = ['flight', 'hotel', 'sight'].map((type) => {
+      const label = placeTypeLabel(type);
+      assert.equal(typeof label, 'string', `${target} must define a label for type ${type}`);
+      assert.ok(label.trim().length > 0, `${target} label for type ${type} must not be empty`);
+      return label;
+    });
+    assert.equal(new Set(labels).size, labels.length, `${target} place-type labels must be distinct`);
+    assert.equal(typeof placeTypeLabel('unrecognized'), 'string', `${target} must define a fallback label`);
+    assert.ok(placeTypeLabel('unrecognized').trim().length > 0, `${target} fallback label must not be empty`);
   });
 }
 

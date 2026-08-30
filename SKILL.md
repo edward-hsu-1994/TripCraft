@@ -13,7 +13,7 @@ Do **not** use it for a single flight, hotel, visa, weather, booking, or payment
 
 ## Platform boundary
 
-Use this file only in a filesystem-capable coding agent. Do not combine it with the browser-only Web prompt: this Skill writes the final HTML to `templates/<destination>-travel.html`, while the Web prompt emits a single `html` code block.
+Use this file only in a filesystem-capable coding agent. Do not combine it with the browser-only Web prompt: this Skill writes the final HTML to `templates/<destination>-<N>days.html` (for example `templates/hokkaido-7days.html`), while the Web prompt emits a single `html` code block. The `templates/` paths, including the Step 10 reference template, are relative to the TripCraft repository; keep the repository reachable when this skill is installed elsewhere.
 
 ## Language policy
 
@@ -144,15 +144,15 @@ For any air connection, classify it as a single protected itinerary or a self-tr
 
 ### 10. Build the itinerary data model
 
-Use the structure and naming convention of `templates/okayama-travel.html`. At minimum, provide `trip`, `tabs`, `overview`, and `itinerary.day1` through `itinerary.dayN`.
+Use the structure and naming convention of `templates/okayama-travel.html` — its structure only; never copy its `zh-Hant` trip data, UI labels, or locale (see the HTML contract). At minimum, provide `trip`, `tabs`, `overview`, and `itinerary.day1` through `itinerary.dayN`. Localize every UI string yourself — tab names, section titles, the place-type labels behind the reference table, and the `book`/`confirm`/`optional`/`backup` status labels — and set the document language to the selected output locale.
 
-Each itinerary item needs a localized name, time, optional tag, type, researched duration, coordinates, and the following transit object when applicable:
+Each itinerary item needs a localized name, time, optional tag, type, researched duration, a valid coordinate — an array `[latitude, longitude]` of two finite numbers — and the following transit object when applicable:
 
 ```javascript
 { icon: 'train', text: 'Operator, line, and researched travel time' }
 ```
 
-The overview must include notes, three weather cards, a source-linked action list, notices, and a responsive place-reference table derived **one-to-one** from actual itinerary entities. Render local-script or translated names only when they are researched one-to-one; otherwise show the itinerary label, coordinates, and a localized type label.
+The overview must include notes, three weather cards, a source-linked action list, notices, and a responsive place-reference table derived **one-to-one** from actual itinerary entities: reuse the reference template's `referenceId`-based deduplication so an entity appearing on several days (the same hotel at check-in and checkout, for example) yields exactly one row. Critical unresolved actions must also appear inside the rendered notices; the reference template's `displayedNotices` derivation does this automatically from `overview.actions`. Render local-script or translated names only when they are researched one-to-one; otherwise show the itinerary label, coordinates, and a localized type label.
 
 **Map scope rule:** Show a marker for every valid coordinate. Build the route polyline and default/reset bounds from local stops, not a latitude/longitude threshold. Exclude a flight stop only when it begins the day and departs by plane, ends the day after arriving by plane, or sits between two plane legs; keep a destination airport that connects to local ground transport.
 
@@ -162,7 +162,7 @@ Confirm that every day starts and ends at the selected lodging or an airport; ar
 
 ### 12. Deliver the interactive HTML itinerary
 
-Write the complete, self-contained file to `templates/<destination>-travel.html`. The final response and every user-visible HTML string must follow the language policy.
+Write the complete, self-contained file to `templates/<destination>-<N>days.html` with a kebab-case destination slug, for example `templates/kyushu-8days.html`. When the repository tests are reachable, validate the file before delivery with `TEST_TARGETS=<file> node --test tests/*.test.mjs`. The final response and every user-visible HTML string must follow the language policy.
 
 ## HTML contract
 
@@ -174,6 +174,6 @@ Use `templates/okayama-travel.html` only as the CLI layout and behavior referenc
 - Bidirectional map behavior: a numbered card badge focuses the map at zoom 17 and opens its popup; the active tab or reset control restores the full-day view.
 - Responsive daily cards with time, type icon, tag, name, duration, and explicit transit connectors. Include a fallback for a day with no items.
 - A locale-aware document language, localized labels, and fonts that render Chinese, Japanese, and English.
-- No omitted days, ellipses, TODOs, mock data, or external build step. CDN dependencies are limited to Vue, Tailwind, Leaflet, and fonts.
+- No omitted days, ellipses, TODOs, mock data, or external build step. CDN dependencies are limited to Vue, Tailwind, Leaflet, and fonts, pinned to exact versions.
 
-Before delivery, open the generated HTML in a browser and verify Vue rendering, tab/hash behavior, Leaflet lifecycle, map interactions, all researched coordinates/transit, and language-correct labels.
+Before delivery, open the generated HTML in a browser and verify Vue rendering, tab/hash behavior, Leaflet lifecycle, map interactions, all researched coordinates/transit, language-correct labels, and a mount with no console errors.

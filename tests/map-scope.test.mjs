@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import vm from 'node:vm';
 import test from 'node:test';
 
-const targets = [
+const defaultTargets = [
   'templates/hokkaido-7days.html',
   'templates/kyushu-8days.html',
   'templates/kansai-7days.html',
@@ -12,6 +12,14 @@ const targets = [
   'templates/tokyo-8days.html',
   'SKILL-for-Web.md'
 ];
+
+const targets = (() => {
+  const override = (process.env.TEST_TARGETS || '')
+    .split(',')
+    .map((target) => target.trim())
+    .filter(Boolean);
+  return override.length ? override : defaultTargets;
+})();
 
 function loadMapScopeSpots(target) {
   const source = readFileSync(resolve(target), 'utf8');

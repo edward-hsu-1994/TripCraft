@@ -96,3 +96,17 @@ Each generated file is self-contained and opens directly in a browser. It includ
 - Vue 3 + Tailwind CSS with Leaflet/OpenStreetMap from CDNs; no build step.
 - Rose numbered markers, dashed route lines, automatic map bounds, reset controls, and card-to-map focus at zoom 17.
 - Localized labels and document language for the user's selected output language.
+
+## Tests
+
+Contract tests extract the shared JavaScript helpers embedded in every template and the Web prompt and execute them against fixture data:
+
+```bash
+node --test tests/*.test.mjs
+```
+
+To validate a newly generated itinerary file with the same suite, pass it via `TEST_TARGETS` (paths relative to the repository root, comma-separated). Type-label assertions are language-agnostic for override targets, so non-Chinese itineraries pass too:
+
+```bash
+TEST_TARGETS=templates/ishikawa-5days.html node --test tests/*.test.mjs
+```

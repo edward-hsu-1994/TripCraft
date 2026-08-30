@@ -96,3 +96,17 @@ TripCraft 會循序詢問尚未提供的資訊，查證指定日期與營業限�
 - 透過 CDN 載入 Vue 3、Tailwind CSS 與 Leaflet/OpenStreetMap，無需建置步驟。
 - 玫瑰粉數字標記、虛線路徑、自動縮放、全景重設，以及卡片點擊後以 Zoom 17 聚焦地圖。
 - 與使用者選定輸出語言一致的文件語言與介面標籤。
+
+## 測試
+
+合約測試會從每份範本與網頁版提示詞抽取共用的 JavaScript 輔助函式，並以固定資料執行驗證：
+
+```bash
+node --test tests/*.test.mjs
+```
+
+要讓新產生的行程檔跑同一套測試，可透過 `TEST_TARGETS` 指定（路徑相對於倉庫根目錄，可逗號分隔多個）。覆寫目標的類型標籤斷言與語言無關，非中文行程也能通過：
+
+```bash
+TEST_TARGETS=templates/ishikawa-5days.html node --test tests/*.test.mjs
+```
